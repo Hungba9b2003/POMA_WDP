@@ -1,0 +1,13 @@
+{
+  "name": "server_all",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run start-server\" \"npm run start-zalopay\"",
+    "start-server": "nodemon server_backend/server.js",
+    "start-zalopay": "nodemon zalopay/server.js"
+  },
+  "dependencies": {
+    "concurrently": "^6.0.0",
+    "nodemon": "^3.1.7"
+  }
+}
