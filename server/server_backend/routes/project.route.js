@@ -10,7 +10,7 @@ projectRouter.use(bodyParser.json());
 
 // api xử lý logic bên project.controller
 projectRouter.post(
-    "/updatePremium",
+    "/:projectId/updatePremium",
 )
 // tao dự án
 projectRouter.post(
@@ -116,6 +116,21 @@ projectRouter.put(
 projectRouter.delete(
     "/:projectId/tasks/:taskId/subTasks/:subTaskId/delete",
 )
+
+// Comment
+groupRouter.get(
+    "/:projectId/tasks/:taskId/comments/get-all",
+)
+groupRouter.post(
+    "/:projectId/tasks/:taskId/comments/create",
+)
+groupRouter.put(
+    "/:projectId/tasks/:taskId/comments/:commentId/edit",
+)
+groupRouter.delete(
+    "/:projectId/tasks/:taskId/comments/:commentId/delete",
+)
+
 
 
 // api cho admin
