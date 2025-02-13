@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { create } = require('./notification.model');
 
-const groupSchema = new mongoose.Schema({
+const projectSchema = new mongoose.Schema({
     projectName: {
         type: String,
         unique: [true, "Group name existed"],
@@ -70,5 +70,5 @@ const groupSchema = new mongoose.Schema({
 });
 
 
-const Group = mongoose.model('group', groupSchema);
-module.exports = Group;
+const Project = mongoose.model('project', projectSchema);
+module.exports = Project;
