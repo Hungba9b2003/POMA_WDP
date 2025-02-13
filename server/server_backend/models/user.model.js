@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
     },
     projects: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'group'
+        ref: 'project'
     }],
     notifications: [{
         type: mongoose.Schema.Types.ObjectId,
