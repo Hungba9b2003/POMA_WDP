@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
-const Group = require("./project.model");
+const Project = require("./project.model");
 const User = require("./user.model");
 const Notification = require("./notification.model");
 const Task = require("./task.model");
 
 const db = {};
 
-db.Groups = Group;
+db.Projects = Project;
 db.Users = User;
 db.Notifications = Notification;
 db.Tasks = Task;
