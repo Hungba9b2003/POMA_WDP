@@ -113,6 +113,15 @@ async function register(req, res, next) {
     if (password !== rePassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
+
+    // // Kiểm tra định dạng mật khẩu
+    // if (!/^(?=.*[A-Z]).{8,}$/.test(password)) {
+    //   return res.status(400).json({
+    //     message:
+    //       "Password must be at least 8 characters and contain at least one uppercase letter",
+    //   });
+    // }
+
     const existingUserName = await db.Users.findOne({ username });
     if (existingUserName) {
       return res.status(409).json({ message: "Username already in use" });

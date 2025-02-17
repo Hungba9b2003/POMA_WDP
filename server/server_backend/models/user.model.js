@@ -22,8 +22,14 @@ const userSchema = new mongoose.Schema(
       password: {
         type: String,
         required: [true, "Password is required"],
-        minlength: [6, "Password must be at least 6 characters"],
-        // Không hash được nếu validate trong schema, nên check ở controller
+        minlength: [8, "Password must be at least 8 characters"],
+        validate: {
+          validator: function (v) {
+            return /^(?=.*[A-Z]).{8,}$/.test(v);
+          },
+          message:
+            "Password must be at least 8 characters and contain at least one uppercase letter",
+        },
       },
     },
     profile: {

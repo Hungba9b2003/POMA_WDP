@@ -1,0 +1,258 @@
+.login_bg {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../../../public/images/background_login.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+.wapper {
+    width: 500px;
+    background-color: transparent;
+    border: 2px solid rgb(255, 255, 255, .2);
+    backdrop-filter: blur(40px);
+    color: #f0f2f5;
+    padding: 30px 40px;
+}
+
+.wapper h1 {
+    font-size: 36px;
+    text-align: center;
+}
+
+.wapper form {
+    padding: 10px;
+}
+
+.wapper form .formGroup {
+    position: relative;
+    height: 50px;
+    width: 100%;
+    margin: 30px 0px;
+}
+
+.formGroup input {
+    height: 100%;
+    width: 90%;
+    border: 1px solid rgb(255, 255, 255, .2);
+    padding: 0px 20px;
+    font-size: 18px;
+    background-color: transparent;
+    outline: none;
+    color: #f0f2f5;
+    border-radius: 40px;
+}
+
+.formGroup input::placeholder {
+    color: #f0f2f5;
+}
+
+.formGroup .icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #f0f2f5;
+    font-size: 16px;
+}
+
+.wapper form .remember {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14.5px;
+    margin: -15px 0 15px 0;
+}
+
+.remember label {
+    font-size: 18px;
+    color: #f0f2f5;
+    cursor: pointer;
+}
+
+.remember a {
+    text-decoration: none;
+    color: #f0f2f5;
+}
+
+.remember a:hover {
+    text-decoration: underline;
+}
+
+.formButton {
+    height: 50px;
+    width: 100%;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    background-color: #f0f2f5;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    color: #333;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.formButton:hover {
+    background-color: #333;
+    color: #f0f2f5;
+}
+
+.register {
+    font-size: 14.5px;
+    text-align: center;
+    margin: 20px 0 15px;
+}
+
+.register p a {
+    text-decoration: none;
+    color: #f0f2f5;
+    font-weight: 600;
+}
+
+.register p a:hover {
+    text-decoration: underline;
+}
+
+.forgot {
+    margin: 0px;
+}
+.message {
+    color: red;
+    background-color: pink;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.container {
+  width: 70%;
+  height: 90vh;
+  padding: 20px 50px;
+  background: #EFF2F8;
+  position: relative;
+  justify-content: center;
+}
+
+.logo {
+  color: #2B92E4;
+  font-size: 100px;
+  font-family: Jaro;
+  font-weight: 700;
+  word-wrap: break-word;
+  text-align: left;
+  letter-spacing: -2px;
+  text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  margin-top: 40px;
+}
+
+.registerButton {
+  position: absolute;
+  top: 60px;
+  right: 50px;
+}
+
+.registerButton a {
+  display: inline-block;
+  width: 120px;
+  height: 35px;
+  background: #2B92E4;
+  border-radius: 5px;
+  color: #F5F5F5;
+  font-size: 16px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  line-height: 35px;
+}
+
+.loginSection {
+  margin-top: 40px;
+}
+
+.title {
+  font-size: 36px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  margin-bottom: 25px;
+}
+
+.subtitle {
+  font-size: 16px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  margin-bottom: 20px;
+}
+
+.inputGroup {
+  max-width: 350px;
+  margin-bottom: 20px;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 16px;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.inputGroup input {
+  width: 100%;
+  height: 40px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding: 0 15px;
+}
+
+.errorInput {
+  background: #F8D0D2;
+}
+
+.options {
+  max-width: 350px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.rememberMe {
+  font-size: 15px;
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.forgotPassword {
+  color: #2B92E4;
+  font-size: 15px;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.loginButton {
+  width: 350px;
+  height: 40px;
+  background: #2B92E4;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.message {
+  max-width: 350px;
+  margin-bottom: 20px;
+}
