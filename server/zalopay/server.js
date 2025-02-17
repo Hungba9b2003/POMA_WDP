@@ -1,4 +1,3 @@
-// Node v10.15.3
 const axios = require('axios').default; // npm install axios
 const CryptoJS = require('crypto-js'); // npm install crypto-js
 const express = require('express'); // npm install express
@@ -52,7 +51,7 @@ app.post('/payment', async (req, res) => {
         item: JSON.stringify(items),
         embed_data: JSON.stringify(embed_data),
         amount,
-        callback_url: 'https://a885-113-23-104-170.ngrok-free.app/callback',
+        callback_url: 'https://c817-118-70-211-234.ngrok-free.app/callback',
         description: `Lazada - Payment for the order #${transID}`,
         bank_code: ''
     };
