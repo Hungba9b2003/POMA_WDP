@@ -1,8 +1,8 @@
-const groupRouter = require("./group.route");
 const userRouter = require("./user.route");
 const authenticationRouter = require("./authentication.route");
+const projectRouter = require("./project.route");
 module.exports = {
-    groupRouter,
+    projectRouter,
     userRouter,
     authenticationRouter
 };

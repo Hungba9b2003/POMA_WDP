@@ -2,9 +2,9 @@ const express = require("express");
 const projectRouter = express.Router();
 const bodyParser = require("body-parser");
 const db = require("../models/index");
-const { AuthMiddleware, GroupMiddleware } = require("../middlewares");
+const { AuthMiddleware, ProjectMiddleware } = require("../middlewares");
 //import cả controller của task lẫn projetc vào đây
-
+const {ProjectController} = require("../controllers/index")
 
 projectRouter.use(bodyParser.json());
 
@@ -14,23 +14,23 @@ projectRouter.post(
 )
 // tao dự án
 projectRouter.post(
-    "/create",
+    "/create",ProjectController.createProject
 )
 //lấy toàn bộ dự án
 projectRouter.get(
-    "/get-project",
+    "/get-project",ProjectController.getAllProjects
 )
 // tìm dự án
 projectRouter.get(
-    "/:projectId/get-project",
+    "/:projectId/get-project",ProjectController.getProjectById
 )
 // chỉnh sửa thông tin dự án chỉ đinh
 projectRouter.put(
-    "/:projectId/edit",
+    "/:projectId/edit",ProjectController.updateProject
 )
 // delete dự án
 projectRouter.delete(
-    "/:projectId/delete",
+    "/:projectId/delete",ProjectController.deleteProject
 )
 // vào project bằng code
 projectRouter.post(
@@ -45,7 +45,7 @@ projectRouter.delete(
 )
 // lấy danh sách thành viên dự án
 projectRouter.get(
-    "/:projectId/get-member",
+    "/:projectId/get-member",ProjectController.getProjectMembers
 )
 // set group member role
 projectRouter.put(
@@ -118,16 +118,16 @@ projectRouter.delete(
 )
 
 // Comment
-groupRouter.get(
+projectRouter.get(
     "/:projectId/tasks/:taskId/comments/get-all",
 )
-groupRouter.post(
+projectRouter.post(
     "/:projectId/tasks/:taskId/comments/create",
 )
-groupRouter.put(
+projectRouter.put(
     "/:projectId/tasks/:taskId/comments/:commentId/edit",
 )
-groupRouter.delete(
+projectRouter.delete(
     "/:projectId/tasks/:taskId/comments/:commentId/delete",
 )
 
