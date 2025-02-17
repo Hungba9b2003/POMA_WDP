@@ -14,4 +14,39 @@ const getProfile = async (req, res) => {
     }
 };
 
-module.exports = { getProfile };
+const updateProfile = async (req, res, next) => {
+    try {
+        const userId = req.payload.id; // Lấy ID từ payload JWT
+        const { username, email, phoneNumber, avatar } = req.body;
+
+        // Kiểm tra nếu không có dữ liệu gửi lên
+        if (!username && !email && !phoneNumber && !avatar) {
+            return res.status(400).json({ success: false, message: "No data provided for update" });
+        }
+
+        // Tạo object cập nhật, chỉ thêm các trường có giá trị
+        const updateData = {};
+        if (username) updateData.username = username;
+        if (email) updateData["account.email"] = email;
+        if (phoneNumber) updateData["profile.phoneNumber"] = phoneNumber;
+        if (avatar) updateData["profile.avatar"] = avatar;
+
+        // Cập nhật thông tin user
+        const updatedUser = await db.Users.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        ).select("-account.password"); // Không trả về password
+
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.status(200).json({ success: true, data: updatedUser });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        next(error);
+    }
+};
+
+module.exports = { getProfile, updateProfile };
