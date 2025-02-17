@@ -8,10 +8,10 @@ userRouter.use(bodyParser.json());
 
 
 
-const { } = require("../controllers/user.controller");
+const {getProfile } = require("../controllers/user.controller");
 
 //lấy profile 
-userRouter.get("/get-profile", AuthMiddleware.verifyAccessToken,);
+userRouter.get("/get-profile", AuthMiddleware.verifyAccessToken, getProfile);
 //update profile
 userRouter.put("/update-profile", AuthMiddleware.verifyAccessToken,);
 // đổi mật khẩu
