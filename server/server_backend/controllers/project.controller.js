@@ -15,7 +15,7 @@ function generateProjectCode(length = 6) {
 async function createProject(req, res, next) {
     try {
         const { projectName } = req.body;
-        const { id } = req.payload;
+        const { id } = req.body;//payload
         const projectCode = generateProjectCode();
         const existingProject = await db.Projects.findOne({ projectName });
         if (existingProject) {
@@ -26,7 +26,7 @@ async function createProject(req, res, next) {
         const members = [
             {
                 _id: id,
-                projectRole: 'owner'
+                role: 'owner'
             }
         ];
         const newProject = new db.Projects({
@@ -40,15 +40,15 @@ async function createProject(req, res, next) {
         const nProjectId = nProject._id;
         console.log(nProjectId);
 
-        // const updatedUser = await db.Users.findOneAndUpdate(
-        //     { _id: id },
-        //     { $push: { projects: nProjectId } },
-        //     { new: true } 
-        // );
+        const updatedUser = await db.Users.findOneAndUpdate(
+            { _id: id },
+            { $push: { projects: nProjectId } },
+            { new: true } 
+        );
         
-        // if (!updatedUser) {
-        //     throw createHttpErrors(400, "Failed to update user with project ID");
-        // }
+        if (!updatedUser) {
+            throw createHttpErrors(400, "Failed to update user with project ID");
+        }
 
         res.status(201).json({ message: "Project created successfully", Project: newProject });
     } catch (error) {
@@ -59,10 +59,10 @@ async function createProject(req, res, next) {
 
 async function getAllProjects(req, res, next) {
     try {
-        const { id } = req.payload;
+        const { id } = req.body;//payload
         const projects = await db.Projects.find({ members: { $elemMatch: { _id: id } } });
         if (!projects) {
-            throw createHttpErrors(404, "project not found")
+            throw createHttpErrors(404, "Project not found")
         }
 
         res.status(200).json(projects)
@@ -88,8 +88,8 @@ async function getProjectById(req, res, next) {
 async function updateProject(req, res, next) {
     try {
         const { projectId } = req.params;
-        const { id } = req.payload;
-        const { projectName, projectCode, projectAvatar, role } = req.body;
+        const { id } = req.body;//payload
+        const { projectName, projectCode, projectAvatar } = req.body;
 
         const project = await db.Projects.findOne({ _id: projectId });
         if (!project) {
@@ -107,7 +107,7 @@ async function updateProject(req, res, next) {
             if (projectName) updateProject.projectName = projectName;
 
             if (projectCode) {
-                const existingProjectByCode = await db.Project.findOne({
+                const existingProjectByCode = await db.Projects.findOne({
                     projectCode,
                     _id: { $ne: projectId }
                 });
@@ -141,7 +141,7 @@ async function updateProject(req, res, next) {
 async function deleteProject(req, res, next) {
     try {
         const { projectId } = req.params;
-        const { id } = req.payload;
+        const { id } = req.body;//payload
         const project = await db.Projects.findOne({ _id: projectId });
 
         if (!project) {
