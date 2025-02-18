@@ -7,17 +7,16 @@ const { AuthMiddleware } = require("../middlewares");
 userRouter.use(bodyParser.json());
 
 
-
-const {getProfile } = require("../controllers/user.controller");
+const {getProfile, updateProfile, getAllUser } = require("../controllers/user.controller");
 
 //lấy profile 
-userRouter.get("/get-profile", AuthMiddleware.verifyAccessToken, getProfile);
+userRouter.get("/get-profile", getProfile);
 //update profile
-userRouter.put("/update-profile", AuthMiddleware.verifyAccessToken,);
+userRouter.put("/update-profile", updateProfile);
 // đổi mật khẩu
-userRouter.put("/change-password", AuthMiddleware.verifyAccessToken,);
+userRouter.put("/change-password", AuthMiddleware.verifyAccessToken);
 // lấy danh sách người dùng
-userRouter.get("/all-users", AuthMiddleware.verifyAccessToken,);
+userRouter.get("/all-users", getAllUser);
 // đổi trạng thái tài khoản người dùng
 userRouter.put("/change-status/:id", AuthMiddleware.verifyAccessToken,);
 
