@@ -52,6 +52,7 @@ const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider
       value={{
+        checkTokenExpiration,
         accessToken,
         user,
         setUser,

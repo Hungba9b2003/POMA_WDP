@@ -69,9 +69,9 @@ async function sendEmail(type, email, link) {
 
 // Hàm đăng nhập
 async function login(req, res) {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
-    const user = await db.Users.findOne({ username });
+    const user = await db.Users.findOne({ email });
     if (!user) {
       return res.status(404).json({ status: "User not found!" });
     }

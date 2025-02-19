@@ -1,17 +1,18 @@
 import React from "react";
 import styles from "../Styles/Login/Login.module.css";
 import { Outlet } from "react-router-dom";
-import { Helmet } from "react-helmet";
+
+import { HelmetProvider } from "react-helmet-async";
 
 function Login() {
   return (
     <>
-      <Helmet>
+      <HelmetProvider >
         <link
           href="https://fonts.googleapis.com/css2?family=Jaro&display=swap"
           rel="stylesheet"
         />
-      </Helmet>
+      </HelmetProvider >
       <div className={styles.login_bg}>
         <Outlet />
       </div>
