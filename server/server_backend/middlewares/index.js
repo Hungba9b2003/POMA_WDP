@@ -1,6 +1,6 @@
 const AuthMiddleware = require("./auth.middleware");
-const GroupMiddleware = require("./group.middleware")
-module.exports={
+const ProjectMiddleware = require("./project.middleware")
+module.exports = {
     AuthMiddleware,
-    GroupMiddleware
+    ProjectMiddleware
 }

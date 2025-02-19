@@ -2,9 +2,9 @@ const express = require("express");
 const projectRouter = express.Router();
 const bodyParser = require("body-parser");
 const db = require("../models/index");
-const { AuthMiddleware, GroupMiddleware } = require("../middlewares");
+//const { AuthMiddleware, GroupMiddleware } = require("../middlewares");
+const { TaskController } = require("../controllers");
 //import cả controller của task lẫn projetc vào đây
-
 
 projectRouter.use(bodyParser.json());
 
@@ -117,21 +117,25 @@ projectRouter.delete(
     "/:projectId/tasks/:taskId/subTasks/:subTaskId/delete",
 )
 
-// Comment
-groupRouter.get(
-    "/:projectId/tasks/:taskId/comments/get-all",
-)
-groupRouter.post(
-    "/:projectId/tasks/:taskId/comments/create",
-)
-groupRouter.put(
-    "/:projectId/tasks/:taskId/comments/:commentId/edit",
-)
-groupRouter.delete(
-    "/:projectId/tasks/:taskId/comments/:commentId/delete",
-)
+// Lấy tất cả comment của task trong project
+projectRouter.get(
+    "/:projectId/tasks/:taskId/comments/get-all", TaskController.getAllComments
+);
 
+// Thêm comment vào task trong project
+projectRouter.post(
+    "/:projectId/tasks/:taskId/comments/create", TaskController.addComment
+);
 
+// Sửa comment trong task của project
+projectRouter.put(
+    "/:projectId/tasks/:taskId/comments/:commentId/edit", TaskController.editComment
+);
+
+// Xóa comment trong task của project
+projectRouter.delete(
+    "/:projectId/tasks/:taskId/comments/:commentId/delete", TaskController.deleteComment
+);
 
 // api cho admin
 //tổng số project
