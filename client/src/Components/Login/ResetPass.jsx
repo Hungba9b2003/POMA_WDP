@@ -1,76 +1,67 @@
-import React, { useContext, useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
+import React, { useContext, useState } from "react";
 import { AppContext } from "../../Context/AppContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import { Alert } from "react-bootstrap";
 import axios from "axios";
 import loginImage from "../../assets/login/images/image1.jpg";
 import styles from "../../Styles/Login/Login.module.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-function LoginForm() {
-  const { authentication_API, setUser } = useContext(AppContext);
-  const [username, setUsername] = useState("");
+function ResetPassword() {
+  const { authentication_API } = useContext(AppContext);
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const navigate = useNavigate();
+  const { id, token } = useParams();
   const [showPassword, setShowPassword] = useState(false);
-  const login_API = `${authentication_API}/login`;
+  const [showRePassword, setShowRePassword] = useState(false);
+  const resetPass_API = `${authentication_API}/reset-password/${id}/${token}`;
 
-  const checkTokenExpiration = () => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const { exp } = jwtDecode(token);
-      if (Date.now() >= exp * 1000) {
-        localStorage.removeItem("token");
-        setMessage("Session expired, please login again");
-        setTimeout(() => navigate("/login/loginForm"), 2000);
-      }
-    }
-  };
-
-  useEffect(() => {
-    checkTokenExpiration();
-  }, []);
-
-  const loginUser = async (username, password) => {
+  const resetPassword = async () => {
     try {
-      const { data } = await axios.post(login_API, { username, password });
+      const { data } = await axios.post(resetPass_API, {
+        password,
+        confirmPassword,
+      });
       return data;
     } catch (error) {
-      throw error;
+      if (error.response) {
+        // Lấy lỗi từ backend
+        return error.response.data;
+      }
+      return { status: "error", message: "Network error, please try again!" };
     }
   };
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    try {
-      const result = await loginUser(username, password);
-      if (result.status === "Login successful!" && result.token) {
-        const expiresInDays = 30; // Thời gian hết hạn nếu chọn "Remember Me" (30 ngày)
-        const expirationTime =
-          new Date().getTime() + expiresInDays * 24 * 60 * 60 * 1000; // Tính timestamp hết hạn
+    setMessage("");
 
-        if (rememberMe) {
-          localStorage.setItem("token", result.token);
-          localStorage.setItem("token_expiration", expirationTime); // Lưu thời gian hết hạn
-        } else {
-          sessionStorage.setItem("token", result.token);
-        }
+    if (password.length < 6) {
+      setMessage("Password must be at least 6 characters!");
+      return;
+    }
 
-        setUser(result.user);
-        setShowSuccessAlert(true);
-        setTimeout(() => {
-          setShowSuccessAlert(false);
-          navigate("/home");
-        }, 2000);
-      } else {
-        setMessage("Login failed");
-      }
-    } catch (error) {
-      setMessage(error.response?.data?.message);
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match!");
+      return;
+    }
+
+    const result = await resetPassword();
+    console.log(result);
+    if (result.status === "Invalid or expired!") {
+      setMessage("This reset password has expired");
+    } else if (result.status === "Password change successful!") {
+      setShowSuccessAlert(true);
+      setMessage("Password changed successfully!");
+      setTimeout(() => {
+        setShowSuccessAlert(false);
+        navigate("/login/loginForm");
+      }, 3000);
+    } else {
+      setMessage(result.message || "An error occurred, please try again!");
     }
   };
 
@@ -95,47 +86,22 @@ function LoginForm() {
             animation: "slideDown 0.5s ease-out",
           }}
         >
-          Login Successful!
+          Password changed successfully!
         </div>
       )}
       <div style={{ flex: 1 }}>
         <div className={styles.logo}>POMA</div>
 
         <div className={styles.loginSection}>
-          <h1 className={styles.title}>Login</h1>
-          <p className={styles.subtitle}>Welcome back 👋</p>
+          <h1 className={styles.title}>Reset Password</h1>
+          <p className={styles.subtitle}>Enter your new password</p>
 
           <form onSubmit={onSubmit}>
             {message && (
-              <Alert variant="danger" className={styles.message}>
+              <Alert variant="info" className={styles.message}>
                 {message}
               </Alert>
             )}
-
-            <div className={styles.inputGroup}>
-              <label htmlFor="username">Email</label>
-              <div style={{ position: "relative" }}>
-                <i
-                  className="fas fa-envelope"
-                  style={{
-                    position: "absolute",
-                    left: "10px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "#666",
-                  }}
-                ></i>
-                <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Nhập email của bạn"
-                  style={{ paddingLeft: "35px" }}
-                  required
-                />
-              </div>
-            </div>
 
             <div className={styles.inputGroup}>
               <label htmlFor="password">Password</label>
@@ -174,31 +140,51 @@ function LoginForm() {
               </div>
             </div>
 
-            <div className={styles.options}>
-              <label className={styles.rememberMe}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="repassword">Confirm Password</label>
+              <div style={{ position: "relative" }}>
+                <i
+                  className="fas fa-lock"
+                  style={{
+                    position: "absolute",
+                    left: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#666",
+                  }}
+                ></i>
                 <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={() => setRememberMe(!rememberMe)}
+                  type={showRePassword ? "text" : "password"}
+                  id="repassword"
+                  value={confirmPassword}
+                  placeholder="Confirm your password"
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  style={{ paddingLeft: "35px" }}
+                  required
                 />
-                <span>Remember me</span>
-              </label>
-              <Link to="/login/forgotPass" className={styles.forgotPassword}>
-                Forgot Password?
-              </Link>
+                <i
+                  className={showRePassword ? "fas fa-eye-slash" : "fas fa-eye"}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#666",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setShowRePassword(!showRePassword)}
+                ></i>
+              </div>
             </div>
 
             <button type="submit" className={styles.loginButton}>
-              Login
+              Reset Password
             </button>
 
             <div className={styles.registerSection}>
               <p>
-                Not registered yet?{" "}
-                <Link
-                  to="/login/registerForm"
-                  style={{ textDecoration: "none" }}
-                >
+                Back to{" "}
+                <Link to="/login/loginForm" style={{ textDecoration: "none" }}>
                   <span
                     style={{
                       fontWeight: "500",
@@ -212,7 +198,7 @@ function LoginForm() {
                       (e.target.style.color = "rgb(235 185 188)")
                     }
                   >
-                    Register
+                    Login
                   </span>
                 </Link>
               </p>
@@ -239,4 +225,4 @@ function LoginForm() {
   );
 }
 
-export default LoginForm;
+export default ResetPassword;

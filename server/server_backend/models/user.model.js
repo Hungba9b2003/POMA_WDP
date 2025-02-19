@@ -71,6 +71,10 @@ const userSchema = new mongoose.Schema(
       enum: ["inactive", "active", "banned"],
       default: "inactive",
     },
+    resetToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

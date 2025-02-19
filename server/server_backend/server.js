@@ -34,6 +34,7 @@ app.use("/authentication", authenticationRouter);
 app.use(async (req, res, next) => {
   next(httpsErrors(404, "Bad Request"));
 });
+
 app.use(async (err, req, res, next) => {
   res.status = err.status || 500;
   res.send({ error: { status: err.status, message: err.message } });

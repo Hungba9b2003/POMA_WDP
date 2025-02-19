@@ -16,20 +16,20 @@ authRouter.post("/register", AuthController.register);
 authRouter.post("/forgot-password", AuthController.forgotPassword);
 
 //lấy người dùng bằng id
-authRouter.get(
+authRouter.post(
   "/get-user",
   AuthMiddleware.verifyAccessToken,
   AuthController.getUserById
 );
 
 //lấy bằng email
-authRouter.get("/getByEmail", AuthController.getUserByEmail);
+authRouter.post("/getByEmail", AuthController.getUserByEmail);
 
 // đặt lại mật khẩu
 authRouter.post("/reset-password/:id/:token", AuthController.resetPassword);
 //token để reset,verify với token để đăng nhâp đăng đang là 2 cái khác nhau
 
 // Xác minh tài khoản
-authRouter.get("/verify/:id/:token", AuthController.verifyAccount);
+authRouter.post("/verify/:id/:token", AuthController.verifyAccount);
 
 module.exports = authRouter;
