@@ -57,24 +57,24 @@ projectRouter.delete("/:projectId/delete-workspace");
 
 // api xử lý logic bên task.controller
 // lấy task
-projectRouter.get("/:projectId/tasks/get-all");
+projectRouter.get("/:projectId/tasks/get-all", TaskController.getAllTasks);
 // tạo task
-projectRouter.post("/:projectId/tasks/create");
+projectRouter.post("/:projectId/tasks/create", TaskController.createTask);
 // chỉnh sửa task
-projectRouter.put("/:projectId/tasks/:taskId/edit");
+projectRouter.put("/:projectId/tasks/:taskId/edit", TaskController.editTask);
 // xoá task
-projectRouter.delete("/:projectId/tasks/:taskId/delete");
+projectRouter.delete("/:projectId/tasks/:taskId/delete", TaskController.deleteTask);
 
 //Subtask bên trong Task có list subtask, xem model nếu không rõ
 
 //lấy subtask
-projectRouter.get("/:projectId/tasks/:taskId/subTasks/get-all");
+projectRouter.get("/:projectId/tasks/:taskId/subTasks/get-all", TaskController.getAllSubTasks);
 // tạo subtas
-projectRouter.post("/:projectId/tasks/:taskId/subTasks/create");
+projectRouter.post("/:projectId/tasks/:taskId/subTasks/create", TaskController.addSubTask);
 // chỉnh sửa subtask
-projectRouter.put("/:projectId/tasks/:taskId/subTasks/:subTaskId/edit");
+projectRouter.put("/:projectId/tasks/:taskId/subTasks/:subTaskId/edit", TaskController.editSubTask);
 // xoá subtask
-projectRouter.delete("/:projectId/tasks/:taskId/subTasks/:subTaskId/delete");
+projectRouter.delete("/:projectId/tasks/:taskId/subTasks/:subTaskId/delete", TaskController.deleteSubTask);
 
 // Lấy tất cả comment của task trong project
 projectRouter.get(

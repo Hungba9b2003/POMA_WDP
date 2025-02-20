@@ -10,7 +10,7 @@ const createHttpErrors = require("http-errors");
 async function getAllTasks(req, res, next) {
     try {
         const { projectId } = req.params;
-        const project = await db.Projects.findOne({ _id: projectId });
+        const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
 
@@ -35,16 +35,27 @@ async function createTask(req, res, next) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
         }
         const newTask = {
+            taskNumber: project.tasks.length+1,
             taskName: req.body.taskName,
             description: req.body.description,
             reviewer: id,
+            assignee: id,
             deadline: req.body.deadline,
-            status: req.body.status.toLowerCase(),
+            status: req.body.status,
         }
-        await db.Projects.findOneAndUpdate({ _id: projectId }, { $addToSet: { tasks: newTask } }, { runValidators: true })
-        const saveProject = await db.Projects.findOne({ _id: projectId });
+        const newTasks =await db.Tasks.create(newTask);
+        console.log(newTasks._id)
+        const updatedProject = await db.Projects.findByIdAndUpdate(
+            projectId,
+            { $push: { tasks: newTasks._id } }, 
+            { new: true, runValidators: true }
+        );
+        console.log(updatedProject);
+        if (!updatedProject) {
+            return res.status(500).json({ error: "Failed to update project with new task" });
+        }
 
-        res.status(201).json(saveProject.tasks[saveProject.tasks.length - 1])
+        res.status(201).json(newTasks);
 
 
 
@@ -76,22 +87,22 @@ async function editTask(req, res, next) {
             reviewer: req.body.reviewer ? req.body.reviewer : task.reviewer,
             assignee: req.body.assignee ? req.body.assignee : task.assignee,
             deadline: req.body.deadline ? req.body.deadline : task.deadline,
-            status: req.body.status?.toLowerCase(),
+            status: req.body?.status,
             updatedAt: new Date()
         }
-        await db.Projects.updateOne(
+        await db.Tasks.updateOne(
             {
-                _id: projectId, "tasks._id": taskId
+                _id: taskId,
             },
             {
                 $set: {
-                    "tasks.$.taskName": updateTask.taskName,
-                    "tasks.$.description": updateTask.description,
-                    "tasks.$.assignee": updateTask.assignee,
-                    "tasks.$.reviewer": updateTask.reviewer,
-                    "tasks.$.deadline": updateTask.deadline,
-                    "tasks.$.status": updateTask.status,
-                    "tasks.$.updatedAt": updateTask.updatedAt
+                    "taskName": updateTask.taskName,
+                    "description": updateTask.description,
+                    "assignee": updateTask.assignee,
+                    "reviewer": updateTask.reviewer,
+                    "deadline": updateTask.deadline,
+                    "status": updateTask.status,
+                    "updatedAt": updateTask.updatedAt
                 }
             },
             {
@@ -114,20 +125,19 @@ async function deleteTask(req, res, next) {
 
 
         }
-        const task = project.tasks.find(t => t._id == taskId)
+        const task = project.tasks.find(t => t._id.equals(taskId));
         if (!task) {
             return res.status(404).json({ error: { status: 404, message: "Task not found" } })
 
         }
 
-        await db.Projects.updateOne(
-            {
-                _id: projectId
-            }
-            , {
-                $pull: { tasks: { _id: taskId } }
-            }
-        )
+        await db.Projects.findByIdAndUpdate(
+            projectId,
+            { $pull: { tasks: taskId } },
+            { new: true }
+        );
+        
+        await db.Tasks.deleteOne({ _id: taskId })
 
         res.status(200).json("Delete task successfully")
     } catch (error) {
@@ -178,7 +188,7 @@ async function addSubTask(req, res, next) {
     }
 }
 
-async function getAllSubTask(req, res, next) {
+async function getAllSubTasks(req, res, next) {
     try {
         const { projectId, taskId } = req.params;
         const project = await db.Projects.findOne({ _id: projectId });
@@ -290,7 +300,7 @@ async function getAllComments(req, res, next) {
     try {
         const { projectId, taskId } = req.params;
 
-        const project = await db.Projects.findById(projectId).populate('tasks._id'); // Dùng populate để lấy các task
+        const project = await db.Projects.findById(projectId).populate('tasks'); // Dùng populate để lấy các task
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
@@ -319,18 +329,18 @@ async function addComment(req, res, next) {
             return res.status(400).json({ error: "Comment content is required" });
         }
 
-        const project = await db.Projects.findById(projectId).populate('tasks._id');
+        const project = await db.Projects.findById(projectId).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
-        const task = project.tasks.find(t => t._id.equals(taskId));
+        const task = project.tasks.find(t => t._id.toString() == taskId);
         if (!task) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
         const newComment = { user: userId, content, createdAt: new Date() };
-        const taskDetails = await db.Task.findByIdAndUpdate(
+        const taskDetails = await db.Tasks.findByIdAndUpdate(
             taskId,
             { $push: { comments: newComment } },
             { new: true }
@@ -352,17 +362,17 @@ async function editComment(req, res, next) {
         const { projectId, taskId, commentId } = req.params;
         const { content } = req.body;
 
-        const project = await db.Projects.findById(projectId).populate('tasks._id');
+        const project = await db.Projects.findById(projectId).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
-        const task = project.tasks.find(t => t._id.equals(taskId));
+        const task = project.tasks.find(t => t._id.toString() === taskId);
         if (!task) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
-        const taskDetails = await db.Task.findOneAndUpdate(
+        const taskDetails = await db.Tasks.findOneAndUpdate(
             { _id: taskId, "comments._id": commentId },
             {
                 $set: {
@@ -388,17 +398,17 @@ async function deleteComment(req, res, next) {
     try {
         const { projectId, taskId, commentId } = req.params;
 
-        const project = await db.Projects.findById(projectId).populate('tasks._id');
+        const project = await db.Projects.findById(projectId).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
-        const task = project.tasks.find(t => t._id.equals(taskId));
+        const task = project.tasks.find(t => t._id.toString() === taskId);
         if (!task) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
-        const taskDetails = await db.Task.findOneAndUpdate(
+        const taskDetails = await db.Tasks.findOneAndUpdate(
             { _id: taskId },
             { $pull: { comments: { _id: commentId } } },
             { new: true }
@@ -418,7 +428,15 @@ const TaskController = {
     getAllComments,
     addComment,
     editComment,
-    deleteComment
+    deleteComment,
+    getAllTasks,
+    createTask,
+    editTask,
+    deleteTask,
+    getAllSubTasks,
+    addSubTask,
+    editSubTask,
+    deleteSubTask
 };
 
 module.exports = TaskController;
