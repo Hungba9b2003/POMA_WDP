@@ -81,19 +81,19 @@ projectRouter.delete(
 // api xử lý logic bên task.controller
 // lấy task 
 projectRouter.get(
-    "/:projectId/tasks/get-all",
+    "/:projectId/tasks/get-all",ProjectController.getAllTask
 )
 // tạo task
 projectRouter.post(
-    "/:projectId/tasks/create",
+    "/:projectId/tasks/create",ProjectController.createTask
 )
 // chỉnh sửa task
 projectRouter.put(
-    "/:projectId/tasks/:taskId/edit",
+    "/:projectId/tasks/:taskId/edit",ProjectController.editTask
 )
 // xoá task
 projectRouter.delete(
-    "/:projectId/tasks/:taskId/delete",
+    "/:projectId/tasks/:taskId/delete",ProjectController.deleteTask
 )
 
 
@@ -106,7 +106,7 @@ projectRouter.get(
 )
 // tạo subtas
 projectRouter.post(
-    "/:projectId/tasks/:taskId/subTasks/create",
+    "/:projectId/tasks/:taskId/subTasks/create",ProjectController.addSubTask
 )
 // chỉnh sửa subtask
 projectRouter.put(
