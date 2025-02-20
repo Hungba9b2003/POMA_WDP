@@ -22,7 +22,7 @@ function RegisterForm() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-
+    setMessage("Please wait...");
     if (password !== repassword) {
       setMessage("Mật khẩu không khớp!");
       return;
@@ -37,7 +37,7 @@ function RegisterForm() {
         repassword,
       });
       console.log(data);
-      if (data.status === "success") {
+      if (data.status === "Success") {
         setShowSuccessAlert(true);
         setTimeout(() => {
           setShowSuccessAlert(false);

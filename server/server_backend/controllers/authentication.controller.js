@@ -148,7 +148,7 @@ async function register(req, res, next) {
         password: hashedPassword,
       },
       profile: {
-        phoneNumber,
+        phoneNumber: phone,
       },
       status: "inactive",
     });
@@ -164,6 +164,7 @@ async function register(req, res, next) {
     await sendEmail("verify", email, verificationLink);
 
     res.status(201).json({
+      status: "Success",
       message:
         "User registered successfully. Check your email for verification link!",
     });
