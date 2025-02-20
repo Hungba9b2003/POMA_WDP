@@ -5,8 +5,8 @@ const paymentRouter = require("./payment.route");
 
 
 module.exports = {
-    projectRouter,
-    userRouter,
-    authenticationRouter,
-    paymentRouter
+  projectRouter,
+  userRouter,
+  authenticationRouter,
+  paymentRouter
 };

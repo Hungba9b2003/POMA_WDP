@@ -13,7 +13,7 @@ async function getAllComments(req, res, next) {
     try {
         const { projectId, taskId } = req.params;
 
-        const project = await db.Project.findById(projectId).populate('tasks._id'); // Dùng populate để lấy các task
+        const project = await db.Projects.findById(projectId).populate('tasks._id'); // Dùng populate để lấy các task
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
@@ -24,7 +24,7 @@ async function getAllComments(req, res, next) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
-        const taskDetails = await db.Task.findById(taskId); // Lấy chi tiết của task từ task collection
+        const taskDetails = await db.Tasks.findById(taskId); // Lấy chi tiết của task từ task collection
         res.status(200).json(taskDetails.comments || []);
     } catch (error) {
         next(error);
@@ -42,7 +42,7 @@ async function addComment(req, res, next) {
             return res.status(400).json({ error: "Comment content is required" });
         }
 
-        const project = await db.Project.findById(projectId).populate('tasks._id');
+        const project = await db.Projects.findById(projectId).populate('tasks._id');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
@@ -75,7 +75,7 @@ async function editComment(req, res, next) {
         const { projectId, taskId, commentId } = req.params;
         const { content } = req.body;
 
-        const project = await db.Project.findById(projectId).populate('tasks._id');
+        const project = await db.Projects.findById(projectId).populate('tasks._id');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
@@ -111,7 +111,7 @@ async function deleteComment(req, res, next) {
     try {
         const { projectId, taskId, commentId } = req.params;
 
-        const project = await db.Project.findById(projectId).populate('tasks._id');
+        const project = await db.Projects.findById(projectId).populate('tasks._id');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }

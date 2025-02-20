@@ -6,10 +6,10 @@ const Task = require("./task.model");
 
 const db = {};
 
-db.Project = Project;
-db.User = User;
-db.Notification = Notification;
-db.Task = Task;
+db.Projects = Project;
+db.Users = User;
+db.Notifications = Notification;
+db.Tasks = Task;
 
 db.connectDB = async () => {
   try {
