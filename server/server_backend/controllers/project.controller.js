@@ -363,6 +363,114 @@ async function addSubTask(req, res, next) {
     }
 }
 
+async function getAllSubTask(req, res, next) {
+    try {
+        const { projectId, taskId } = req.params;
+        const project = await db.Projects.findOne({ _id: projectId });
+        if (!project) {
+            return res.status(404).json({ error: { status: 404, message: "Project not found" } })
+
+        }
+        const task = project.tasks.find(t => t._id == taskId)
+        if (!task) {
+            return res.status(404).json({ error: { status: 404, message: "Task not found" } })
+
+        }
+
+        const { subTasks } = task;
+        res.status(200).json(subTasks)
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+async function editSubTask(req, res, next) {
+    try {
+        const { projectId, taskId, subTaskId } = req.params;
+        const project = await db.Projects.findOne({ _id: projectId });
+        if (!project) {
+            return res.status(404).json({ error: { status: 404, message: "Project not found" } })
+
+        }
+        const task = project.tasks.find(t => t._id == taskId)
+        if (!task) {
+            return res.status(404).json({ error: { status: 404, message: "Task not found" } })
+
+        }
+        const subTask = task.subTasks.find(st => st._id == subTaskId)
+        if (!subTask) {
+            return res.status(404).json({ error: { status: 404, message: "Sub task not found" } })
+
+        }
+        const updateSubTask = {
+            subTaskName: req.body.subTaskName ? req.body.subTaskName : subTask.subTaskName,
+            assignee: req.body.assignee ? req.body.assignee : subTask.assignee,
+            priority: req.body.priority ? req.body.priority : subTask.priority,
+            status: req.body.status ? req.body.status : subTask.status,
+            updatedAt: new Date()
+        }
+
+        await db.Projects.updateOne(
+            {
+                _id: projectId,
+                "tasks._id": taskId,
+                "tasks.subTasks._id": subTaskId
+            },
+            {
+                $set: {
+                    "tasks.$.subTasks.$[subtask].subTaskName": updateSubTask.subTaskName,
+                    "tasks.$.subTasks.$[subtask].assignee": updateSubTask.assignee,
+                    "tasks.$.subTasks.$[subtask].priority": updateSubTask.priority,
+                    "tasks.$.subTasks.$[subtask].status": updateSubTask.status,
+                    "tasks.$.subTasks.$[subtask].updatedAt": updateSubTask.updatedAt
+                }
+            },
+            {
+                arrayFilters: [{ "subtask._id": subTaskId }],
+                runValidators: true
+            })
+            .then((rs) => res.status(200).json(updateSubTask));
+    } catch (error) {
+        next(error)
+    }
+}
+
+async function deleteSubTask(req, res, next) {
+    try {
+        const { projectId, taskId, subTaskId } = req.params;
+        const project = await db.Projects.findOne({ _id: projectId });
+        if (!project) {
+            return res.status(404).json({ error: { status: 404, message: "Project not found" } })
+
+        }
+        const task = project.tasks.find(t => t._id == taskId)
+        if (!task) {
+            return res.status(404).json({ error: { status: 404, message: "Task not found" } })
+
+        }
+        const subTask = task.subTasks.find(st => st._id == subTaskId)
+        if (!subTask) {
+            return res.status(404).json({ error: { status: 404, message: "Sub task not found" } })
+
+        }
+
+        await db.Projects.updateOne(
+            {
+                _id: projectId, "tasks._id": taskId
+            }
+            , {
+                $pull: { "tasks.$.subTasks": { _id: subTaskId } }
+            }
+        ).then((rs) => res.status(200).json(subTaskId))
+            .catch((err) => { console.log(err); })
+
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 const ProjectController={
     createProject,
     getAllProjects,
@@ -374,7 +482,10 @@ const ProjectController={
     createTask,
     editTask,
     deleteTask,
-    addSubTask
+    addSubTask,
+    getAllSubTask,
+    editSubTask,
+    deleteSubTask
 }
 
 module.exports = ProjectController

@@ -102,7 +102,7 @@ projectRouter.delete(
 
 //lấy subtask
 projectRouter.get(
-    "/:projectId/tasks/:taskId/subTasks/get-all",
+    "/:projectId/tasks/:taskId/subTasks/get-all",ProjectController.getAllSubTask
 )
 // tạo subtas
 projectRouter.post(
@@ -110,11 +110,11 @@ projectRouter.post(
 )
 // chỉnh sửa subtask
 projectRouter.put(
-    "/:projectId/tasks/:taskId/subTasks/:subTaskId/edit",
+    "/:projectId/tasks/:taskId/subTasks/:subTaskId/edit",ProjectController.editSubTask
 )
 // xoá subtask
 projectRouter.delete(
-    "/:projectId/tasks/:taskId/subTasks/:subTaskId/delete",
+    "/:projectId/tasks/:taskId/subTasks/:subTaskId/delete",ProjectController.deleteSubTask
 )
 
 // Comment
