@@ -5,7 +5,6 @@ const morgan = require("morgan")
 const createHttpErrors = require("http-errors");
 
 
-
 //const authenticationController = require("./authentication.controller");
 
 // Lấy tất cả comment của một task trong một project
@@ -53,7 +52,7 @@ async function addComment(req, res, next) {
         }
 
         const newComment = { user: userId, content, createdAt: new Date() };
-        const taskDetails = await db.Task.findByIdAndUpdate(
+        const taskDetails = await db.Tasks.findByIdAndUpdate(
             taskId,
             { $push: { comments: newComment } },
             { new: true }
@@ -85,7 +84,7 @@ async function editComment(req, res, next) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
-        const taskDetails = await db.Task.findOneAndUpdate(
+        const taskDetails = await db.Tasks.findOneAndUpdate(
             { _id: taskId, "comments._id": commentId },
             {
                 $set: {
@@ -121,7 +120,7 @@ async function deleteComment(req, res, next) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
-        const taskDetails = await db.Task.findOneAndUpdate(
+        const taskDetails = await db.Tasks.findOneAndUpdate(
             { _id: taskId },
             { $pull: { comments: { _id: commentId } } },
             { new: true }
