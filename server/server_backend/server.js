@@ -30,6 +30,9 @@ app.get("/", async (req, res, next) => {
 // app.use("/projects", projectRouter);
 app.use("/users", userRouter);
 // app.use("/authentication", authenticationRouter);
+app.use("/projects", projectRouter);
+// app.use("/users", userRouter);
+app.use("/authentication", authenticationRouter);
 
 app.use(async (req, res, next) => {
   next(httpsErrors(404, "Bad Request"));
