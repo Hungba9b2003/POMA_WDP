@@ -22,11 +22,11 @@ const taskSchema = new Schema({
         maxlength: 1000
     },
     assignee: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'user', required: true
     },
     reviewer: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'user',
         required: true
     },
@@ -43,7 +43,7 @@ const taskSchema = new Schema({
     },
     comments: [{
         user: {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'user',
             required: true
         },
@@ -62,7 +62,7 @@ const taskSchema = new Schema({
             required: true,
             min: 1
         },
-        subtaskName: {
+        subTaskName: {
             type: String,
             required: true,
             trim: true,
@@ -70,7 +70,7 @@ const taskSchema = new Schema({
             maxlength: 100
         },
         assignee: {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'user',
             required: true
         },
