@@ -9,7 +9,7 @@ userRouter.use(bodyParser.json());
 
 const {} = require("../controllers/user.controller");
 //lấy profile
-userRouter.post(
+userRouter.get(
   "/get-profile",
   UserController.getProfile
 );

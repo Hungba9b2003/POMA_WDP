@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const getProfile = async (req, res, next) => {
   const {userId} = req.body;
   try {
+    console.log(userId);
     const user = await db.Users.findById(userId);
     res.status(200).json(user);
   } catch (error) {

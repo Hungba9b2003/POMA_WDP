@@ -1,14 +1,20 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { BrowserRouter, Router, Routes, Route } from "react-router-dom";
 import Login from "./Pages/Login";
 
 import LoginForm from "./Components/Login/LoginForm";
+import RegisterForm from "./Components/Login/RegisterForm";
+import ForgotPassword from "./Components/Login/ForgotPass";
+import ResetPassword from "./Components/Login/ResetPass";
 import "./App.css";
 import AppProvider, { AppContext } from "./Context/AppContext"; // Import AppContext
 
 function App() {
   const { checkTokenExpiration } = useContext(AppContext); // Lấy hàm checkTokenExpiration từ context
-  const { accessToken } = useContext(AppContext);
+  const [accessToken, setAccessToken] = useState(localStorage.getItem("token"));
+  const [accessToken2, setAccessToken2] = useState(
+    sessionStorage.getItem("token")
+  );
 
   useEffect(() => {
     checkTokenExpiration();
@@ -23,15 +29,21 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        {!accessToken && (
+        {!accessToken && !accessToken2 && (
           <Route path="/login" element={<Login />}>
             <Route path="loginForm" element={<LoginForm />} />
-            <Route path="registerForm" element={""} />
-            <Route path="forgotPass" element={""} />
+            <Route path="registerForm" element={<RegisterForm />} />
+            <Route path="forgotPass" element={<ForgotPassword />} />
             <Route path="verifyAccount/:id/:token" element={""} />
           </Route>
         )}
-        <Route path="resetPassword/:id/:token" element={""} />
+
+        <Route path="/login" element={<Login />}>
+          <Route
+            path="resetPassword/:id/:token"
+            element={<ResetPassword />}
+          ></Route>
+        </Route>
 
         {accessToken && (
           <Route path="/profile" element={""}>
