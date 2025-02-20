@@ -273,16 +273,24 @@ async function resetPassword(req, res) {
 
   try {
     if (password !== confirmPassword) {
-      return res.status(400).json({ status: "Passwords do not match!" });
+      return res.status(400).json({
+        status: "Invalid",
+        message: "Passwords do not match",
+      });
     }
 
     const oldUser = await db.Users.findById(id);
     console.log(oldUser.resetToken);
     if (oldUser.resetToken != token) {
-      return res.status(400).json({ status: "Invalid or expired token!" });
+      return res.status(400).json({
+        status: "Invalid",
+        message: "Reset form has been disabled! PLease send email again",
+      });
     }
     if (!oldUser) {
-      return res.status(404).json({ status: "User Not Exists!" });
+      return res
+        .status(404)
+        .json({ status: "User Not Exists!", message: "User Not Exists!" });
     }
 
     const secret = process.env.JWT_SECRET + oldUser.account.password;
@@ -293,12 +301,12 @@ async function resetPassword(req, res) {
       if (error.name === "TokenExpiredError") {
         return res.status(401).json({
           status: "error",
-          message: "Expired reset form! please send email again",
+          message: "Expired reset form! please send email again ",
         });
       } else {
         return res.status(401).json({
           status: "error",
-          message: "Expired reset form! please send email again",
+          message: err.message,
         });
       }
     }
@@ -309,7 +317,10 @@ async function resetPassword(req, res) {
       { $set: { "account.password": encryptedPassword } }
     );
 
-    res.json({ status: "Password change successful!" });
+    res.status(200).json({
+      status: "Successful",
+      message: "Password changed successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: "Something went wrong!" });
