@@ -30,7 +30,7 @@ app.get("/", async (req, res, next) => {
 // Định tuyến theo các chức năng thực tế
 app.use("/projects", projectRouter);
 // app.use("/users", userRouter);
-// app.use("/authentication", authenticationRouter);
+app.use("/authentication", authenticationRouter);
 
 app.use(async (req, res, next) => {
   next(httpsErrors(404, "Bad Request"));
