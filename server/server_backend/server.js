@@ -28,7 +28,7 @@ app.get("/", async (req, res, next) => {
 });
 
 // Định tuyến theo các chức năng thực tế
-// app.use("/projects", projectRouter);
+app.use("/projects", projectRouter);
 // app.use("/users", userRouter);
 app.use("/authentication", authenticationRouter);
 
