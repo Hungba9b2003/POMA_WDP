@@ -42,7 +42,7 @@ app.use(async (err, req, res, next) => {
   res.send({ error: { status: err.status, message: err.message } });
 });
 
-const host = process.env.HOSTNAME;
+const host = "localhost";
 const port = process.env.PORT;
 console.log(port);
 console.log(host);
