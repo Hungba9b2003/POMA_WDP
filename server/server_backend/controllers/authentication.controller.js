@@ -110,13 +110,13 @@ async function login(req, res) {
 // Hàm đăng ký
 async function register(req, res, next) {
   try {
-    const { username, email, password, rePassword, phoneNumber } = req.body;
+    const { username, email, password, repassword, phone } = req.body;
 
-    if (!username || !email || !password || !rePassword || !phoneNumber) {
+    if (!username || !email || !password || !repassword || !phone) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (password !== rePassword) {
+    if (password !== repassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 

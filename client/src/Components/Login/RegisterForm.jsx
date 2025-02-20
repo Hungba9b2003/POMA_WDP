@@ -34,15 +34,16 @@ function RegisterForm() {
         email,
         phone,
         password,
+        repassword,
       });
       console.log(data);
-      //   if (data.status === "success") {
-      //     setShowSuccessAlert(true);
-      //     setTimeout(() => {
-      //       setShowSuccessAlert(false);
-      //       navigate("/login/loginForm");
-      //     }, 3000);
-      //   }
+      if (data.status === "success") {
+        setShowSuccessAlert(true);
+        setTimeout(() => {
+          setShowSuccessAlert(false);
+          navigate("/login/loginForm");
+        }, 3000);
+      }
     } catch (error) {
       const errorMessage = error.response?.data?.message;
       setMessage(errorMessage || "Đã xảy ra lỗi trong quá trình đăng ký");
