@@ -18,7 +18,7 @@ authRouter.post("/forgot-password", AuthController.forgotPassword);
 //lấy người dùng bằng id
 authRouter.post(
   "/get-user",
-  AuthMiddleware.verifyAccessToken,
+  // AuthMiddleware.verifyAccessToken,
   AuthController.getUserById
 );
 
@@ -26,10 +26,10 @@ authRouter.post(
 authRouter.post("/getByEmail", AuthController.getUserByEmail);
 
 // đặt lại mật khẩu
-authRouter.post("/reset-password/:id/:token", AuthController.resetPassword);
+authRouter.get("/reset-password/:id/:token", AuthController.resetPassword);
 //token để reset,verify với token để đăng nhâp đăng đang là 2 cái khác nhau
 
 // Xác minh tài khoản
-authRouter.post("/verify/:id/:token", AuthController.verifyAccount);
+authRouter.get("/verify/:id/:token", AuthController.verifyAccount);
 
 module.exports = authRouter;

@@ -32,7 +32,7 @@ app.get("/", async (req, res, next) => {
 app.use("/authentication", authenticationRouter);
 
 app.use(async (req, res, next) => {
-  next(httpsErrors(404, "Bad Request"));
+  next(httpsErrors(404, "Bad Request server"));
 });
 
 app.use(async (err, req, res, next) => {
