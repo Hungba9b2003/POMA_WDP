@@ -8,7 +8,6 @@ const { UserController } = require("../controllers");
 userRouter.use(bodyParser.json());
 
 const {} = require("../controllers/user.controller");
-
 //lấy profile
 userRouter.get(
   "/get-profile",
