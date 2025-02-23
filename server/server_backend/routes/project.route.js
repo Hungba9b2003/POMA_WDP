@@ -42,11 +42,11 @@ projectRouter.get(
     "/:projectId/get-member",ProjectController.getProjectMembers
 )
 // set group member role
-projectRouter.put("/:projectId/member/:memberId/set-role");
+projectRouter.put("/:projectId/member/:memberId/set-role",ProjectController.setProjectMemberRole);
 // đá thành viên ra khỏi dự án
-projectRouter.delete("/:projectId/member/:memberId/delete");
+projectRouter.delete("/:projectId/member/:memberId/delete",ProjectController.deleteProjectMember);
 // lấy thông tin thành viên đang có trong dự án
-projectRouter.get("/user/:projectId/get-user-role");
+projectRouter.get("/user/:projectId/get-user-role",ProjectController.getUserRole);
 
 //CRUD không gian làm việc, hiển thị các task theo từng cột, dùng thuộc tính status phân cột
 projectRouter.post("/:projectId/create-workspace");
