@@ -22,7 +22,7 @@ function RegisterForm() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-
+    setMessage("Please wait...");
     if (password !== repassword) {
       setMessage("Mật khẩu không khớp!");
       return;
