@@ -1,7 +1,7 @@
 
 const createHttpErrors = require("http-errors");
 const db = require("../models");
-
+const sendEmail = require("./authentication.controller").sendEmail;
 
 
 function generateProjectCode(length = 6) {
@@ -44,9 +44,9 @@ async function createProject(req, res, next) {
         const updatedUser = await db.Users.findOneAndUpdate(
             { _id: id },
             { $push: { projects: nProjectId } },
-            { new: true } 
+            { new: true }
         );
-        
+
         if (!updatedUser) {
             throw createHttpErrors(400, "Failed to update user with project ID");
         }
@@ -77,9 +77,9 @@ async function getProjectById(req, res, next) {
     try {
         const { projectId } = req.params;
         const project = await db.Projects.findById(projectId);
-        
+
         if (!project) return next(createHttpErrors.NotFound("Project not found"));
-        
+
         res.json({ project });
     } catch (error) {
         next(createHttpErrors.InternalServerError(error.message));
@@ -122,7 +122,7 @@ async function updateProject(req, res, next) {
             if (projectAvatar) {
                 updateProject.projectAvatar = projectAvatar;
             }
-        } 
+        }
         else if (member.role === 'member') {
             if (projectName || projectCode || projectAvatar) {
                 throw createHttpErrors(403, "Only the project owner can edit the project name, project code, and avatar");
@@ -148,15 +148,15 @@ async function deleteProject(req, res, next) {
         if (!project) {
             throw createHttpErrors(404, "Project not found");
         }
-        
+
         const isOwner = project.members.some(member => member._id.toString() === id && member.role === 'owner');
         if (!isOwner) {
             throw createHttpErrors(403, "Only the project owner can delete this project");
         }
-        
+
         await db.Users.updateMany(
-            { projects: projectId }, 
-            { $pull: { projects: projectId } } 
+            { projects: projectId },
+            { $pull: { projects: projectId } }
         );
 
         await db.Projects.deleteOne({ _id: projectId });
@@ -193,14 +193,242 @@ async function getProjectMembers(req, res, next) {
     }
 }
 
+async function setProjectMemberRole(req, res, next) {
+    try {
+        const { projectId, memberId } = req.params;
+        // const { id } = req.payload;
+        const { id } = req.body;
+        const { role } = req.body;
 
-const ProjectController={
+        const project = await db.Projects.findOne({ _id: projectId });
+        if (!project) {
+            throw createHttpErrors(404, "Project not found");
+        }
+        const owner = project.members.find(member => member._id.toString() === id && member.role === 'owner');
+        if (!owner) {
+            throw createHttpErrors(403, "Only the project owner can edit member role");
+        }
+        const member = project.members.find(member => member._id.toString() === memberId);
+        if (!member) {
+            throw createHttpErrors(404, "Member not found");
+        }
+        if (memberId === owner._id.toString()) {
+            throw createHttpErrors(403, "You cannot change your own role");
+        }
+        const otherOwners = project.members.filter(member => member.role === 'owner' && member._id.toString() !== memberId);
+        if (role === 'owner' && otherOwners.length > 0) {
+            throw createHttpErrors(400, "Cannot assign owner role as there is already an owner");
+        }
+
+        await db.Projects.updateOne(
+            { _id: projectId, "members._id": memberId },
+            { $set: { "members.$.role": role } }
+        );
+        res.status(200).json({ message: "Member role updated successfully", memberId, newRole: role });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+
+async function deleteProjectMember(req, res, next) {
+    try {
+        const { projectId, memberId } = req.params;
+        // const { id } = req.payload;
+        const { id } = req.body;
+
+        const project = await db.Projects.findOne({ _id: projectId });
+        if (!project) {
+            throw createHttpErrors(404, "Project not found");
+        }
+
+        const owner = project.members.find(member => member._id.toString() === id && member.role === 'owner');
+        if (!owner) {
+            throw createHttpErrors(403, "Only the project owner can delete a member");
+        }
+
+        const memberToDelete = project.members.find(member => member._id.toString() === memberId);
+        if (!memberToDelete) {
+            throw createHttpErrors(404, "Member not found");
+        }
+
+        if (memberId === id) {
+            throw createHttpErrors(403, "The owner cannot remove themselves from the group");
+        }
+
+        project.members = project.members.filter(member => member._id.toString() !== memberId);
+        await project.save();
+
+        const user = await db.Users.findById(memberId);
+        if (user) {
+            user.projects = user.projects.filter(project => project.toString() !== projectId);
+            await user.save();
+        }
+
+        res.status(200).json({ message: "Member removed from the project successfully" });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+async function getUserRole(req, res, next) {
+    try {
+        const { projectId } = req.params;
+        // const { id } = req.payload;
+        const { id } = req.body;
+
+        const project = await db.Projects.findOne({ _id: projectId });
+
+        if (!project) {
+            throw createHttpErrors(404, "Project not found");
+        }
+        const member = project.members.find(member => member._id.toString() === id);
+
+        if (!member) {
+            throw createHttpErrors(404, "User not found in the specified project");
+        }
+        res.status(200).json({
+            id: member._id,
+            role: member.role,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function getInviteMembers(req, res, next) {
+    try {
+        const { projectId } = req.params;
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        // Kiểm tra xem project có tồn tại không
+        const project = await db.Projects.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const user = await db.Users.findOne({ "account.email": email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Tạo link tham gia nhóm (có thể thay đổi thành URL frontend)
+        //const inviteLink = ``;
+        const inviteLink = `http://localhost:9999/users/confirm-invite/${projectId}/${user._id}`;
+
+        // Gửi email mời vào nhóm
+        await sendEmail("join", email, inviteLink);
+
+        res.status(200).json({
+            message: "Invitation email sent successfully",
+            projectId,
+            email,
+            inviteLink,
+        });
+    } catch (error) {
+        console.error("Error sending invitation email:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+
+async function updatePremium(req, res, next) {
+    try {
+        const { projectId } = req.params;
+        const { status } = req.body;
+
+        // Kiểm tra đầu vào
+        if (status != 1) {
+            return res.status(400).json({ message: "Invalid isPremium value. Must be true or false." });
+        }
+
+        // Tìm project theo ID
+        const project = await db.Projects.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        // Cập nhật giá trị isPremium
+        project.isPremium = true;
+        await project.save();
+
+        res.status(200).json({
+            message: "Project premium status updated successfully",
+            project
+        });
+    } catch (error) {
+        console.error("Error updating project premium status:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+const countProjects = async (req, res, next) => {
+    try {
+        const totalProjects = await db.Projects.countDocuments(); // Đếm tất cả dự án
+
+        res.status(200).json({ success: true, totalProjects });
+    } catch (error) {
+        console.error("Error counting projects:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+const countPremiumProjects = async (req, res, next) => {
+    try {
+        const premiumProjects = await db.Projects.countDocuments({ isPremium: true }); // Đếm dự án có Premium
+
+        res.status(200).json({ success: true, premiumProjects });
+    } catch (error) {
+        console.error("Error counting premium projects:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+const leaveProjects = async (req, res, next) => {
+    try {
+        const { userId, projectId } = req.body;
+
+        const project = await db.Projects.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ success: false, message: "Project not found" });
+        }
+
+        // Kiểm tra xem user có trong nhóm
+        const memberIndex = project.members.findIndex(member => member._id.toString() === userId);
+        if (memberIndex === -1) {
+            return res.status(400).json({ success: false, message: "User is not in this project" });
+        }
+
+        // Xóa user khỏi danh sách members
+        project.members.splice(memberIndex, 1);
+        await project.save();
+
+        res.status(200).json({ success: true, message: "Left the project successfully" });
+    } catch (error) {
+        console.error("Error leaving project:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+const ProjectController = {
     createProject,
     getAllProjects,
     getProjectById,
     updateProject,
     deleteProject,
     getProjectMembers,
+    setProjectMemberRole,
+    deleteProjectMember,
+    getUserRole,
+    updatePremium,
+    getInviteMembers,
+    countProjects,
+    countPremiumProjects,
+    leaveProjects,
 }
 
 module.exports = ProjectController

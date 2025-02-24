@@ -5,7 +5,6 @@ const morgan = require("morgan")
 const createHttpErrors = require("http-errors");
 
 
-
 //const authenticationController = require("./authentication.controller");
 async function getAllTasks(req, res, next) {
     try {
