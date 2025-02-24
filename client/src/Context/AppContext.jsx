@@ -8,6 +8,7 @@ export const AppContext = createContext();
 const AppProvider = ({ children }) => {
   //token
   const accessToken = localStorage.getItem("token");
+  const accessToken2 = sessionStorage.getItem("token");
   // api
   const authentication_API = `http://localhost:9999/authentication`;
   const users_API = "http://localhost:9999/users";
@@ -52,7 +53,9 @@ const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider
       value={{
+        checkTokenExpiration,
         accessToken,
+        accessToken2,
         user,
         setUser,
         authentication_API,
