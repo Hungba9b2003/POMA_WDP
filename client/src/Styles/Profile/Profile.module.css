@@ -33,7 +33,8 @@
 /* Contact information */
 
 .contactInfo {
-  margin-top: 20px; /* Add margin top to separate from user info */
+  margin-top: 20px;
+  /* Add margin top to separate from user info */
   padding-top: 20px;
   border-top: 1px solid #ccc;
 }
@@ -86,17 +87,20 @@ label {
   margin-bottom: 10px;
 }
 
-input[type="text"], input[type="password"], input[type="email"], input[type="tel"] {
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"] {
   width: 100%;
   padding: 5px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
 }
 
-.editButton, button[type="submit"] {
+.editButton,
+button[type="submit"] {
   border: 1px solid #ccc;
   border-radius: 5px;
-  padding: 10px 20px;
 }
 
 .mainContainer {
@@ -111,13 +115,13 @@ input[type="text"], input[type="password"], input[type="email"], input[type="tel
 
 @media screen and (max-width: 768px) {
   .mainContainer {
-      margin: 20px 20px;
+    margin: 20px 20px;
   }
 }
 
 @media screen and (max-width: 1280px) {
   .mainContainer {
-      margin: 20px 40px;
+    margin: 20px 40px;
   }
 }
 
@@ -134,14 +138,18 @@ input[type="text"], input[type="password"], input[type="email"], input[type="tel
 
 /* Định dạng cho hình ảnh trong danh sách */
 .imageItem img {
-  border: 2px solid transparent; /* Mặc định không có viền */
-  border-radius: 4px; /* Bo góc cho hình ảnh */
-  transition: border-color 0.3s; /* Hiệu ứng chuyển đổi viền khi chọn */
+  border: 2px solid transparent;
+  /* Mặc định không có viền */
+  border-radius: 4px;
+  /* Bo góc cho hình ảnh */
+  transition: border-color 0.3s;
+  /* Hiệu ứng chuyển đổi viền khi chọn */
 }
 
 /* Hiển thị viền khi hình ảnh được chọn */
 .imageItem img:hover {
-  border-color: #0F67B1; /* Đổi màu viền khi hover */
+  border-color: #0F67B1;
+  /* Đổi màu viền khi hover */
 }
 
 .avatarContainer {
@@ -150,9 +158,162 @@ input[type="text"], input[type="password"], input[type="email"], input[type="tel
 }
 
 .avatarImage {
-  width: 250px; /* Set the width of the avatar */
-  height: 250px; /* Set the height of the avatar */
-  border-radius: 50%; /* Makes the avatar circular */
-  border: 2px solid gray; /* Add a circular border */
-  object-fit: cover; /* Ensures the image covers the entire area without distortion */
+  width: 250px;
+  /* Set the width of the avatar */
+  height: 250px;
+  /* Set the height of the avatar */
+  border-radius: 50%;
+  /* Makes the avatar circular */
+  border: 2px solid gray;
+  /* Add a circular border */
+  object-fit: cover;
+  /* Ensures the image covers the entire area without distortion */
+}
+
+.profileContainer {
+  background: #EFF2F8;
+  min-height: 100vh;
+  position: relative;
+}
+
+.headerBackground {
+  height: 152px;
+  background: #D9D9D9;
+  position: relative;
+}
+
+.cameraIcon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.avatarSection {
+  position: relative;
+  margin-top: -90px;
+  text-align: center;
+}
+
+.avatarWrapper {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+  position: relative;
+  cursor: pointer;
+}
+
+.avatarOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.avatarWrapper:hover .avatarOverlay {
+  opacity: 1;
+}
+
+.section {
+  width: 230px;
+  margin: 20px auto;
+  background: #D9D9D9;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.section h3 {
+  font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.contactGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inputGroup {
+  position: relative;
+}
+
+.icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.imageSelectionModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.imageGrid img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.selectedImage {
+  border: 2px solid #0F67B1;
+}
+
+.uploadButton {
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
 }

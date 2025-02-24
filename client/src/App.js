@@ -1,5 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
-import { BrowserRouter, Router, Routes, Route } from "react-router-dom";
+import React, { useContext, useEffect, useState, useNavigate } from "react";
+import {
+  BrowserRouter,
+  Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Login from "./Pages/Login";
 
 import LoginForm from "./Components/Login/LoginForm";
@@ -35,14 +41,14 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        {(!accessToken || !accessToken2) && (
+        {!(accessToken || accessToken2) && (
           <>
             <Route path="/login" element={<Login />}>
               <Route path="loginForm" element={<LoginForm />} />
               <Route path="registerForm" element={<RegisterForm />} />
               <Route path="forgotPass" element={<ForgotPassword />} />
+              <Route path="verify/:id/:token" element={<VerifyRegister />} />
             </Route>
-            <Route path="verify/:id/:token" element={<VerifyRegister />} />
           </>
         )}
 
@@ -53,13 +59,20 @@ function App() {
           ></Route>
         </Route>
 
-        {(accessToken || accessToken2) && (
-          <Route path="/profile" element={<ProfilePage />}>
-            <Route path="profileInfo" element={<ProfileInfo />} />
-            <Route path="editProfile" element={<EditProfile />} />
-            <Route path="changePassword" element={<ChangePassword />} />
-          </Route>
-        )}
+        <Route path="/profile" element={<ProfilePage />}>
+          {accessToken || accessToken2 ? (
+            <>
+              <Route path="profileInfo" element={<ProfileInfo />} />
+              <Route path="editProfile" element={<EditProfile />} />
+              <Route path="changePassword" element={<ChangePassword />} />
+            </>
+          ) : (
+            <Route
+              path="*"
+              element={<Navigate to="/login/loginForm" replace />}
+            />
+          )}
+        </Route>
       </Routes>
     </div>
   );

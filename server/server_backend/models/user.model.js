@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
       },
       avatar: {
         type: String,
-        default: "imageDefault",
+        default: "/images/avatar/imageDefault.jpg",
       },
     },
     projects: [

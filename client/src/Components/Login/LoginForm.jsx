@@ -67,6 +67,7 @@ function LoginForm() {
 
         setUser(result.user);
         setShowSuccessAlert(true);
+        console.log(result);
         setTimeout(() => {
           setShowSuccessAlert(false);
           navigate("/home");

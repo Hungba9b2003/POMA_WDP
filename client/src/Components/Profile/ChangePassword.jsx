@@ -5,7 +5,7 @@ import { Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
-
+import "@fortawesome/fontawesome-free/css/all.min.css";
 function ChangePassword() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -13,7 +13,9 @@ function ChangePassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -73,71 +75,150 @@ function ChangePassword() {
     <div>
       <h2>Change Password</h2>
       <form onSubmit={handleSubmit}>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th colSpan={2} style={{ fontSize: "1.3em", color: "#0F67B1" }}>
-                Change Password
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <strong>Old Password:</strong>
-              </td>
-              <td>
-                <input
-                  type="password"
-                  name="oldPassword"
-                  placeholder="Enter old password"
-                  className="inputField"
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  required
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>New Password:</strong>
-              </td>
-              <td>
-                <input
-                  type="password"
-                  name="newPassword"
-                  placeholder="Enter new password"
-                  className="inputField"
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>Re New Password:</strong>
-              </td>
-              <td>
-                <input
-                  type="password"
-                  name="newPassword"
-                  placeholder="Enter new password"
-                  className="inputField"
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </Table>
-        <div style={{ marginTop: "10px" }}>
-          <Button variant="primary" type="submit" style={{ marginRight: 5 }}>
-            Save
-          </Button>
-          <Button variant="secondary" style={{ marginRight: 5 }} type="reset">
-            Clear
-          </Button>
+        <div>
+          <Table className="border border-gray-300 rounded-lg shadow-md">
+            <thead>
+              <tr>
+                <th style={{ fontSize: "1.3em", color: "#0F67B1" }}>
+                  Change Password
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <label htmlFor="password">Password</label>
+                  <div style={{ position: "relative" }}>
+                    <i
+                      className="fas fa-lock"
+                      style={{
+                        position: "absolute",
+                        left: "10px",
+                        top: "40%",
+                        transform: "translateY(-50%)",
+                        color: "#666",
+                      }}
+                    ></i>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      value={oldPassword}
+                      placeholder="Enter your password"
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      style={{ paddingLeft: "35px" }}
+                      required
+                    />
+                    <i
+                      className={
+                        showPassword ? "fas fa-eye-slash" : "fas fa-eye"
+                      }
+                      style={{
+                        position: "absolute",
+                        right: "10px",
+                        top: "40%",
+                        transform: "translateY(-50%)",
+                        color: "#666",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setShowPassword(!showPassword)}
+                    ></i>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label htmlFor="password">New Password</label>
+                  <div style={{ position: "relative" }}>
+                    <i
+                      className="fas fa-lock"
+                      style={{
+                        position: "absolute",
+                        left: "10px",
+                        top: "40%",
+                        transform: "translateY(-50%)",
+                        color: "#666",
+                      }}
+                    ></i>
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      id="password"
+                      value={newPassword}
+                      placeholder="Enter your password"
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      style={{ paddingLeft: "35px" }}
+                      required
+                    />
+                    <i
+                      className={
+                        showNewPassword ? "fas fa-eye-slash" : "fas fa-eye"
+                      }
+                      style={{
+                        position: "absolute",
+                        right: "10px",
+                        top: "40%",
+                        transform: "translateY(-50%)",
+                        color: "#666",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    ></i>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label htmlFor="password">Confirm New Password</label>
+                  <div style={{ position: "relative" }}>
+                    <i
+                      className="fas fa-lock"
+                      style={{
+                        position: "absolute",
+                        left: "10px",
+                        top: "40%",
+                        transform: "translateY(-50%)",
+                        color: "#666",
+                      }}
+                    ></i>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="password"
+                      value={confirmPassword}
+                      placeholder="Enter your password"
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      style={{ paddingLeft: "35px" }}
+                      required
+                    />
+                    <i
+                      className={
+                        showConfirmPassword ? "fas fa-eye-slash" : "fas fa-eye"
+                      }
+                      style={{
+                        position: "absolute",
+                        right: "10px",
+                        top: "40%",
+                        transform: "translateY(-50%)",
+                        color: "#666",
+                        cursor: "pointer",
+                      }}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    ></i>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </Table>
+          <div className="mt-4 flex justify-end space-x-3">
+            <Button
+              type="button"
+              className="bg-gray-500 hover:bg-gray-600 text-white"
+            >
+              Back
+            </Button>
+            <Button type="reset">Clear</Button>
+            <Button type="submit">save</Button>
+          </div>
         </div>
       </form>
       {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}

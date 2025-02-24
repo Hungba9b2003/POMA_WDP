@@ -33,7 +33,7 @@ export default function VerifyPage() {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
+    height: "100%",
     backgroundColor: "#f4f4f4",
     fontFamily: "Arial, sans-serif",
   };
