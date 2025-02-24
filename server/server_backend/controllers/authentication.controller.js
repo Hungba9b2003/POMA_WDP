@@ -158,7 +158,7 @@ async function register(req, res, next) {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    const verificationLink = `http://localhost:9999/authentication/verify/${newUser._id}/${token}`;
+    const verificationLink = `http://${process.env.HOSTNAME}:${process.env.PORTBACK_ENDE}/verify/${newUser._id}/${token}`;
 
     // Gửi email
     await sendEmail("verify", email, verificationLink);
@@ -173,7 +173,7 @@ async function register(req, res, next) {
       const messages = Object.values(error.errors).map((err) => err.message);
       return res.status(400).json({ message: messages.join(", ") });
     }
-    res.status(500).json({ message: "Internal server error register" +error.message, error: error.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 }
 
@@ -188,7 +188,7 @@ async function getUserById(req, res) {
     res.json(user);
   } catch (error) {
     console.error("Get user by ID error:", error);
-    res.status(500).json({ message: "Internal server error get user" });
+    res.status(500).json({ message: "Internal server error" });
   }
 }
 
@@ -204,7 +204,7 @@ async function getUserByEmail(req, res) {
     res.json(user);
   } catch (error) {
     console.error("Get user by email error:", error);
-    res.status(500).json({ message: "Internal server error getEmail" });
+    res.status(500).json({ message: "Internal server error" });
   }
 }
 

@@ -118,7 +118,34 @@ const getAllUser = async (req, res, next) => {
         // next(error); 
     }
 };
+const joinByCode = async (req, res, next) => {
+  try {
+      const { userId, projectCode } = req.body; // Lấy đúng dữ liệu
 
+      const project = await db.Projects.findOne({ projectCode });
+      if (!project) {
+          return res.status(404).json({ success: false, message: "Invalid project code" });
+      }
+
+      // Chuyển userId thành ObjectId
+      const userIdObject = new mongoose.Types.ObjectId(userId);
+
+      // Kiểm tra user
+      const isMember = project.members.some(member => member._id.equals(userIdObject));
+      if (isMember) {
+          return res.status(400).json({ success: false, message: "User already joined" });
+      }
+
+      // Thêm user vào members
+      project.members.push({ _id: userIdObject, role: "member" });
+      await project.save();
+
+      res.status(200).json({ success: true, message: "Joined project successfully", project });
+  } catch (error) {
+      console.error("Error joining project:", error);
+      next(error);
+  }
+};
 
 module.exports = {
   getProfile,
@@ -126,4 +153,5 @@ module.exports = {
   changePassword,
   changeStatus,
   getAllUser,
+  joinByCode,
 };

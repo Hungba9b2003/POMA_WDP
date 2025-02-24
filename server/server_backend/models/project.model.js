@@ -22,12 +22,7 @@ const projectSchema = new mongoose.Schema({
     classifications: [{
         type: String // Add classifications array (add more detail based on your needs)
     }],
-    tasks: [{
-        _id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'task'
-        }
-    }],
+    tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "task" }],
     members: [{
         _id: {
             type: mongoose.Schema.Types.ObjectId,
