@@ -49,6 +49,21 @@ async function sendEmail(type, email, link) {
             <hr>
             <p style="text-align: center; font-size: 12px; color: #888;">© 2025 Công ty của bạn. Mọi quyền được bảo lưu.</p>
           </div>`;
+    } else if (type === "join") {
+      subject = "🔹Mời vào nhóm";
+      htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <h2 style="color: #FF5733; text-align: center;">Tham gia nhóm</h2>
+            <p style="font-size: 16px; text-align: center;">Bạn được mời tham gia dự án mới. Nhấn vào nút bên dưới để tiếp tục:</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${link}" style="background-color: #FF5733; color: white; padding: 10px 20px; font-size: 18px; text-decoration: none; border-radius: 5px;">
+                Tham gia
+              </a>
+            </div>
+            <p style="font-size: 14px; text-align: center; color: #777;">Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+            <hr>
+            <p style="text-align: center; font-size: 12px; color: #888;">© 2025 Công ty của bạn. Mọi quyền được bảo lưu.</p>
+          </div>`;
     } else {
       throw new Error("Invalid email type");
     }

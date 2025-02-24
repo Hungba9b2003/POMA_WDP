@@ -5,31 +5,31 @@ const db = require("../models/index");
 //const { AuthMiddleware } = require("../middlewares");
 const { TaskController } = require("../controllers");
 //import cả controller của task lẫn projetc vào đây
-const {ProjectController} = require("../controllers/index")
+const { ProjectController } = require("../controllers/index")
 
 projectRouter.use(bodyParser.json());
 
 // api xử lý logic bên project.controller
-projectRouter.post("/:projectId/updatePremium");
+projectRouter.post("/:projectId/updatePremium", ProjectController.updatePremium);
 // tao dự án
 projectRouter.post(
-    "/create",ProjectController.createProject
+    "/create", ProjectController.createProject
 )
 //lấy toàn bộ dự án
 projectRouter.get(
-    "/get-project",ProjectController.getAllProjects
+    "/get-project", ProjectController.getAllProjects
 )
 // tìm dự án
 projectRouter.get(
-    "/:projectId/get-project",ProjectController.getProjectById
+    "/:projectId/get-project", ProjectController.getProjectById
 )
 // chỉnh sửa thông tin dự án chỉ đinh
 projectRouter.put(
-    "/:projectId/edit",ProjectController.updateProject
+    "/:projectId/edit", ProjectController.updateProject
 )
 // delete dự án
 projectRouter.delete(
-    "/:projectId/delete",ProjectController.deleteProject
+    "/:projectId/delete", ProjectController.deleteProject
 )
 // vào project bằng code
 projectRouter.post("/join-by-code");
@@ -39,14 +39,14 @@ projectRouter.post("/:projectId/invite");
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
 projectRouter.get(
-    "/:projectId/get-member",ProjectController.getProjectMembers
+    "/:projectId/get-member", ProjectController.getProjectMembers
 )
 // set group member role
-projectRouter.put("/:projectId/member/:memberId/set-role",ProjectController.setProjectMemberRole);
+projectRouter.put("/:projectId/member/:memberId/set-role", ProjectController.setProjectMemberRole);
 // đá thành viên ra khỏi dự án
-projectRouter.delete("/:projectId/member/:memberId/delete",ProjectController.deleteProjectMember);
+projectRouter.delete("/:projectId/member/:memberId/delete", ProjectController.deleteProjectMember);
 // lấy thông tin thành viên đang có trong dự án
-projectRouter.get("/user/:projectId/get-user-role",ProjectController.getUserRole);
+projectRouter.get("/user/:projectId/get-user-role", ProjectController.getUserRole);
 
 //CRUD không gian làm việc, hiển thị các task theo từng cột, dùng thuộc tính status phân cột
 projectRouter.post("/:projectId/create-workspace");
@@ -95,6 +95,8 @@ projectRouter.put(
 projectRouter.delete(
     "/:projectId/tasks/:taskId/comments/:commentId/delete", TaskController.deleteComment
 );
+
+projectRouter.get("/:projectId/inviteMember", ProjectController.getInviteMembers);
 
 // api cho admin
 //tổng số project
