@@ -158,7 +158,7 @@ async function register(req, res, next) {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    const verificationLink = `http://localhost:9999/authentication/verify/${newUser._id}/${token}`;
+    const verificationLink = `http://${process.env.HOSTNAME}:${process.env.PORTBACK_END}/login/verify/${newUser._id}/${token}`;
 
     // Gửi email
     await sendEmail("verify", email, verificationLink);

@@ -6,6 +6,12 @@ import LoginForm from "./Components/Login/LoginForm";
 import RegisterForm from "./Components/Login/RegisterForm";
 import ForgotPassword from "./Components/Login/ForgotPass";
 import ResetPassword from "./Components/Login/ResetPass";
+import VerifyRegister from "./Components/Login/VerifyRegister";
+import ProfilePage from "./Pages/ProfilePage";
+import ChangePassword from "./Components/Profile/ChangePassword";
+import EditProfile from "./Components/Profile/EditProfile";
+import ProfileInfo from "./Components/Profile/ProfileInfo";
+
 import "./App.css";
 import AppProvider, { AppContext } from "./Context/AppContext"; // Import AppContext
 
@@ -29,13 +35,15 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        {!accessToken && !accessToken2 && (
-          <Route path="/login" element={<Login />}>
-            <Route path="loginForm" element={<LoginForm />} />
-            <Route path="registerForm" element={<RegisterForm />} />
-            <Route path="forgotPass" element={<ForgotPassword />} />
-            <Route path="verifyAccount/:id/:token" element={""} />
-          </Route>
+        {(!accessToken || !accessToken2) && (
+          <>
+            <Route path="/login" element={<Login />}>
+              <Route path="loginForm" element={<LoginForm />} />
+              <Route path="registerForm" element={<RegisterForm />} />
+              <Route path="forgotPass" element={<ForgotPassword />} />
+            </Route>
+            <Route path="verify/:id/:token" element={<VerifyRegister />} />
+          </>
         )}
 
         <Route path="/login" element={<Login />}>
@@ -45,11 +53,11 @@ function App() {
           ></Route>
         </Route>
 
-        {accessToken && (
-          <Route path="/profile" element={""}>
-            <Route path="profileInfo" element={""} />
-            <Route path="editProfile" element={""} />
-            <Route path="changePassword" element={""} />
+        {(accessToken || accessToken2) && (
+          <Route path="/profile" element={<ProfilePage />}>
+            <Route path="profileInfo" element={<ProfileInfo />} />
+            <Route path="editProfile" element={<EditProfile />} />
+            <Route path="changePassword" element={<ChangePassword />} />
           </Route>
         )}
       </Routes>

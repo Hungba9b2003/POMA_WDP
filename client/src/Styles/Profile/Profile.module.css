@@ -1,0 +1,158 @@
+.userProfile {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  padding: 20px;
+  position: relative;
+}
+
+.userInfo {
+  margin-bottom: 20px;
+}
+
+.userInfo h4 {
+  margin-top: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #0487f9;
+}
+
+.userInfo p {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.userInfo svg {
+  margin-right: 10px;
+  font-size: 24px;
+  color: #0487f9;
+}
+
+/* Contact information */
+
+.contactInfo {
+  margin-top: 20px; /* Add margin top to separate from user info */
+  padding-top: 20px;
+  border-top: 1px solid #ccc;
+}
+
+.contactInfo h4 {
+  margin-top: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #0487f9;
+}
+
+.contactInfo p {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Edit button */
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 150px;
+  position: absolute;
+  bottom: 3px;
+  right: 0;
+}
+
+.editButton {
+  background-color: #0487f9;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.editButton:hover {
+  background-color: #c2cef8;
+}
+
+/* Form styles */
+
+form {
+  margin-top: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+input[type="text"], input[type="password"], input[type="email"], input[type="tel"] {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+}
+
+.editButton, button[type="submit"] {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px 20px;
+}
+
+.mainContainer {
+  margin: 20px 200px;
+  min-height: 65vh;
+  border: 1px solid rgb(206, 206, 206);
+  border-radius: 10px;
+  box-shadow: 0 0 10px 2px rgb(166, 166, 166);
+  padding: 20px;
+  position: relative;
+}
+
+@media screen and (max-width: 768px) {
+  .mainContainer {
+      margin: 20px 20px;
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  .mainContainer {
+      margin: 20px 40px;
+  }
+}
+
+.imageList {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* Mỗi item hình ảnh */
+.imageItem {
+  margin: 5px;
+}
+
+/* Định dạng cho hình ảnh trong danh sách */
+.imageItem img {
+  border: 2px solid transparent; /* Mặc định không có viền */
+  border-radius: 4px; /* Bo góc cho hình ảnh */
+  transition: border-color 0.3s; /* Hiệu ứng chuyển đổi viền khi chọn */
+}
+
+/* Hiển thị viền khi hình ảnh được chọn */
+.imageItem img:hover {
+  border-color: #0F67B1; /* Đổi màu viền khi hover */
+}
+
+.avatarContainer {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.avatarImage {
+  width: 250px; /* Set the width of the avatar */
+  height: 250px; /* Set the height of the avatar */
+  border-radius: 50%; /* Makes the avatar circular */
+  border: 2px solid gray; /* Add a circular border */
+  object-fit: cover; /* Ensures the image covers the entire area without distortion */
+}
