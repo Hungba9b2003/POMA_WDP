@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema({
     }],
     project: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'group'
+        ref: 'project'
     },
     //nội dung thông báo
     content: {

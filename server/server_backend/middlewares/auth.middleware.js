@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const bcrypt = require("bcrypt");
 const db = require("../models");
 
+// verify access token
 async function verifyAccessToken(req, res, next) {
   if (!req.headers["authorization"]) {
     return next(createError.Unauthorized);
@@ -25,7 +26,19 @@ async function verifyAccessToken(req, res, next) {
     next();
   });
 }
+// check admin
+async function verifyAdmin(req, res, next) {
+  try {
+    if (!req.payload || req.payload.role !== "admin") {
+      return next(createError.Forbidden("Access denied! Admins only."));
+    }
+    next();
+  } catch (error) {
+    next(createError.InternalServerError(error.message));
+  }
+}
 
 module.exports = {
   verifyAccessToken,
+  verifyAdmin,
 };

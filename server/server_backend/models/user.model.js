@@ -35,20 +35,43 @@ const userSchema = new mongoose.Schema(
     profile: {
       phoneNumber: {
         type: String,
-        required: [true, "Phone number is required"],
-        validate: {
-          validator: function (v) {
-            return /^(0|\+84)[0-9]{9,12}$/.test(v);
-          },
-          message:
-            "Invalid phone number format ( It must start with 0 or +84 and be 10-12 digits long )",
-        },
+        match: /^(0|\+)[0-9]{9,12}$/, // Phone number validation (10 digits)
+        // thiếu điều kiện so
+        required: true,
       },
       avatar: {
         type: String,
-        default: "/images/avatar/imageDefault.jpg",
+        default: "/images/avatar/imageDefault.jpg", // Default avatar URL, update with a valid URL
       },
     },
+    projects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "project",
+      },
+    ],
+    notifications: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "notification",
+      },
+    ],
+    role: {
+      type: String,
+      required: [true, "Phone number is required"],
+      validate: {
+        validator: function (v) {
+          return /^(0|\+84)[0-9]{9,12}$/.test(v);
+        },
+        message:
+          "Invalid phone number format ( It must start with 0 or +84 and be 10-12 digits long )",
+      },
+    },
+    avatar: {
+      type: String,
+      default: "/images/avatar/imageDefault.jpg",
+    },
+
     projects: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -2,23 +2,35 @@ const express = require("express");
 const projectRouter = express.Router();
 const bodyParser = require("body-parser");
 const db = require("../models/index");
-const { AuthMiddleware, ProjectMiddleware } = require("../middlewares");
+//const { AuthMiddleware } = require("../middlewares");
+const { TaskController } = require("../controllers");
 //import cả controller của task lẫn projetc vào đây
+const { ProjectController } = require("../controllers/index")
 
 projectRouter.use(bodyParser.json());
 
 // api xử lý logic bên project.controller
-projectRouter.post("/:projectId/updatePremium");
+projectRouter.post("/:projectId/updatePremium", ProjectController.updatePremium);
 // tao dự án
-projectRouter.post("/create");
+projectRouter.post(
+    "/create", ProjectController.createProject
+)
 //lấy toàn bộ dự án
-projectRouter.get("/get-project");
+projectRouter.get(
+    "/get-project", ProjectController.getAllProjects
+)
 // tìm dự án
-projectRouter.get("/:projectId/get-project");
+projectRouter.get(
+    "/:projectId/get-project", ProjectController.getProjectById
+)
 // chỉnh sửa thông tin dự án chỉ đinh
-projectRouter.put("/:projectId/edit");
+projectRouter.put(
+    "/:projectId/edit", ProjectController.updateProject
+)
 // delete dự án
-projectRouter.delete("/:projectId/delete");
+projectRouter.delete(
+    "/:projectId/delete", ProjectController.deleteProject
+)
 // vào project bằng code
 projectRouter.post("/join-by-code");
 //vào dự án bằng link email
@@ -26,13 +38,15 @@ projectRouter.post("/:projectId/invite");
 // rời dự án
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
-projectRouter.get("/:projectId/get-member");
+projectRouter.get(
+    "/:projectId/get-member", ProjectController.getProjectMembers
+)
 // set group member role
-projectRouter.put("/:projectId/member/:memberId/set-role");
+projectRouter.put("/:projectId/member/:memberId/set-role", ProjectController.setProjectMemberRole);
 // đá thành viên ra khỏi dự án
-projectRouter.delete("/:projectId/member/:memberId/delete");
+projectRouter.delete("/:projectId/member/:memberId/delete", ProjectController.deleteProjectMember);
 // lấy thông tin thành viên đang có trong dự án
-projectRouter.get("/user/:projectId/get-user-role");
+projectRouter.get("/user/:projectId/get-user-role", ProjectController.getUserRole);
 
 //CRUD không gian làm việc, hiển thị các task theo từng cột, dùng thuộc tính status phân cột
 projectRouter.post("/:projectId/create-workspace");
@@ -43,30 +57,46 @@ projectRouter.delete("/:projectId/delete-workspace");
 
 // api xử lý logic bên task.controller
 // lấy task
-projectRouter.get("/:projectId/tasks/get-all");
+projectRouter.get("/:projectId/tasks/get-all", TaskController.getAllTasks);
 // tạo task
-projectRouter.post("/:projectId/tasks/create");
+projectRouter.post("/:projectId/tasks/create", TaskController.createTask);
 // chỉnh sửa task
-projectRouter.put("/:projectId/tasks/:taskId/edit");
+projectRouter.put("/:projectId/tasks/:taskId/edit", TaskController.editTask);
 // xoá task
-projectRouter.delete("/:projectId/tasks/:taskId/delete");
+projectRouter.delete("/:projectId/tasks/:taskId/delete", TaskController.deleteTask);
 
 //Subtask bên trong Task có list subtask, xem model nếu không rõ
 
 //lấy subtask
-projectRouter.get("/:projectId/tasks/:taskId/subTasks/get-all");
+projectRouter.get("/:projectId/tasks/:taskId/subTasks/get-all", TaskController.getAllSubTasks);
 // tạo subtas
-projectRouter.post("/:projectId/tasks/:taskId/subTasks/create");
+projectRouter.post("/:projectId/tasks/:taskId/subTasks/create", TaskController.addSubTask);
 // chỉnh sửa subtask
-projectRouter.put("/:projectId/tasks/:taskId/subTasks/:subTaskId/edit");
+projectRouter.put("/:projectId/tasks/:taskId/subTasks/:subTaskId/edit", TaskController.editSubTask);
 // xoá subtask
-projectRouter.delete("/:projectId/tasks/:taskId/subTasks/:subTaskId/delete");
+projectRouter.delete("/:projectId/tasks/:taskId/subTasks/:subTaskId/delete", TaskController.deleteSubTask);
 
-// Comment
-projectRouter.get("/:projectId/tasks/:taskId/comments/get-all");
-projectRouter.post("/:projectId/tasks/:taskId/comments/create");
-projectRouter.put("/:projectId/tasks/:taskId/comments/:commentId/edit");
-projectRouter.delete("/:projectId/tasks/:taskId/comments/:commentId/delete");
+// Lấy tất cả comment của task trong project
+projectRouter.get(
+    "/:projectId/tasks/:taskId/comments/get-all", TaskController.getAllComments
+);
+
+// Thêm comment vào task trong project
+projectRouter.post(
+    "/:projectId/tasks/:taskId/comments/create", TaskController.addComment
+);
+
+// Sửa comment trong task của project
+projectRouter.put(
+    "/:projectId/tasks/:taskId/comments/:commentId/edit", TaskController.editComment
+);
+
+// Xóa comment trong task của project
+projectRouter.delete(
+    "/:projectId/tasks/:taskId/comments/:commentId/delete", TaskController.deleteComment
+);
+
+projectRouter.get("/:projectId/inviteMember", ProjectController.getInviteMembers);
 
 // api cho admin
 //tổng số project

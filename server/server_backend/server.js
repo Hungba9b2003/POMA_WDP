@@ -6,7 +6,6 @@ const cors = require("cors"); // Thêm dòng này để import cors
 // require("dotenv").config();
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
-
 const app = express();
 const db = require("./models/index");
 const { projectRouter, userRouter, authenticationRouter } = require("./routes");
@@ -30,8 +29,12 @@ app.get("/", async (req, res, next) => {
 // Định tuyến theo các chức năng thực tế
 app.use("/api", uploadRoutes);
 
-app.use("/authentication", authenticationRouter);
+// app.use("/projects", projectRouter);
 app.use("/users", userRouter);
+// app.use("/authentication", authenticationRouter);
+app.use("/projects", projectRouter);
+// app.use("/users", userRouter);
+app.use("/authentication", authenticationRouter);
 app.use(async (req, res, next) => {
   next(httpsErrors(404, "Bad Request server"));
 });
@@ -41,7 +44,7 @@ app.use(async (err, req, res, next) => {
   res.send({ error: { status: err.status, message: err.message } });
 });
 
-const host = process.env.HOSTNAME;
+const host = "localhost";
 const port = process.env.PORT;
 console.log(port);
 console.log(host);

@@ -7,12 +7,10 @@ const { AuthMiddleware } = require("../middlewares");
 const { UserController } = require("../controllers");
 userRouter.use(bodyParser.json());
 
-const {} = require("../controllers/user.controller");
-
+const { } = require("../controllers/user.controller");
 //lấy profile
 userRouter.get(
-  "/get-profile",
-  AuthMiddleware.verifyAccessToken,
+  "/get-profile", AuthMiddleware.verifyAccessToken,
   UserController.getProfile
 );
 //update profile
@@ -28,9 +26,18 @@ userRouter.put(
   UserController.changePassword
 );
 // lấy danh sách người dùng
-userRouter.get("/all-users", AuthMiddleware.verifyAccessToken);
+userRouter.get("/all-users", AuthMiddleware.verifyAccessToken, UserController.getAllUser);
 // đổi trạng thái tài khoản người dùng
-userRouter.put("/change-status/:id", AuthMiddleware.verifyAccessToken);
+userRouter.put("/change-status/:id", AuthMiddleware.verifyAccessToken, UserController.changeStatus);
+userRouter.post(
+  "/join-project",
+  UserController.joinByCode
+);
+
+userRouter.post(
+  "/confirm-invite/:projectId/:userId",
+  UserController.confirmInvite
+);
 
 //api cho admin
 //lấy danh sách người dùng
