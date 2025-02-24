@@ -3,8 +3,9 @@ const db = require("../models/index");
 const bcrypt = require("bcrypt");
 
 const getProfile = async (req, res, next) => {
-  const userId = req.payload.id;
+  const {userId} = req.body;
   try {
+    console.log(userId);
     const user = await db.Users.findById(userId);
     res.status(200).json(user);
   } catch (error) {
@@ -83,9 +84,74 @@ const changePassword = async (req, res, next) => {
     next(error); // Pass errors to the error handling middleware
   }
 };
+const changeStatus = async (req, res, next) => {
+    try {
+        const userId = req.payload.id; // Lấy ID từ URL
+        const { status } = req.body;
+         // Danh sách trạng thái hợp lệ
+         const validStatuses = ["inactive", "active", "banned"];
+         if (!validStatuses.includes(status)) {
+             return res.status(400).json({ success: false, message: "Invalid status value" });
+         }
+          // Cập nhật trạng thái của user
+        const updatedUser = await db.Users.findByIdAndUpdate(
+            userId,
+            { $set: { status } },
+            { new: true, runValidators: true }
+        ).select("-account.password"); // Không trả về mật khẩu
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        res.status(200).json({ success: true, message: "Status updated successfully", data: updatedUser });
+    } catch (error) {
+        console.error("Error updating status:", error);
+        next(error);
+    }
+};
+const getAllUser = async (req, res, next) => {
+    try {
+        const users = await db.Users.find();
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error fetching all users:", error);
+        res.status(500).json({ error: { status: 500, message: "Failed to fetch users" } });
+        // next(error); 
+    }
+};
+const joinByCode = async (req, res, next) => {
+  try {
+      const { userId, projectCode } = req.body; // Lấy đúng dữ liệu
+
+      const project = await db.Projects.findOne({ projectCode });
+      if (!project) {
+          return res.status(404).json({ success: false, message: "Invalid project code" });
+      }
+
+      // Chuyển userId thành ObjectId
+      const userIdObject = new mongoose.Types.ObjectId(userId);
+
+      // Kiểm tra user
+      const isMember = project.members.some(member => member._id.equals(userIdObject));
+      if (isMember) {
+          return res.status(400).json({ success: false, message: "User already joined" });
+      }
+
+      // Thêm user vào members
+      project.members.push({ _id: userIdObject, role: "member" });
+      await project.save();
+
+      res.status(200).json({ success: true, message: "Joined project successfully", project });
+  } catch (error) {
+      console.error("Error joining project:", error);
+      next(error);
+  }
+};
 
 module.exports = {
   getProfile,
   updateProfile,
   changePassword,
+  changeStatus,
+  getAllUser,
+  joinByCode,
 };

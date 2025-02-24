@@ -44,9 +44,9 @@ async function createProject(req, res, next) {
         const updatedUser = await db.Users.findOneAndUpdate(
             { _id: id },
             { $push: { projects: nProjectId } },
-            { new: true } 
+            { new: true }
         );
-        
+
         if (!updatedUser) {
             throw createHttpErrors(400, "Failed to update user with project ID");
         }
@@ -77,9 +77,9 @@ async function getProjectById(req, res, next) {
     try {
         const { projectId } = req.params;
         const project = await db.Projects.findById(projectId);
-        
+
         if (!project) return next(createHttpErrors.NotFound("Project not found"));
-        
+
         res.json({ project });
     } catch (error) {
         next(createHttpErrors.InternalServerError(error.message));
@@ -122,7 +122,7 @@ async function updateProject(req, res, next) {
             if (projectAvatar) {
                 updateProject.projectAvatar = projectAvatar;
             }
-        } 
+        }
         else if (member.role === 'member') {
             if (projectName || projectCode || projectAvatar) {
                 throw createHttpErrors(403, "Only the project owner can edit the project name, project code, and avatar");
@@ -148,15 +148,15 @@ async function deleteProject(req, res, next) {
         if (!project) {
             throw createHttpErrors(404, "Project not found");
         }
-        
+
         const isOwner = project.members.some(member => member._id.toString() === id && member.role === 'owner');
         if (!isOwner) {
             throw createHttpErrors(403, "Only the project owner can delete this project");
         }
-        
+
         await db.Users.updateMany(
-            { projects: projectId }, 
-            { $pull: { projects: projectId } } 
+            { projects: projectId },
+            { $pull: { projects: projectId } }
         );
 
         await db.Projects.deleteOne({ _id: projectId });
@@ -193,14 +193,123 @@ async function getProjectMembers(req, res, next) {
     }
 }
 
+async function setProjectMemberRole(req, res, next) {
+    try {
+        const { projectId, memberId } = req.params;
+        // const { id } = req.payload;
+        const { id } = req.body;
+        const { role } = req.body;
 
-const ProjectController={
+        const project = await db.Projects.findOne({ _id: projectId });
+        if (!project) {
+            throw createHttpErrors(404, "Project not found");
+        }
+        const owner = project.members.find(member => member._id.toString() === id && member.role === 'owner');
+        if (!owner) {
+            throw createHttpErrors(403, "Only the project owner can edit member role");
+        }
+        const member = project.members.find(member => member._id.toString() === memberId);
+        if (!member) {
+            throw createHttpErrors(404, "Member not found");
+        }
+        if (memberId === owner._id.toString()) {
+            throw createHttpErrors(403, "You cannot change your own role");
+        }
+        const otherOwners = project.members.filter(member => member.role === 'owner' && member._id.toString() !== memberId);
+        if (role === 'owner' && otherOwners.length > 0) {
+            throw createHttpErrors(400, "Cannot assign owner role as there is already an owner");
+        }
+
+        await db.Projects.updateOne(
+            { _id: projectId, "members._id": memberId },
+            { $set: { "members.$.role": role } }
+        );
+        res.status(200).json({ message: "Member role updated successfully", memberId, newRole: role });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+
+async function deleteProjectMember(req, res, next) {
+    try {
+        const { projectId, memberId } = req.params;
+        // const { id } = req.payload;
+        const { id } = req.body; 
+
+        const project = await db.Projects.findOne({ _id: projectId });
+        if (!project) {
+            throw createHttpErrors(404, "Project not found");
+        }
+
+        const owner = project.members.find(member => member._id.toString() === id && member.role === 'owner');
+        if (!owner) {
+            throw createHttpErrors(403, "Only the project owner can delete a member");
+        }
+
+        const memberToDelete = project.members.find(member => member._id.toString() === memberId);
+        if (!memberToDelete) {
+            throw createHttpErrors(404, "Member not found");
+        }
+
+        if (memberId === id) {
+            throw createHttpErrors(403, "The owner cannot remove themselves from the group");
+        }
+
+        project.members = project.members.filter(member => member._id.toString() !== memberId);
+        await project.save();
+
+        const user = await db.Users.findById(memberId);
+        if (user) {
+            user.projects = user.projects.filter(project => project.toString() !== projectId);
+            await user.save();
+        }
+
+        res.status(200).json({ message: "Member removed from the project successfully" });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+async function getUserRole(req, res, next) {
+    try {
+        const { projectId } = req.params;
+        // const { id } = req.payload;
+        const { id } = req.body;
+
+        const project = await db.Projects.findOne({ _id: projectId });
+
+        if (!project) {
+            throw createHttpErrors(404, "Project not found");
+        }
+        const member = project.members.find(member => member._id.toString() === id);
+
+        if (!member) {
+            throw createHttpErrors(404, "User not found in the specified project");
+        }
+        res.status(200).json({
+            id: member._id,
+            role: member.role,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+const ProjectController = {
     createProject,
     getAllProjects,
     getProjectById,
     updateProject,
     deleteProject,
     getProjectMembers,
+    setProjectMemberRole,
+    deleteProjectMember,
+    getUserRole,
 }
 
 module.exports = ProjectController

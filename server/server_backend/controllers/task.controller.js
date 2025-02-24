@@ -43,13 +43,11 @@ async function createTask(req, res, next) {
             status: req.body.status,
         }
         const newTasks =await db.Tasks.create(newTask);
-        console.log(newTasks._id)
         const updatedProject = await db.Projects.findByIdAndUpdate(
             projectId,
             { $push: { tasks: newTasks._id } }, 
             { new: true, runValidators: true }
         );
-        console.log(updatedProject);
         if (!updatedProject) {
             return res.status(500).json({ error: "Failed to update project with new task" });
         }
@@ -146,8 +144,9 @@ async function deleteTask(req, res, next) {
 
 async function addSubTask(req, res, next) {
     try {
+        const {id} = req.body;
         const { projectId, taskId } = req.params;
-        const project = await db.Projects.findOne({ _id: projectId });
+        const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
 
@@ -162,25 +161,20 @@ async function addSubTask(req, res, next) {
 
         }
         const newSubTask = {
-            subTaskName: req.body.subTaskName
+            subTaskNumber: task.subTasks.length+1,
+            subTaskName: req.body.subTaskName,
+            assignee: id,
+            priority: "Low",
+            status: "Pending"
         }
-        await db.Projects.updateOne(
-            {
-                _id: projectId, "tasks._id": taskId
+        const subTasks = await db.Tasks.findByIdAndUpdate(
+            taskId,
+            { $push: { subTasks: newSubTask } },
+            { new: true }
+        );
 
-            },
-            {
-                $push: { "tasks.$.subTasks": newSubTask }
-            },
-            {
-                runValidators: true,
-                new: true
-            }
-        )
-
-        const saveProject = await db.Projects.findOne({ _id: projectId })
-        const subTasks = saveProject.tasks.find(t => t._id == taskId).subTasks
-        res.status(201).json(subTasks[subTasks.length - 1])
+        
+        res.status(201).json(subTasks)
 
     } catch (error) {
         next(error)
@@ -190,7 +184,7 @@ async function addSubTask(req, res, next) {
 async function getAllSubTasks(req, res, next) {
     try {
         const { projectId, taskId } = req.params;
-        const project = await db.Projects.findOne({ _id: projectId });
+        const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
 
@@ -212,7 +206,7 @@ async function getAllSubTasks(req, res, next) {
 async function editSubTask(req, res, next) {
     try {
         const { projectId, taskId, subTaskId } = req.params;
-        const project = await db.Projects.findOne({ _id: projectId });
+        const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
 
@@ -231,30 +225,28 @@ async function editSubTask(req, res, next) {
             subTaskName: req.body.subTaskName ? req.body.subTaskName : subTask.subTaskName,
             assignee: req.body.assignee ? req.body.assignee : subTask.assignee,
             priority: req.body.priority ? req.body.priority : subTask.priority,
-            status: req.body.status ? req.body.status : subTask.status,
-            updatedAt: new Date()
+            status: req.body.status ? req.body.status : subTask.status
         }
 
-        await db.Projects.updateOne(
+        await db.Tasks.updateOne(
             {
-                _id: projectId,
-                "tasks._id": taskId,
-                "tasks.subTasks._id": subTaskId
+                _id: taskId, "subTasks._id": subTaskId
             },
             {
-                $set: {
-                    "tasks.$.subTasks.$[subtask].subTaskName": updateSubTask.subTaskName,
-                    "tasks.$.subTasks.$[subtask].assignee": updateSubTask.assignee,
-                    "tasks.$.subTasks.$[subtask].priority": updateSubTask.priority,
-                    "tasks.$.subTasks.$[subtask].status": updateSubTask.status,
-                    "tasks.$.subTasks.$[subtask].updatedAt": updateSubTask.updatedAt
+                $set: { "subTasks.$.subTaskName": updateSubTask?.subTaskName,
+                    "subTasks.$.assignee": updateSubTask?.assignee,
+                    "subTasks.$.priority": updateSubTask?.priority,
+                    "subTasks.$.status": updateSubTask?.status
                 }
             },
             {
-                arrayFilters: [{ "subtask._id": subTaskId }],
-                runValidators: true
-            })
-            .then((rs) => res.status(200).json(updateSubTask));
+                runValidators: true,
+                isNew: false
+            }
+        )
+
+        res.status(200).json(updateSubTask)
+        
     } catch (error) {
         next(error)
     }
@@ -263,7 +255,7 @@ async function editSubTask(req, res, next) {
 async function deleteSubTask(req, res, next) {
     try {
         const { projectId, taskId, subTaskId } = req.params;
-        const project = await db.Projects.findOne({ _id: projectId });
+        const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
 
@@ -279,12 +271,12 @@ async function deleteSubTask(req, res, next) {
 
         }
 
-        await db.Projects.updateOne(
+        await db.Tasks.updateOne(
             {
-                _id: projectId, "tasks._id": taskId
+                _id: taskId, 
             }
             , {
-                $pull: { "tasks.$.subTasks": { _id: subTaskId } }
+                $pull: { "subTasks": { _id: subTaskId } }
             }
         ).then((rs) => res.status(200).json(subTaskId))
             .catch((err) => { console.log(err); })
