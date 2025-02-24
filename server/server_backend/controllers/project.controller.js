@@ -1,7 +1,7 @@
 
 const createHttpErrors = require("http-errors");
 const db = require("../models");
-
+const sendEmail = require("./authentication.controller").sendEmail;
 
 
 function generateProjectCode(length = 6) {
@@ -236,7 +236,7 @@ async function deleteProjectMember(req, res, next) {
     try {
         const { projectId, memberId } = req.params;
         // const { id } = req.payload;
-        const { id } = req.body; 
+        const { id } = req.body;
 
         const project = await db.Projects.findOne({ _id: projectId });
         if (!project) {
@@ -299,6 +299,76 @@ async function getUserRole(req, res, next) {
     }
 }
 
+async function getInviteMembers(req, res, next) {
+    try {
+        const { projectId } = req.params;
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        // Kiểm tra xem project có tồn tại không
+        const project = await db.Projects.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const user = await db.Users.findOne({ "account.email": email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Tạo link tham gia nhóm (có thể thay đổi thành URL frontend)
+        //const inviteLink = ``;
+        const inviteLink = `http://localhost:9999/users/confirm-invite/${projectId}/${user._id}`;
+
+        // Gửi email mời vào nhóm
+        await sendEmail("join", email, inviteLink);
+
+        res.status(200).json({
+            message: "Invitation email sent successfully",
+            projectId,
+            email,
+            inviteLink,
+        });
+    } catch (error) {
+        console.error("Error sending invitation email:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+
+async function updatePremium(req, res, next) {
+    try {
+        const { projectId } = req.params;
+        const { status } = req.body;
+
+        // Kiểm tra đầu vào
+        if (status != 1) {
+            return res.status(400).json({ message: "Invalid isPremium value. Must be true or false." });
+        }
+
+        // Tìm project theo ID
+        const project = await db.Projects.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        // Cập nhật giá trị isPremium
+        project.isPremium = true;
+        await project.save();
+
+        res.status(200).json({
+            message: "Project premium status updated successfully",
+            project
+        });
+    } catch (error) {
+        console.error("Error updating project premium status:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
 
 const ProjectController = {
     createProject,
@@ -310,6 +380,8 @@ const ProjectController = {
     setProjectMemberRole,
     deleteProjectMember,
     getUserRole,
+    updatePremium,
+    getInviteMembers
 }
 
 module.exports = ProjectController
