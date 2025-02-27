@@ -6,6 +6,7 @@ import { Alert } from "react-bootstrap";
 import axios from "axios";
 import loginImage from "../../assets/login/images/image1.jpg";
 import styles from "../../Styles/Login/Login.module.css";
+import Header from "../../Components/Utils/Header";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -82,7 +83,8 @@ function LoginForm() {
   };
 
   return (
-
+    <div>
+      <Header />
     <div
       className={styles.container}
       style={{
@@ -255,6 +257,7 @@ function LoginForm() {
           />
         </div>
       </div>
+    </div>
     </div>
   );
 }

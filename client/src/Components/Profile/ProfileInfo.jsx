@@ -35,7 +35,7 @@ function ProfileInfo() {
       };
       fetchUserInfo();
     }
-  }, [token]);
+  }, []);
 
   if (!userInfo) {
     return <div>Loading...</div>;
