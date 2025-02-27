@@ -86,8 +86,9 @@ async function sendEmail(type, email, link) {
 async function login(req, res) {
   const { email, password } = req.body;
   try {
-    const user = await db.Users.findOne({ email });
+    const user = await db.Users.findOne({"account.email": email });
     if (!user) {
+
       return res.status(404).json({ message: "User not found!" });
     }
     if (!/^(?=.*[A-Z]).{8,}$/.test(password)) {
