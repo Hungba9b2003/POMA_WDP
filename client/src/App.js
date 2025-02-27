@@ -1,28 +1,31 @@
 import React, { useContext, useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
-import Login from "./Pages/Login";
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from "react-router-dom";
+import Login from "./Pages/LoginPage";
 import LoginForm from "./Components/Login/LoginForm";
 import RegisterForm from "./Components/Login/RegisterForm";
 import ForgotPassword from "./Components/Login/ForgotPass";
 import ResetPassword from "./Components/Login/ResetPass";
 import Sidebar from "./Components/Utils/Sidebar";
-// import ViewProfile from "./Components/User_Components/ViewProfile";
-// import EditProfile from "./Components/User_Components/EditProfile";
-// import ChangePassword from "./Components/User_Components/ChangePassword";
+import VerifyRegister from "./Components/Login/VerifyRegister";
+import ProfilePage from "./Pages/ProfilePage";
+import ChangePassword from "./Components/Profile/ChangePassword";
+import EditProfile from "./Components/Profile/EditProfile";
+import ProfileInfo from "./Components/Profile/ProfileInfo";
 import ProtectedRoute from "./Components/Utils/ProtectedRoute";
-
-import "./App.css";
+import Landing from "./Pages/LandingPage";
+import Workspace from "./Components/Project/Workspace";
 import { AppContext } from "./Context/AppContext";
 
-const Layout = ({ children }) => {
+const Layout = () => {
   const location = useLocation();
-  const hidePaths = ["/login", "/forgot-password", "/verify/:token", "/resetPassword/:id/:token"];
+  const showSidebar = location.pathname.startsWith("/project");
 
   return (
     <div className="d-flex">
-
-      {!hidePaths.includes(location.pathname) && <Sidebar />}
-      <div className="flex-grow-1 overflow-auto">{children}</div>
+      {showSidebar && <Sidebar />}
+      <div className="flex-grow-1 overflow-auto">
+        <Outlet /> {/* Đảm bảo render các route con tại đây */}
+      </div>
     </div>
   );
 };
@@ -41,27 +44,35 @@ function App() {
   }, [checkTokenExpiration]);
 
   return (
-    <Layout>
-      <Routes>
-        {!accessToken && !accessToken2 && (
-          <Route path="/login" element={<Login />}>
-            <Route path="loginForm" element={<LoginForm />} />
-            <Route path="registerForm" element={<RegisterForm />} />
-            <Route path="forgotPass" element={<ForgotPassword />} />
-            <Route path="verifyAccount/:id/:token" element={""} />
-            <Route path="resetPassword/:id/:token" element={<ResetPassword />} />
-          </Route>
-        )}
 
-        {accessToken && (
-          <Route path="/" element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
-            <Route path="view-profile" />
-            <Route path="edit-profile" />
-            <Route path="change-password" />
-          </Route>
-        )}
-      </Routes>
-    </Layout>
+    <Routes>
+      {!accessToken && !accessToken2 && (
+        <Route path="/login" element={<Login />}>
+          <Route path="loginForm" element={<LoginForm />} />
+          <Route path="registerForm" element={<RegisterForm />} />
+          <Route path="forgotPass" element={<ForgotPassword />} />
+          <Route path="verify/:id/:token" element={<VerifyRegister />} />
+          <Route path="resetPassword/:id/:token" element={<ResetPassword />} />
+        </Route>
+      )}
+
+      <Route path="/" element={<Landing />} />
+
+      {!accessToken && !accessToken2 && (
+        <Route path="/project/:projectId/*" element={<Layout />}>
+          <Route path="workspace" element={<Workspace />} />
+        </Route>
+      )}
+
+      {accessToken && (
+        <Route path="/" element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
+          <Route path="view-profile" />
+          <Route path="edit-profile" />
+          <Route path="change-password" />
+        </Route>
+      )}
+    </Routes>
+
   );
 }
 

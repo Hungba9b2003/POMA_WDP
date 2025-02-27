@@ -18,18 +18,6 @@ const AppProvider = ({ children }) => {
   const [show, setShow] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState(null);
 
-  //call api
-
-  useEffect(() => {
-    axios
-      .get(`${users_API}/get-profile`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      .then((res) => {
-        setUser(res.data);
-      });
-  }, [accessToken]);
-
   //fuction
   const handleLogout = () => {
     localStorage.removeItem("token");

@@ -172,7 +172,7 @@ function RegisterForm() {
                   style={{
                     position: "absolute",
                     left: "10px",
-                    top: "50%",
+                    top: "40%",
                     transform: "translateY(-50%)",
                     color: "#666",
                   }}
@@ -191,7 +191,7 @@ function RegisterForm() {
                   style={{
                     position: "absolute",
                     right: "10px",
-                    top: "50%",
+                    top: "40%",
                     transform: "translateY(-50%)",
                     color: "#666",
                     cursor: "pointer",
@@ -209,7 +209,7 @@ function RegisterForm() {
                   style={{
                     position: "absolute",
                     left: "10px",
-                    top: "50%",
+                    top: "40%",
                     transform: "translateY(-50%)",
                     color: "#666",
                   }}
@@ -228,7 +228,7 @@ function RegisterForm() {
                   style={{
                     position: "absolute",
                     right: "10px",
-                    top: "50%",
+                    top: "40%",
                     transform: "translateY(-50%)",
                     color: "#666",
                     cursor: "pointer",
@@ -268,7 +268,7 @@ function RegisterForm() {
         </div>
       </div>
 
-      <div style={{ flex: 1 }}>
+      <div className={styles.image_container} style={{ flex: 1 }}>
         <img
           src={loginImage}
           alt="register"
