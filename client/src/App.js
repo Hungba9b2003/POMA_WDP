@@ -1,12 +1,6 @@
-import React, { useContext, useEffect, useState, useNavigate } from "react";
-import {
-  BrowserRouter,
-  Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import Login from "./Pages/Login";
+import React, { useContext, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./Pages/LoginPage";
 
 import LoginForm from "./Components/Login/LoginForm";
 import RegisterForm from "./Components/Login/RegisterForm";
@@ -17,17 +11,14 @@ import ProfilePage from "./Pages/ProfilePage";
 import ChangePassword from "./Components/Profile/ChangePassword";
 import EditProfile from "./Components/Profile/EditProfile";
 import ProfileInfo from "./Components/Profile/ProfileInfo";
-
+import Landing from "./Pages/LandingPage";
 import "./App.css";
 import AppProvider, { AppContext } from "./Context/AppContext"; // Import AppContext
 
 function App() {
   const { checkTokenExpiration } = useContext(AppContext); // Lấy hàm checkTokenExpiration từ context
-  const [accessToken, setAccessToken] = useState(localStorage.getItem("token"));
-  const [accessToken2, setAccessToken2] = useState(
-    sessionStorage.getItem("token")
-  );
-
+  const accessToken = localStorage.getItem("token");
+  const accessToken2 = sessionStorage.getItem("token");
   useEffect(() => {
     checkTokenExpiration();
 
@@ -51,6 +42,7 @@ function App() {
             </Route>
           </>
         )}
+        <Route path="/" element={<Landing />}></Route>
 
         <Route path="/login" element={<Login />}>
           <Route

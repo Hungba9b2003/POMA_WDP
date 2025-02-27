@@ -68,13 +68,13 @@ export default function VerifyPage() {
         {status === "loading" && <p>Verifying your account...</p>}
         {status === "success" && (
           <div style={successStyle}>
-            <h2>Account Verified Successfully!</h2>
+            <h2 style={{ color: "green" }}>Account Verified Successfully!</h2>
             <p>You can now log in.</p>
           </div>
         )}
         {status === "error" && (
           <div style={errorStyle}>
-            <h2>Verification Failed!</h2>
+            <h2 style={{ color: "red" }}>Verification Failed!</h2>
             <p>Invalid or expired token.</p>
           </div>
         )}

@@ -11,7 +11,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function LoginForm() {
   const { authentication_API, setUser } = useContext(AppContext);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState("");
@@ -37,9 +37,9 @@ function LoginForm() {
     checkTokenExpiration();
   }, []);
 
-  const loginUser = async (username, password) => {
+  const loginUser = async (email, password) => {
     try {
-      const { data } = await axios.post(login_API, { username, password });
+      const { data } = await axios.post(login_API, { email, password });
       return data;
     } catch (error) {
       throw error;
@@ -51,7 +51,8 @@ function LoginForm() {
     setMessage("");
     setMessageS("");
     try {
-      const result = await loginUser(username, password);
+      const result = await loginUser(email, password);
+      console.log(result);
       if (result.status === "Login successful!" && result.token) {
         setMessageS("Login successful!");
         const expiresInDays = 30; // Thời gian hết hạn nếu chọn "Remember Me" (30 ngày)
@@ -144,8 +145,8 @@ function LoginForm() {
                 <input
                   type="text"
                   id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Nhập email của bạn"
                   style={{ paddingLeft: "35px" }}
                   required

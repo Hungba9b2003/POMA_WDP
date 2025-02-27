@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaAddressCard, FaUser, FaPhone } from "react-icons/fa";
+import { FaAddressCard, FaUser, FaPhone, FaCamera } from "react-icons/fa";
 import { IoMail } from "react-icons/io5";
 import { Table, Button } from "react-bootstrap";
 import styles from "../../Styles/Profile/Profile.module.css";
@@ -140,157 +140,107 @@ function EditProfile() {
   };
 
   return (
-    <div>
-      <h2>Edit User Profile</h2>
-      <form onSubmit={handleSaveChanges}>
-        <div style={{ marginBottom: "20px", textAlign: "center" }}>
-          <h3>Select an Image:</h3>
-          <div onClick={toggleImageList} style={{ cursor: "pointer" }}>
-            {tempSelectedImage ? (
-              <img
-                src={tempSelectedImage}
-                alt="Selected Avatar"
-                className={styles.avatarImage}
-                style={{ width: "150px", height: "150px", borderRadius: "50%" }}
-              />
-            ) : (
-              <Button variant="primary">Select Avatar</Button>
-            )}
+    <div className={styles.profileContainer}>
+      {/* Header background */}
+      <div className={styles.headerBackground}>
+        <div className={styles.cameraIcon}>
+          <FaCamera size={122} color="rgba(0,0,0,0.15)" />
+        </div>
+      </div>
+
+      {/* Avatar section */}
+      <div className={styles.avatarSection}>
+        <div className={styles.avatarWrapper} onClick={() => setShowImageList(true)}>
+          <img
+            src={tempSelectedImage || "/images/avatar/imageDefault.jpg"}
+            alt="Profile"
+            className={styles.avatarImage}
+          />
+          <div className={styles.avatarOverlay}>
+            <FaCamera />
           </div>
+        </div>
+      </div>
 
-          {showImageList && (
-            <div className={styles.imageList}>
-              {imageList.map((image, index) => (
-                <div key={index} style={{ position: "relative" }}>
-                  <img
-                    src={image}
-                    alt={`Image ${index + 1}`}
-                    onClick={() => handleImageSelect(image)}
-                    style={{
-                      cursor: "pointer",
-                      border:
-                        tempSelectedImage === image
-                          ? "2px solid #0F67B1"
-                          : "none",
-                      width: "100px",
-                      height: "100px",
-                      borderRadius: "10px",
-                      margin: "5px",
-                    }}
-                  />
-                </div>
-              ))}
-
-              {/* Upload ảnh mới */}
-              <div>
-                <label
-                  htmlFor="upload-avatar"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "100px",
-                    marginTop: "5px",
-                    height: "100px",
-                    border: "2px dashed #ccc",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontSize: "20px",
-                  }}
-                >
-                  ➕
-                </label>
-                <input
-                  id="upload-avatar"
-                  type="file"
-                  onChange={handleImageSelectOther}
-                  accept="image/*"
-                  style={{ display: "none" }}
-                />
-              </div>
-            </div>
-          )}
+      <form onSubmit={handleSaveChanges} className={styles.formContainer}>
+        {/* Name section */}
+        <div className={styles.section}>
+          <h3>Name</h3>
+          <input
+            type="text"
+            name="username"
+            defaultValue={userInfo?.account.username}
+            className={styles.input}
+          />
         </div>
 
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th colSpan={2} style={{ fontSize: "1.3em", color: "#0F67B1" }}>
-                <FaUser /> User Information
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <strong>Username:</strong>
-              </td>
-              <td>
-                <input
-                  type="text"
-                  name="username"
-                  defaultValue={userInfo ? userInfo.username : ""}
-                  className={styles.inputField}
-                  required
-                />
-              </td>
-            </tr>
-          </tbody>
-        </Table>
+        {/* About section */}
+        <div className={styles.section}>
+          <h3>About</h3>
+          <textarea
+            className={styles.textarea}
+            rows={6}
+            placeholder="Tell us about yourself..."
+          />
+        </div>
 
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th colSpan={2} style={{ fontSize: "1.3em", color: "#0F67B1" }}>
-                <FaAddressCard /> Contact
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <strong>
-                  <IoMail /> Email:
-                </strong>
-              </td>
-              <td>
-                <input
-                  type="email"
-                  name="email"
-                  defaultValue={userInfo ? userInfo.account.email : ""}
-                  className={styles.inputField}
-                  readOnly
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>
-                  <FaPhone /> Phone:
-                </strong>
-              </td>
-              <td>
-                <input
-                  type="tel"
-                  name="phone"
-                  defaultValue={userInfo ? userInfo.profile.phoneNumber : ""}
-                  className={styles.inputField}
-                  required
-                />
-              </td>
-            </tr>
-          </tbody>
-        </Table>
+        {/* Contact section */}
+        <div className={styles.section}>
+          <h3>Contact</h3>
+          <input
+            type="email"
+            name="email"
+            defaultValue={userInfo?.account.email}
+            className={styles.input}
+            readOnly
+          />
+          <input
+            type="tel"
+            name="phone"
+            defaultValue={userInfo?.profile.phoneNumber}
+            className={styles.input}
+          />
+        </div>
 
-        <div style={{ marginTop: "10px" }}>
-          <Button variant="primary" type="submit" style={{ marginRight: 5 }}>
-            Save
-          </Button>
-          <Button variant="secondary" style={{ marginRight: 5 }} type="reset">
-            Clear
-          </Button>
+        {/* Projects section */}
+        <div className={styles.section}>
+          <h3>Projects</h3>
+          <div className={styles.demoContent}>
+            Coming soon...
+          </div>
+        </div>
+
+        {/* History section */}
+        <div className={styles.section}>
+          <h3>History</h3>
+          <div className={styles.demoContent}>
+            Coming soon...
+          </div>
         </div>
       </form>
+
+      {/* Image selection modal */}
+      {showImageList && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.imageGrid}>
+              {imageList.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Avatar ${index + 1}`}
+                  onClick={() => handleImageSelect(image)}
+                  className={tempSelectedImage === image ? styles.selectedImage : ''}
+                />
+              ))}
+            </div>
+            <div className={styles.modalActions}>
+              <button onClick={() => setShowImageList(false)}>Cancel</button>
+              <button onClick={handleSaveChanges}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
