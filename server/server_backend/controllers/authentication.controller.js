@@ -86,7 +86,7 @@ async function sendEmail(type, email, link) {
 async function login(req, res) {
   const { email, password } = req.body;
   try {
-    const user = await db.Users.findOne({"account.email": email });
+    const user = await db.Users.findOne({ "account.email": email });
     if (!user) {
 
       return res.status(404).json({ message: "User not found!" });
@@ -174,7 +174,7 @@ async function register(req, res, next) {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    const verificationLink = `http://${process.env.HOSTNAME}:${process.env.PORTBACK_ENDE}/verify/${newUser._id}/${token}`;
+    const verificationLink = `http://${process.env.HOSTNAME}:${process.env.PORT_FRONT_END}/login/verify/${newUser._id}/${token}`;
 
     // Gửi email
     await sendEmail("verify", email, verificationLink);
