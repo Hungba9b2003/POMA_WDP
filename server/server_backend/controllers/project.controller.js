@@ -412,7 +412,7 @@ const leaveProjects = async (req, res, next) => {
     } catch (error) {
         console.error("Error leaving project:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
-    }
+    } 
 };
 const ProjectController = {
     createProject,
