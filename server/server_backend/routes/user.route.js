@@ -10,7 +10,7 @@ userRouter.use(bodyParser.json());
 const { } = require("../controllers/user.controller");
 //lấy profile
 userRouter.get(
-  "/get-profile", AuthMiddleware.verifyAccessToken,
+  "/get-profile",
   UserController.getProfile
 );
 //update profile
@@ -26,9 +26,9 @@ userRouter.put(
   UserController.changePassword
 );
 // lấy danh sách người dùng
-userRouter.get("/all-users", AuthMiddleware.verifyAccessToken, UserController.getAllUser);
+userRouter.get("/all-users", UserController.getAllUser);
 // đổi trạng thái tài khoản người dùng
-userRouter.put("/change-status/:id", AuthMiddleware.verifyAccessToken, UserController.changeStatus);
+userRouter.put("/change-status/:id", UserController.changeStatus);
 userRouter.post(
   "/join-project",
   UserController.joinByCode
@@ -41,6 +41,5 @@ userRouter.post(
 
 //api cho admin
 //lấy danh sách người dùng
-userRouter.get("/all-users");
 
 module.exports = userRouter;

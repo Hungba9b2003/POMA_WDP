@@ -100,8 +100,11 @@ projectRouter.get("/:projectId/inviteMember", ProjectController.getInviteMembers
 
 // api cho admin
 //tổng số project
-projectRouter.get("/count");
+projectRouter.get("/count", ProjectController.countProjects);
 //tổng số project premium
-projectRouter.get("/count-premium");
+projectRouter.get("/count-premium", ProjectController.countPremiumProjects);
+
+projectRouter.post("/leave", ProjectController.leaveProjects);
+
 
 module.exports = projectRouter;
