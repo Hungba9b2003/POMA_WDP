@@ -16,7 +16,7 @@ function generateProjectCode(length = 6) {
 async function createProject(req, res, next) {
     try {
         const { projectName } = req.body;
-        const { id } = req.body;//payload
+        const { id } = req.payload.id;
         const projectCode = generateProjectCode();
         const existingProject = await db.Projects.findOne({ projectName });
         if (existingProject) {
@@ -60,7 +60,7 @@ async function createProject(req, res, next) {
 
 async function getAllProjects(req, res, next) {
     try {
-        const { id } = req.body;//payload
+        const { id } = req.payload.id;
         const projects = await db.Projects.find({ members: { $elemMatch: { _id: id } } });
         if (!projects) {
             throw createHttpErrors(404, "Project not found")

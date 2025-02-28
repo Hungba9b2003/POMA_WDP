@@ -15,18 +15,22 @@ import ProtectedRoute from "./Components/Utils/ProtectedRoute";
 import Landing from "./Pages/LandingPage";
 import Workspace from "./Components/Project/Workspace";
 import { AppContext } from "./Context/AppContext";
+import Header from "./Components/Utils/Header";
 
 const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
 
   return (
-    <div className="d-flex">
+    <>
+    <Header />
+     <div className="d-flex">
       {showSidebar && <Sidebar />}
       <div className="flex-grow-1 overflow-auto">
         <Outlet /> {/* Đảm bảo render các route con tại đây */}
       </div>
     </div>
+    </>   
   );
 };
 
@@ -58,7 +62,7 @@ function App() {
 
       <Route path="/" element={<Landing />} />
 
-      {!accessToken && !accessToken2 && (
+      {accessToken || accessToken2 && (
         <Route path="/project/:projectId/*" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
         </Route>

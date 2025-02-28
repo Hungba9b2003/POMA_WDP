@@ -2,7 +2,7 @@ const express = require("express");
 const projectRouter = express.Router();
 const bodyParser = require("body-parser");
 const db = require("../models/index");
-//const { AuthMiddleware } = require("../middlewares");
+const { AuthMiddleware } = require("../middlewares");
 const { TaskController } = require("../controllers");
 //import cả controller của task lẫn projetc vào đây
 const { ProjectController } = require("../controllers/index")
@@ -13,12 +13,13 @@ projectRouter.use(bodyParser.json());
 projectRouter.post("/:projectId/updatePremium", ProjectController.updatePremium);
 // tao dự án
 projectRouter.post(
-    "/create", ProjectController.createProject
+    "/create", ProjectController.createProject, AuthMiddleware.verifyAccessToken
 )
-//lấy toàn bộ dự án
+//lấy toàn bộ dự án của user
 projectRouter.get(
-    "/get-project", ProjectController.getAllProjects
+    "/get-project", ProjectController.getAllProjects, AuthMiddleware.verifyAccessToken
 )
+
 // tìm dự án
 projectRouter.get(
     "/:projectId/get-project", ProjectController.getProjectById
