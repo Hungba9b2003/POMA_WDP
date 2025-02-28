@@ -74,6 +74,11 @@ const taskSchema = new Schema({
             ref: 'user',
             required: true
         },
+        description: {
+            type: String,
+            trim: true,
+            maxlength: 1000
+        },
         priority: {
             type: String,
             required: true,

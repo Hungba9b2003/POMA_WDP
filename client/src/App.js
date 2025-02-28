@@ -14,6 +14,7 @@ import ProfileInfo from "./Components/Profile/ProfileInfo";
 import ProtectedRoute from "./Components/Utils/ProtectedRoute";
 import Landing from "./Pages/LandingPage";
 import Workspace from "./Components/Project/Workspace";
+import ListTask from "./Components/Project/ListTask";
 import { AppContext } from "./Context/AppContext";
 import Header from "./Components/Utils/Header";
 
@@ -62,9 +63,10 @@ function App() {
 
       <Route path="/" element={<Landing />} />
 
-      {accessToken || accessToken2 && (
+      {(accessToken || accessToken2) && (
         <Route path="/project/:projectId/*" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
+          <Route path="listTask" element={<ListTask />} />
         </Route>
       )}
 
