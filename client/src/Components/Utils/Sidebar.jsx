@@ -5,6 +5,7 @@ import { TbWorld } from "react-icons/tb";
 import { GrWorkshop } from "react-icons/gr";
 import { Card } from 'react-bootstrap';
 import axios from 'axios';
+import Header from './Header';
 
 const Sidebar = () => {
     const location = useLocation();
@@ -46,34 +47,37 @@ const Sidebar = () => {
 
 
     return (
-        <div className="d-flex flex-column vh-100 p-3" style={{ width: '250px', borderRight: '1px solid #ccc' }}>
-            <h4 className="text-dark text-center mb-4">
-                {project.projectName}
-                {project.isPremium && <span className="ms-2" style={{ color: 'gold' }}>💎</span>}
-            </h4>
-            <nav className="flex-column">
-                {menuItems.map((item) => (
-                    <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`d-flex align-items-center gap-2 p-2 rounded text-decoration-none ${location.pathname === item.path ? 'bg-primary text-white' : 'text-dark'}`}
-                    >
-                        {item.icon} {item.label}
-                    </Link>
-                ))}
-            </nav>
-            <Card className="mt-auto p-3 text-center" style={{ background: 'linear-gradient(135deg, #A855F7, #EC4899)', color: 'white' }}>
-                <p className="mb-1">Upgrade to PRO to get access all features!</p>
-                <button className="btn btn-light btn-sm">Get Pro Now!</button>
-            </Card>
-            <div className="d-flex align-items-center gap-2 mt-3">
-                <img src="https://placehold.co/40" alt="avatar" className="rounded-circle" />
-                <div>
-                    <p className="mb-0">Olala</p>
-                    <small>Project Manager</small>
+        <>
+            <Header />
+            <div className="d-flex flex-column vh-100 p-3" style={{ width: '250px', borderRight: '1px solid #ccc' }}>
+                <h4 className="text-dark text-center mb-4">
+                    {project.projectName}
+                    {project.isPremium && <span className="ms-2" style={{ color: 'gold' }}>💎</span>}
+                </h4>
+                <nav className="flex-column">
+                    {menuItems.map((item) => (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`d-flex align-items-center gap-2 p-2 rounded text-decoration-none ${location.pathname === item.path ? 'bg-primary text-white' : 'text-dark'}`}
+                        >
+                            {item.icon} {item.label}
+                        </Link>
+                    ))}
+                </nav>
+                <Card className="mt-auto p-3 text-center" style={{ background: 'linear-gradient(135deg, #A855F7, #EC4899)', color: 'white' }}>
+                    <p className="mb-1">Upgrade to PRO to get access all features!</p>
+                    <button className="btn btn-light btn-sm">Get Pro Now!</button>
+                </Card>
+                <div className="d-flex align-items-center gap-2 mt-3">
+                    <img src="https://placehold.co/40" alt="avatar" className="rounded-circle" />
+                    <div>
+                        <p className="mb-0">Olala</p>
+                        <small>Project Manager</small>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

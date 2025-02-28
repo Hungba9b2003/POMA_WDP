@@ -83,8 +83,6 @@ function LoginForm() {
   };
 
   return (
-    <div>
-      <Header />
     <div
       className={styles.container}
       style={{
@@ -257,7 +255,6 @@ function LoginForm() {
           />
         </div>
       </div>
-    </div>
     </div>
   );
 }
