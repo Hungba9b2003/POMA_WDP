@@ -51,9 +51,9 @@ function ResetPassword() {
 
     const result = await resetPassword();
     console.log(result.status);
-    if (result.status === "Invalid or expired token!") {
+    if (result.status === "Invalid") {
       setMessage(result.message);
-    } else if (result.status === "Password change successful!") {
+    } else if (result.status === "Successful") {
       setShowSuccessAlert(true);
       setMessage(result.message);
       setTimeout(() => {
