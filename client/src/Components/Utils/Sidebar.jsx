@@ -15,10 +15,10 @@ const Sidebar = () => {
 
     const menuItems = projectId
         ? [
-            { path: `/projects/${projectId}/summary`, label: 'Summary', icon: <TbWorld /> },
-            { path: `/projects/${projectId}/workspace`, label: 'Workspace', icon: <GrWorkshop /> },
-            { path: `/projects/${projectId}/members`, label: 'Member', icon: <FaUsers /> },
-            { path: `/projects/${projectId}/tasks`, label: 'List Tasks', icon: <FaTasks /> },
+            { path: `/project/${projectId}/summary`, label: 'Summary', icon: <TbWorld /> },
+            { path: `/project/${projectId}/workspace`, label: 'Workspace', icon: <GrWorkshop /> },
+            { path: `/project/${projectId}/members`, label: 'Member', icon: <FaUsers /> },
+            { path: `/project/${projectId}/listTask`, label: 'List Tasks', icon: <FaTasks /> },
         ]
         : [];
 

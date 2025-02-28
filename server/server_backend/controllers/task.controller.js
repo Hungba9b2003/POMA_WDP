@@ -34,7 +34,7 @@ async function createTask(req, res, next) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
         }
         const newTask = {
-            taskNumber: project.tasks.length+1,
+            taskNumber: project.tasks.length + 1,
             taskName: req.body.taskName,
             description: req.body.description,
             reviewer: id,
@@ -42,10 +42,10 @@ async function createTask(req, res, next) {
             deadline: req.body.deadline,
             status: req.body.status,
         }
-        const newTasks =await db.Tasks.create(newTask);
+        const newTasks = await db.Tasks.create(newTask);
         const updatedProject = await db.Projects.findByIdAndUpdate(
             projectId,
-            { $push: { tasks: newTasks._id } }, 
+            { $push: { tasks: newTasks._id } },
             { new: true, runValidators: true }
         );
         if (!updatedProject) {
@@ -133,7 +133,7 @@ async function deleteTask(req, res, next) {
             { $pull: { tasks: taskId } },
             { new: true }
         );
-        
+
         await db.Tasks.deleteOne({ _id: taskId })
 
         res.status(200).json("Delete task successfully")
@@ -144,7 +144,7 @@ async function deleteTask(req, res, next) {
 
 async function addSubTask(req, res, next) {
     try {
-        const {id} = req.body;
+        const { id } = req.body;
         const { projectId, taskId } = req.params;
         const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
         if (!project) {
@@ -161,9 +161,10 @@ async function addSubTask(req, res, next) {
 
         }
         const newSubTask = {
-            subTaskNumber: task.subTasks.length+1,
+            subTaskNumber: task.subTasks.length + 1,
             subTaskName: req.body.subTaskName,
             assignee: id,
+            description: req.body.description,
             priority: "Low",
             status: "Pending"
         }
@@ -173,7 +174,7 @@ async function addSubTask(req, res, next) {
             { new: true }
         );
 
-        
+
         res.status(201).json(subTasks)
 
     } catch (error) {
@@ -224,6 +225,7 @@ async function editSubTask(req, res, next) {
         const updateSubTask = {
             subTaskName: req.body.subTaskName ? req.body.subTaskName : subTask.subTaskName,
             assignee: req.body.assignee ? req.body.assignee : subTask.assignee,
+            description: req.body.description ? req.body.description : subTask.description,
             priority: req.body.priority ? req.body.priority : subTask.priority,
             status: req.body.status ? req.body.status : subTask.status
         }
@@ -233,7 +235,8 @@ async function editSubTask(req, res, next) {
                 _id: taskId, "subTasks._id": subTaskId
             },
             {
-                $set: { "subTasks.$.subTaskName": updateSubTask?.subTaskName,
+                $set: {
+                    "subTasks.$.subTaskName": updateSubTask?.subTaskName,
                     "subTasks.$.assignee": updateSubTask?.assignee,
                     "subTasks.$.priority": updateSubTask?.priority,
                     "subTasks.$.status": updateSubTask?.status
@@ -246,7 +249,7 @@ async function editSubTask(req, res, next) {
         )
 
         res.status(200).json(updateSubTask)
-        
+
     } catch (error) {
         next(error)
     }
@@ -273,7 +276,7 @@ async function deleteSubTask(req, res, next) {
 
         await db.Tasks.updateOne(
             {
-                _id: taskId, 
+                _id: taskId,
             }
             , {
                 $pull: { "subTasks": { _id: subTaskId } }
