@@ -9,7 +9,9 @@ const TaskDetail = ({ task, showModal, onClose }) => {
     const [comments, setComments] = useState(task.comments || []);  // Use task.comments directly
     const [newSubTask, setNewSubTask] = useState("");
     const [subTasks, setSubTasks] = useState(task.subTasks || []);  // Use task.subTasks directly
-    const { projectId } = useParams();  // L y project ID t i params
+    const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
+    const [subTaskName, setSubTaskName] = useState("");
+    const { projectId } = useParams();  // Get project ID from params
 
     useEffect(() => {
         if (task) {
@@ -76,10 +78,81 @@ const TaskDetail = ({ task, showModal, onClose }) => {
         try {
             const response = await axios.get(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/get-all`);
             setSubTasks(Array.isArray(response.data) ? response.data : []);
-            console.log(response.data);
         } catch (error) {
             console.error("Error fetching subtasks", error);
             setSubTasks([]);  // Fallback to empty array if an error occurs
+        }
+    };
+
+    const handleEditSubTaskName = (subTask) => {
+        setEditingSubTaskId(subTask._id);
+        setSubTaskName(subTask.subTaskName); // Đặt tên subtask vào input
+    };
+
+    const handleSaveSubTaskName = async (subTask) => {
+        if (!subTaskName.trim()) {
+            alert("Subtask name cannot be empty!");
+            return;
+        }
+
+        try {
+            await axios.put(
+                `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
+                { subTaskName }, // Chỉ gửi subTaskName để cập nhật
+                { headers: { "Content-Type": "application/json" } }
+            );
+
+            const updatedSubTasks = subTasks.map(st =>
+                st._id === subTask._id ? { ...st, subTaskName } : st
+            );
+            setSubTasks(updatedSubTasks);
+        } catch (error) {
+            console.error("Error updating subtask name:", error);
+        }
+
+        setEditingSubTaskId(null);
+    };
+
+    const handleCancelSubTaskName = () => {
+        setEditingSubTaskId(null);
+        setSubTaskName(""); // Reset input
+    };
+
+    const handleUpdateSubTask = async (subTask, updates) => {
+        try {
+            if (!projectId || !task?._id || !subTask?._id) {
+                console.error("Missing projectId, taskId, or subTaskId");
+                return;
+            }
+
+            const updateData = {};
+            if (updates.status) updateData.status = updates.status;
+            if (updates.priority) updateData.priority = updates.priority;
+
+            if (Object.keys(updateData).length === 0) {
+                console.error("No valid fields to update");
+                return;
+            }
+
+            await axios.put(
+                `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
+                updateData, // Chỉ gửi những giá trị cần cập nhật
+                { headers: { "Content-Type": "application/json" } }
+            );
+
+            fetchSubTasks(); // Cập nhật lại danh sách subtask sau khi sửa
+        } catch (error) {
+            console.error("Error updating subtask", error.response?.data || error);
+        }
+    };
+
+
+    const handleDeleteSubTask = async (subTask) => {
+        try {
+            await axios.delete(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/delete`);
+            fetchSubTasks(); // Re-fetch subtasks after deletion
+        } catch (error) {
+            console.error("Error deleting subtask", error);
         }
     };
 
@@ -104,7 +177,6 @@ const TaskDetail = ({ task, showModal, onClose }) => {
                     {/* Subtask Section */}
                     <div>
                         <h5>Subtasks</h5>
-
                         <Row className="align-items-center" style={{ marginBottom: "10px" }}>
                             <Col xs={8} className="d-flex">
                                 <Form.Control
@@ -112,7 +184,7 @@ const TaskDetail = ({ task, showModal, onClose }) => {
                                     value={newSubTask}
                                     onChange={(e) => setNewSubTask(e.target.value)}
                                     placeholder="Add new subtask"
-                                    style={{ height: '38px', marginBottom: 0 }} // Xóa margin dưới của Form.Control
+                                    style={{ height: '38px', marginBottom: 0 }} // Remove bottom margin
                                 />
                             </Col>
                             <Col xs={4} className="d-flex">
@@ -120,7 +192,7 @@ const TaskDetail = ({ task, showModal, onClose }) => {
                                     variant="primary"
                                     onClick={addSubTask}
                                     className="w-100"
-                                    style={{ height: '38px', marginTop: 0 }} // Xóa margin trên của Button
+                                    style={{ height: '38px', marginTop: 0 }} // Remove top margin
                                 >
                                     Add Subtask
                                 </Button>
@@ -133,51 +205,73 @@ const TaskDetail = ({ task, showModal, onClose }) => {
                                     subTasks.map((subtask) => (
                                         <li key={subtask._id} style={{ borderBottom: "1px solid black" }}>
                                             <Row className="align-items-center" style={{ padding: "10px" }}>
-                                                {/* SubTask Number */}
-                                                <Col xs={1}>
-                                                    <h6>{subtask.subTaskNumber}</h6>
-                                                </Col>
                                                 {/* SubTask Name */}
-                                                <Col xs={7}>
-                                                    <h6>{subtask.subTaskName}</h6>
+                                                <Col xs={1}>
+                                                    <h>{subtask.subTaskNumber}</h>
                                                 </Col>
+                                                <Col xs={7}>
+                                                    {editingSubTaskId === subtask._id ? (
+                                                        <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+                                                            <input
+                                                                type="text"
+                                                                value={subTaskName}
+                                                                onChange={(e) => setSubTaskName(e.target.value)}
+                                                                style={{
+                                                                    margin: 0,
+
+                                                                }}
+                                                            />
+                                                            <button style={{ backgroundColor: "blue", color: "white", border: "none", borderRadius: "5px", padding: "5px" }} onClick={() => handleSaveSubTaskName(subtask)}>✔</button>
+                                                            <button style={{ backgroundColor: "gray", border: "none", borderRadius: "5px", padding: "5px" }} onClick={handleCancelSubTaskName}>✖</button>
+                                                        </div>
+                                                    ) : (
+                                                        <h6 onClick={() => handleEditSubTaskName(subtask)}>{subtask.subTaskName}</h6>
+                                                    )}
+                                                </Col>
+
+
                                                 {/* Priority */}
                                                 <Col xs={1}>
-                                                    <div>
-                                                        {subtask.priority === "High" && (
-                                                            <span style={{ color: 'red', transform: 'rotate(90deg)', display: 'inline-block' }}>|||</span> // Xoay ba dấu gạch ngang
-                                                        )}
-                                                        {subtask.priority === "Medium" && (
-                                                            <span style={{ color: 'yellow', transform: 'rotate(90deg)', display: 'inline-block' }}>||</span> // Xoay hai dấu gạch ngang
-                                                        )}
-                                                        {subtask.priority === "Low" && (
-                                                            <span style={{ color: 'green', transform: 'rotate(90deg)', display: 'inline-block' }}>|</span> // Xoay một dấu gạch ngang
-                                                        )}
-                                                    </div>
-
-                                                </Col>
-                                                <Col xs={1} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                                    <Image
-                                                        src="https://via.placeholder.com/10" // Thay thế bằng ảnh avatar của assignee khi có
-                                                        roundedCircle
-                                                        alt="Assignee Avatar"
+                                                    <Form.Control
+                                                        as="select"
+                                                        value={subtask.priority}
+                                                        onChange={(e) => handleUpdateSubTask(subtask, { priority: e.target.value })}
                                                         style={{
-                                                            border: "1px solid #ccc",
-                                                            width: '30px',  // Đặt kích thước ảnh nhỏ
-                                                            height: '30px', // Đặt kích thước ảnh nhỏ
-                                                            objectFit: 'contain' // Đảm bảo ảnh không bị vỡ hoặc cắt
+                                                            border: 'none',
+                                                            color: subtask.priority === 'Low' ? 'green' : subtask.priority === 'Medium' ? 'yellow' : 'red',
                                                         }}
-                                                    />
+                                                    >
+                                                        <option value="Low" style={{ writingMode: 'vertical-lr', transform: 'rotate(0deg)', color: 'green' }}> | </option>
+                                                        <option value="Medium" style={{ writingMode: 'vertical-lr', transform: 'rotate(0deg)', color: 'yellow' }}> || </option>
+                                                        <option value="High" style={{ writingMode: 'vertical-lr', transform: 'rotate(0deg)', color: 'red' }}> ||| </option>
+                                                    </Form.Control>
                                                 </Col>
 
+                                                {/* Status */}
                                                 <Col xs={2}>
-                                                    <p style={{
-                                                        fontSize: "0.8rem",
-                                                        fontWeight: "bold",
-                                                        color: subtask.status === "Pending" ? "black" :
-                                                            subtask.status === "In Progress" ? "blue" :
-                                                                "green"
-                                                    }}>{subtask.status}</p>
+                                                    <Form.Control
+                                                        as="select"
+                                                        value={subtask.status}
+                                                        onChange={(e) => handleUpdateSubTask(subtask, { status: e.target.value })}
+                                                        style={{
+                                                            border: 'none',
+                                                            color: subtask.status === 'Pending' ? 'black' : subtask.status === 'In Progress' ? 'blue' : 'green',
+                                                        }}
+                                                    >
+                                                        <option value="Pending" style={{ color: 'black' }}>Pending</option>
+                                                        <option value="In Progress" style={{ color: 'blue' }}>Progress</option>
+                                                        <option value="Completed" style={{ color: 'green' }}>Completed</option>
+                                                    </Form.Control>
+                                                </Col>
+
+                                                {/* Action buttons */}
+                                                <Col xs={1}>
+                                                    <Button
+                                                        variant="danger"
+                                                        onClick={() => handleDeleteSubTask(subtask)}
+                                                    >
+                                                        X
+                                                    </Button>
                                                 </Col>
                                             </Row>
                                         </li>
@@ -193,35 +287,81 @@ const TaskDetail = ({ task, showModal, onClose }) => {
 
                     {/* Activity Section */}
                     <h5>Activity</h5>
+
                     {user && (
-                        <div>
-                            <img src={user.avatar} alt="avatar" width="50" />
-                            <Form.Control
-                                type="text"
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="Add comment"
-                            />
-                            <Button variant="success" onClick={addComment} className="mt-2">Save</Button>
-                            <Button variant="secondary" onClick={() => setNewComment("")} className="mt-2 ml-2">Cancel</Button>
-                        </div>
+
+                        <Row>
+                            <Col md={1} style={{ display: "flex", alignItems: "center" }}>
+                                <img src={user.avatar} alt="avatar" width="50" />
+                            </Col>
+                            <Col md={11} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <Form.Control
+                                    type="text"
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    placeholder="Add comment"
+                                    style={{
+                                        margin: 0,          // Loại bỏ margin mặc định
+                                        padding: "8px",     // Thiết lập padding đồng đều cho input
+                                        height: "38px",     // Đảm bảo input có chiều cao cố định
+                                    }}
+                                />
+                                <Button variant="success" onClick={addComment} style={{ margin: "none", height: "38px" }}>Save</Button>
+                                <Button variant="secondary" onClick={() => setNewComment("")} style={{ margin: "none", height: "38px" }}>Cancel</Button>
+                            </Col>
+
+                        </Row>
+
                     )}
 
                     {/* Comments Section */}
                     <h5>Comments</h5>
-                    <ul>
-                        {comments.map((c, index) => (
-                            <li key={index}>{c.content}</li>
-                        ))}
-                    </ul>
+                    <div style={{ maxHeight: "300px", overflowY: "auto" }}> {/* Đặt max-height và cho phép cuộn */}
+                        <ul style={{ listStyleType: "none", padding: 0 }}>
+                            {comments.slice().reverse().map((c, index) => (
+                                <li key={index} style={{ marginBottom: "10px" }}>
+                                    <Row className="align-items-center" style={{ marginBottom: "10px" }}>
+                                        {/* Avatar */}
+                                        <Col xs="auto">
+                                            <img
+                                                src={c.avatar || "default-avatar-url"} // Thay bằng URL ảnh đại diện của bạn
+                                                alt="Avatar"
+                                                style={{
+                                                    width: "40px",  // Kích thước ảnh đại diện
+                                                    height: "40px",
+                                                    borderRadius: "50%", // Làm cho ảnh tròn
+                                                }}
+                                            />
+                                        </Col>
+
+                                        {/* Comment Content */}
+                                        <Col>
+                                            <div style={{
+                                                backgroundColor: "#f0f0f0", // Màu nền comment
+                                                padding: "10px",  // Khoảng cách trong comment
+                                                borderRadius: "10px",  // Viền bo tròn
+                                                maxWidth: "500px",  // Giới hạn chiều rộng
+                                                wordWrap: "break-word",  // Ngắt chữ khi quá dài
+                                                display: "flex",
+
+                                            }}>
+                                                <p>{c.content}</p>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
                 </div>
 
-                {/* Right Section: 3 part (tạm thời để trống) */}
+                {/* Right Section (can be filled with additional content later) */}
                 <div style={{ width: "30%" }}>
                     {/* You can add right section content later */}
                 </div>
             </Modal.Body>
-        </Modal>
+        </Modal >
     );
 };
 
