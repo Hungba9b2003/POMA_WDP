@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa";
 import { FiLogOut, FiUser, FiKey } from "react-icons/fi";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const Header = () => {
   const [showModal, setShowModal] = useState(false);
@@ -12,15 +13,25 @@ const Header = () => {
 
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
+
+  let id = null;
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      id = decoded?.id || null; 
+    } catch (error) {
+      console.error("Error decoding token:", error);
+    }
+  }
+
   useEffect(() => {
-    if (token && !userInfo) {
-      axios.get("http://localhost:9999/users/get-profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    if (token && id && !userInfo) {
+      axios.post("http://localhost:9999/users/get-profile", { id }) 
         .then(response => setUserInfo(response.data))
         .catch(error => console.error("Error fetching user information:", error));
     }
-  }, [token, userInfo]);
+  }, [token, id, userInfo]);
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -39,8 +50,7 @@ const Header = () => {
 
       const createResponse = await axios.post(
         "http://localhost:9999/projects/create",
-        { projectName },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { projectName , id},
       );
 
       if (createResponse.data) {
@@ -73,14 +83,14 @@ const Header = () => {
 
           {/* Dropdown menu cho màn hình nhỏ */}
           <NavDropdown title="Menu" id="nav-dropdown" className="d-lg-none">
-            <NavDropdown.Item href="#">Projects</NavDropdown.Item>
+            <NavDropdown.Item href="/listProject">Projects</NavDropdown.Item>
             <NavDropdown.Item href="#">Your work</NavDropdown.Item>
             <NavDropdown.Item href="#">Your team</NavDropdown.Item>
           </NavDropdown>
 
           {/* Menu cho màn hình lớn */}
           <Nav className="d-none d-lg-flex gap-3">
-            <Nav.Link href="#">Projects</Nav.Link>
+            <Nav.Link href="/listProject">Projects</Nav.Link>
             <Nav.Link href="#">Your work</Nav.Link>
             <Nav.Link href="#">Your team</Nav.Link>
           </Nav>

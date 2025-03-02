@@ -13,12 +13,11 @@ projectRouter.use(bodyParser.json());
 projectRouter.post("/:projectId/updatePremium", ProjectController.updatePremium);
 // tao dự án
 projectRouter.post(
-    "/create", ProjectController.createProject, AuthMiddleware.verifyAccessToken
+    "/create", ProjectController.createProject,
 )
 //lấy toàn bộ dự án của user
-projectRouter.get(
-    "/get-project", ProjectController.getAllProjects, AuthMiddleware.verifyAccessToken
-)
+projectRouter.post(
+    "/get-project", ProjectController.getAllProjects, )
 
 // tìm dự án
 projectRouter.get(
@@ -32,6 +31,9 @@ projectRouter.put(
 projectRouter.delete(
     "/:projectId/delete", ProjectController.deleteProject
 )
+// update status dự án
+projectRouter.put(
+    "/update-status/:projectId", ProjectController.updateProjectStatus)
 // vào project bằng code
 projectRouter.post("/join-by-code");
 //vào dự án bằng link email

@@ -5,7 +5,6 @@ import { TbWorld } from "react-icons/tb";
 import { GrWorkshop } from "react-icons/gr";
 import { Card } from 'react-bootstrap';
 import axios from 'axios';
-import Header from './Header';
 
 const Sidebar = () => {
     const location = useLocation();
