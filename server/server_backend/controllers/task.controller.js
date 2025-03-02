@@ -208,50 +208,48 @@ async function editSubTask(req, res, next) {
     try {
         const { projectId, taskId, subTaskId } = req.params;
         const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
+
         if (!project) {
-            return res.status(404).json({ error: { status: 404, message: "Project not found" } })
-
+            return res.status(404).json({ error: { status: 404, message: "Project not found" } });
         }
-        const task = project.tasks.find(t => t._id == taskId)
+
+        const task = project.tasks.find(t => t._id == taskId);
         if (!task) {
-            return res.status(404).json({ error: { status: 404, message: "Task not found" } })
-
+            return res.status(404).json({ error: { status: 404, message: "Task not found" } });
         }
-        const subTask = task.subTasks.find(st => st._id == subTaskId)
+
+        const subTask = task.subTasks.find(st => st._id == subTaskId);
         if (!subTask) {
-            return res.status(404).json({ error: { status: 404, message: "Sub task not found" } })
+            return res.status(404).json({ error: { status: 404, message: "Sub task not found" } });
+        }
 
-        }
         const updateSubTask = {
-            subTaskName: req.body.subTaskName ? req.body.subTaskName : subTask.subTaskName,
-            assignee: req.body.assignee ? req.body.assignee : subTask.assignee,
-            description: req.body.description ? req.body.description : subTask.description,
-            priority: req.body.priority ? req.body.priority : subTask.priority,
-            status: req.body.status ? req.body.status : subTask.status
-        }
+            subTaskName: req.body.subTaskName || subTask.subTaskName,
+            assignee: req.body.assignee || subTask.assignee,
+            description: req.body.description || subTask.description,
+            priority: req.body.priority || subTask.priority, // Cập nhật priority
+            status: req.body.status || subTask.status, // Cập nhật status
+        };
+
+
+        const updateFields = {};
+        if (req.body.subTaskNumber !== undefined) updateFields["subTasks.$.subTaskNumber"] = req.body.subTaskNumber;
+        if (req.body.subTaskName) updateFields["subTasks.$.subTaskName"] = req.body.subTaskName;
+        if (req.body.assignee) updateFields["subTasks.$.assignee"] = req.body.assignee;
+        if (req.body.description) updateFields["subTasks.$.description"] = req.body.description;
+        if (req.body.priority !== undefined) updateFields["subTasks.$.priority"] = req.body.priority;
+        if (req.body.status) updateFields["subTasks.$.status"] = req.body.status;
 
         await db.Tasks.updateOne(
-            {
-                _id: taskId, "subTasks._id": subTaskId
-            },
-            {
-                $set: {
-                    "subTasks.$.subTaskName": updateSubTask?.subTaskName,
-                    "subTasks.$.assignee": updateSubTask?.assignee,
-                    "subTasks.$.priority": updateSubTask?.priority,
-                    "subTasks.$.status": updateSubTask?.status
-                }
-            },
-            {
-                runValidators: true,
-                isNew: false
-            }
-        )
+            { _id: taskId, "subTasks._id": subTaskId },
+            { $set: updateFields },
+            { runValidators: true }
+        );
 
-        res.status(200).json(updateSubTask)
 
+        res.status(200).json(updateSubTask);
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
 
