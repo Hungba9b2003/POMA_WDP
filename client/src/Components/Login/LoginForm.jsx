@@ -6,6 +6,7 @@ import { Alert } from "react-bootstrap";
 import axios from "axios";
 import loginImage from "../../assets/login/images/image1.jpg";
 import styles from "../../Styles/Login/Login.module.css";
+import Header from "../../Components/Utils/Header";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -130,7 +131,7 @@ function LoginForm() {
             )}
 
             <div className={styles.inputGroup}>
-              <label htmlFor="username">Email</label>
+              <label htmlFor="email">Email</label>
               <div style={{ position: "relative" }}>
                 <i
                   className="fas fa-envelope"

@@ -16,18 +16,23 @@ import Landing from "./Pages/LandingPage";
 import Workspace from "./Components/Project/Workspace";
 import ListTask from "./Components/Project/ListTask";
 import { AppContext } from "./Context/AppContext";
+import Header from "./Components/Utils/Header";
+import ListProject from "./Components/Project/ListProject";
 
 const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
 
   return (
-    <div className="d-flex">
+    <>
+    <Header />
+     <div className="d-flex">
       {showSidebar && <Sidebar />}
       <div className="flex-grow-1 overflow-auto">
         <Outlet /> {/* Đảm bảo render các route con tại đây */}
       </div>
     </div>
+    </>   
   );
 };
 
@@ -63,6 +68,12 @@ function App() {
         <Route path="/project/:projectId/*" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
           <Route path="listTask" element={<ListTask />} />
+        </Route>
+      )}
+
+      {(accessToken || accessToken2) && (
+        <Route path="/" element={<Layout />}>
+          <Route path="listProject" element={<ListProject />} />
         </Route>
       )}
 

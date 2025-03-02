@@ -11,6 +11,7 @@ const { } = require("../controllers/user.controller");
 //lấy profile
 userRouter.get(
   "/get-profile",
+  AuthMiddleware.verifyAccessToken,
   UserController.getProfile
 );
 //update profile

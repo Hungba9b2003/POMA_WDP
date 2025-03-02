@@ -1,71 +1,13 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import styles from "../Styles/Landing/Landing.module.css";
+import Header from "../Components/Utils/Header";
 
 function LandingPage() {
   return (
     <>
       <div data-spy="scroll" data-target=".navbar" data-offset="51">
-        <div id="nav">
-          <div className="container">
-            <nav className="navbar navbar-expand-md bg-light navbar-light">
-              <a href="index.html" className="navbar-brand">
-                E Startup
-              </a>
-              <button
-                type="button"
-                className="navbar-toggler"
-                data-toggle="collapse"
-                data-target="#navbarCollapse"
-              >
-                <span className="navbar-toggler-icon"></span>
-              </button>
-
-              <div
-                className="collapse navbar-collapse justify-content-between"
-                id="navbarCollapse"
-              >
-                <ul className="navbar-nav ml-auto">
-                  <li className="nav-item">
-                    <a href="#header" className="nav-link">
-                      Home
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a href="#about" className="nav-link">
-                      About
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a href="#team" className="nav-link">
-                      Team
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a href="#service" className="nav-link">
-                      Service
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a href="#portfolio" className="nav-link">
-                      Portfolio
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a href="#pricing" className="nav-link">
-                      Price
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a href="#contact" className="nav-link">
-                      Contact
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </nav>
-          </div>
-        </div>
+        <Header />
         <div className="header" id="header">
           <div className="container">
             <h1>

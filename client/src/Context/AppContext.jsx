@@ -18,6 +18,8 @@ const AppProvider = ({ children }) => {
   const [show, setShow] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState(null);
 
+ 
+
   //fuction
   const handleLogout = () => {
     localStorage.removeItem("token");

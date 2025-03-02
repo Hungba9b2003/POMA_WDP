@@ -16,7 +16,7 @@ function generateProjectCode(length = 6) {
 async function createProject(req, res, next) {
     try {
         const { projectName } = req.body;
-        const { id } = req.body;//payload
+        const { id } = req.body;
         const projectCode = generateProjectCode();
         const existingProject = await db.Projects.findOne({ projectName });
         if (existingProject) {
@@ -60,7 +60,7 @@ async function createProject(req, res, next) {
 
 async function getAllProjects(req, res, next) {
     try {
-        const { id } = req.body;//payload
+        const { id } = req.body;
         const projects = await db.Projects.find({ members: { $elemMatch: { _id: id } } });
         if (!projects) {
             throw createHttpErrors(404, "Project not found")
@@ -165,6 +165,26 @@ async function deleteProject(req, res, next) {
         next(error);
     }
 }
+
+
+const updateProjectStatus = async (req, res) => {
+    try {
+        const { projectId } = req.params; 
+        const project = await db.Projects.findById(projectId);
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        project.status = project.status === "active" ? "inactive" : "active";
+        await project.save();
+
+        res.status(200).json({ message: "Project status updated successfully", project });
+    } catch (error) {
+        console.error("Error updating project status:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 
 async function getProjectMembers(req, res, next) {
     try {
@@ -420,6 +440,7 @@ const ProjectController = {
     getProjectById,
     updateProject,
     deleteProject,
+    updateProjectStatus,
     getProjectMembers,
     setProjectMemberRole,
     deleteProjectMember,

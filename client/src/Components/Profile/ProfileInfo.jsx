@@ -42,7 +42,7 @@ function ProfileInfo() {
       };
       fetchUserInfo();
     }
-  }, [token]);
+  }, []);
 
 
   if (!userInfo) {

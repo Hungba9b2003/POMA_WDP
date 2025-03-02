@@ -46,6 +46,7 @@ const Sidebar = () => {
 
 
     return (
+
         <div className="d-flex flex-column vh-100 p-3" style={{ width: '250px', borderRight: '1px solid #ccc' }}>
             <h4 className="text-dark text-center mb-4">
                 {project.projectName}
@@ -74,6 +75,7 @@ const Sidebar = () => {
                 </div>
             </div>
         </div>
+
     );
 };
 
