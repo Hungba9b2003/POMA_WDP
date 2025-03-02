@@ -6,14 +6,16 @@ import { Alert } from "react-bootstrap";
 import axios from "axios";
 import loginImage from "../../assets/login/images/image1.jpg";
 import styles from "../../Styles/Login/Login.module.css";
+
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function LoginForm() {
   const { authentication_API, setUser } = useContext(AppContext);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageS, setMessageS] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -35,9 +37,9 @@ function LoginForm() {
     checkTokenExpiration();
   }, []);
 
-  const loginUser = async (username, password) => {
+  const loginUser = async (email, password) => {
     try {
-      const { data } = await axios.post(login_API, { username, password });
+      const { data } = await axios.post(login_API, { email, password });
       return data;
     } catch (error) {
       throw error;
@@ -46,9 +48,13 @@ function LoginForm() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    setMessage("");
+    setMessageS("");
     try {
-      const result = await loginUser(username, password);
+      const result = await loginUser(email, password);
+      console.log(result);
       if (result.status === "Login successful!" && result.token) {
+        setMessageS("Login successful!");
         const expiresInDays = 30; // Thời gian hết hạn nếu chọn "Remember Me" (30 ngày)
         const expirationTime =
           new Date().getTime() + expiresInDays * 24 * 60 * 60 * 1000; // Tính timestamp hết hạn
@@ -62,6 +68,7 @@ function LoginForm() {
 
         setUser(result.user);
         setShowSuccessAlert(true);
+        console.log(result);
         setTimeout(() => {
           setShowSuccessAlert(false);
           navigate("/home");
@@ -77,7 +84,12 @@ function LoginForm() {
   return (
     <div
       className={styles.container}
-      style={{ display: "flex", alignItems: "center", gap: "50px" }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "50px",
+        minWidth: "800px",
+      }}
     >
       {showSuccessAlert && (
         <div
@@ -111,6 +123,11 @@ function LoginForm() {
                 {message}
               </Alert>
             )}
+            {messageS && (
+              <Alert variant="success" className={styles.message}>
+                {messageS}
+              </Alert>
+            )}
 
             <div className={styles.inputGroup}>
               <label htmlFor="username">Email</label>
@@ -120,7 +137,7 @@ function LoginForm() {
                   style={{
                     position: "absolute",
                     left: "10px",
-                    top: "50%",
+                    top: "40%",
                     transform: "translateY(-50%)",
                     color: "#666",
                   }}
@@ -128,8 +145,8 @@ function LoginForm() {
                 <input
                   type="text"
                   id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Nhập email của bạn"
                   style={{ paddingLeft: "35px" }}
                   required
@@ -145,7 +162,7 @@ function LoginForm() {
                   style={{
                     position: "absolute",
                     left: "10px",
-                    top: "50%",
+                    top: "40%",
                     transform: "translateY(-50%)",
                     color: "#666",
                   }}
@@ -164,7 +181,7 @@ function LoginForm() {
                   style={{
                     position: "absolute",
                     right: "10px",
-                    top: "50%",
+                    top: "40%",
                     transform: "translateY(-50%)",
                     color: "#666",
                     cursor: "pointer",
@@ -221,19 +238,21 @@ function LoginForm() {
         </div>
       </div>
 
-      <div style={{ flex: 1 }}>
-        <img
-          src={loginImage}
-          alt="login"
-          style={{
-            width: "120%",
-            marginLeft: "-15%",
-            height: "auto",
-            maxHeight: "500px",
-            objectFit: "cover",
-            borderRadius: "10px",
-          }}
-        />
+      <div className={styles.image_container} style={{ flex: 1 }}>
+        <div>
+          <img
+            src={loginImage}
+            alt="login"
+            style={{
+              width: "120%",
+              marginLeft: "-15%",
+              height: "auto",
+              maxHeight: "500px",
+              objectFit: "cover",
+              borderRadius: "10px",
+            }}
+          />
+        </div>
       </div>
     </div>
   );

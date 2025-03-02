@@ -9,7 +9,7 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const app = express();
 const db = require("./models/index");
 const { projectRouter, userRouter, authenticationRouter } = require("./routes");
-
+const uploadRoutes = require("./routes/upload");
 // Sử dụng cors middleware để cho phép request từ localhost:3000
 app.use(
   cors({
@@ -27,15 +27,16 @@ app.get("/", async (req, res, next) => {
 });
 
 // Định tuyến theo các chức năng thực tế
+app.use("/api", uploadRoutes);
+
 // app.use("/projects", projectRouter);
 app.use("/users", userRouter);
 // app.use("/authentication", authenticationRouter);
 app.use("/projects", projectRouter);
 // app.use("/users", userRouter);
 app.use("/authentication", authenticationRouter);
-
 app.use(async (req, res, next) => {
-  next(httpsErrors(404, "Bad Request"));
+  next(httpsErrors(404, "Bad Request server"));
 });
 
 app.use(async (err, req, res, next) => {
