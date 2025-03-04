@@ -3,7 +3,6 @@ import { FaAddressCard, FaUser, FaPhone } from "react-icons/fa";
 import { IoMail } from "react-icons/io5";
 import { Table, Button } from "react-bootstrap";
 import { FaKey, FaHome } from "react-icons/fa";
-
 import styles from "../../Styles/Profile/Profile.module.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
@@ -27,7 +26,7 @@ function ProfileInfo() {
               },
             }
           );
-          console.log(response.data);
+          // console.log(response.data);
           setUserInfo(response.data);
         } catch (error) {
           console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -43,7 +42,6 @@ function ProfileInfo() {
       fetchUserInfo();
     }
   }, []);
-
 
   if (!userInfo) {
     return <div>Loading...</div>;
