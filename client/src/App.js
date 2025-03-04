@@ -14,6 +14,7 @@ import ProfileInfo from "./Components/Profile/ProfileInfo";
 import Landing from "./Pages/LandingPage";
 import "./App.css";
 import AppProvider, { AppContext } from "./Context/AppContext"; // Import AppContext
+import MemberList from "./Pages/MemberList";
 
 function App() {
   const { checkTokenExpiration } = useContext(AppContext); // Lấy hàm checkTokenExpiration từ context
@@ -65,6 +66,11 @@ function App() {
             />
           )}
         </Route>
+
+        {accessToken && <Route path="/projects"  >
+            <Route path=":projectId/memberList" element={<MemberList />} />
+          </Route>
+        }
       </Routes>
     </div>
   );

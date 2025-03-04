@@ -197,7 +197,7 @@ async function setProjectMemberRole(req, res, next) {
     try {
         const { projectId, memberId } = req.params;
         // const { id } = req.payload;
-        const { id } = req.body;
+        const { id } = req.payload;
         const { role } = req.body;
 
         const project = await db.Projects.findOne({ _id: projectId });

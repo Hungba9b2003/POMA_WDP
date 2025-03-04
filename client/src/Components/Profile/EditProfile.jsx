@@ -52,7 +52,7 @@ function EditProfile() {
       };
       fetchUserInfo();
     }
-  }, [token]);
+  },[]);
 
   const handleSaveChanges = async (event) => {
     event.preventDefault();

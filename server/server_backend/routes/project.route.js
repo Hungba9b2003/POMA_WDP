@@ -5,7 +5,8 @@ const db = require("../models/index");
 //const { AuthMiddleware } = require("../middlewares");
 const { TaskController } = require("../controllers");
 //import cả controller của task lẫn projetc vào đây
-const { ProjectController } = require("../controllers/index")
+const { ProjectController } = require("../controllers/index");
+const { AuthMiddleware } = require("../middlewares");
 
 projectRouter.use(bodyParser.json());
 
@@ -42,7 +43,7 @@ projectRouter.get(
     "/:projectId/get-member", ProjectController.getProjectMembers
 )
 // set group member role
-projectRouter.put("/:projectId/member/:memberId/set-role", ProjectController.setProjectMemberRole);
+projectRouter.put("/:projectId/member/:memberId/set-role",AuthMiddleware.verifyAccessToken, ProjectController.setProjectMemberRole);
 // đá thành viên ra khỏi dự án
 projectRouter.delete("/:projectId/member/:memberId/delete", ProjectController.deleteProjectMember);
 // lấy thông tin thành viên đang có trong dự án
