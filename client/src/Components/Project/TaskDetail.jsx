@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, Col, Row, Image } from "react-bootstrap";
+import { Modal, Button, Form, Col, Row, Image, ProgressBar, OverlayTrigger, Tooltip } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     const [user, setUser] = useState(null);
@@ -14,6 +15,18 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     const [taskDescription, setTaskDescription] = useState(task.description || "");
     const { projectId } = useParams();  // Get project ID from params
 
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    let id = null;
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            id = decoded?.id || null;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    }
+
     useEffect(() => {
         if (task) {
             fetchUser();
@@ -22,6 +35,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
         }
     }, [task]);
 
+    console.log(user);
     // Fetch user profile
     const fetchUser = async () => {
         const token = sessionStorage.getItem("authToken");
@@ -32,6 +46,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
                 },
             });
             setUser(response.data);
+
         } catch (error) {
             console.error("Error fetching user", error);
         }
@@ -41,7 +56,13 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     const addComment = async () => {
         if (newComment) {
             try {
-                await axios.post(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/create`, { content: newComment });
+                await axios.post(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/create`, { content: newComment },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 setNewComment("");
                 fetchComments(); // Re-fetch comments after adding
             } catch (error) {
@@ -54,7 +75,13 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     const addSubTask = async () => {
         if (newSubTask) {
             try {
-                await axios.post(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/create`, { subTaskName: newSubTask });
+                await axios.post(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/create`, { subTaskName: newSubTask },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 setNewSubTask("");
                 fetchSubTasks(); // Re-fetch subtasks after adding
             } catch (error) {
@@ -66,7 +93,13 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     // Re-fetch comments
     const fetchComments = async () => {
         try {
-            const response = await axios.get(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/get-all`);
+            const response = await axios.get(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/get-all`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             setComments(response.data || []);  // Ensure it's always an array
         } catch (error) {
             console.error("Error fetching comments", error);
@@ -77,7 +110,13 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     // Re-fetch subtasks
     const fetchSubTasks = async () => {
         try {
-            const response = await axios.get(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/get-all`);
+            const response = await axios.get(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/get-all`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             setSubTasks(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching subtasks", error);
@@ -89,7 +128,12 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
         try {
             const { data } = await axios.put(
                 `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
-                { description: taskDescription }
+                { description: taskDescription },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
             onUpdateTask(data); // Gọi hàm cập nhật task trong ListTask
         } catch (error) {
@@ -112,7 +156,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
             await axios.put(
                 `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
                 { subTaskName }, // Chỉ gửi subTaskName để cập nhật
-                { headers: { "Content-Type": "application/json" } }
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
 
             const updatedSubTasks = subTasks.map(st =>
@@ -150,7 +198,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
             await axios.put(
                 `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
                 updateData, // Chỉ gửi những giá trị cần cập nhật
-                { headers: { "Content-Type": "application/json" } }
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
 
             fetchSubTasks(); // Cập nhật lại danh sách subtask sau khi sửa
@@ -162,10 +214,60 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
 
     const handleDeleteSubTask = async (subTask) => {
         try {
-            await axios.delete(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/delete`);
+            await axios.delete(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/delete`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             fetchSubTasks(); // Re-fetch subtasks after deletion
         } catch (error) {
             console.error("Error deleting subtask", error);
+        }
+    };
+
+    const getSubtaskProgress = () => {
+        if (subTasks.length === 0) return { completed: 0, inProgress: 0, pending: 0 };
+
+        const total = subTasks.length;
+        const completed = (subTasks.filter(sub => sub.status === "Completed").length / total) * 100;
+        const inProgress = (subTasks.filter(sub => sub.status === "In Progress").length / total) * 100;
+        const pending = (subTasks.filter(sub => sub.status === "Pending").length / total) * 100;
+
+        return { completed, inProgress, pending };
+    };
+
+    const { completed, inProgress, pending } = getSubtaskProgress();
+
+    const renderTooltip = (status, completed, total) => {
+        switch (status) {
+            case "completed":
+                return (
+                    <Tooltip id="progress-tooltip">
+                        <div style={{ fontSize: "12px" }}>
+                            Completed: {completed} of {total} issues
+                        </div>
+                    </Tooltip>
+                );
+            case "inProgress":
+                return (
+                    <Tooltip id="progress-tooltip">
+                        <div style={{ fontSize: "12px" }}>
+                            In Progress: {completed} of {total} issues
+                        </div>
+                    </Tooltip>
+                );
+            case "pending":
+                return (
+                    <Tooltip id="progress-tooltip">
+                        <div style={{ fontSize: "12px" }}>
+                            Pending: {completed} of {total} issues
+                        </div>
+                    </Tooltip>
+                );
+            default:
+                return null;
         }
     };
 
@@ -190,8 +292,8 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
                         rows={3}
                         placeholder="Edit description"
                     />
-                    <Button variant="success" className="mt-2" onClick={handleUpdateDescription}>
-                        Update Description
+                    <Button variant="primary" className="mt-2 float-right" onClick={handleUpdateDescription}>
+                        Save Description
                     </Button>
 
                     {/* Subtask Section */}
@@ -219,7 +321,72 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
                             </Col>
                         </Row>
 
+                        <Row className="align-items-center" style={{ marginBottom: "10px", display: "flex", alignItems: "center" }}>
+                            <Col md={10} style={{ alignItems: "center", justifyContent: "center", marginTop: "11px" }} >
+                                <div style={{ marginBottom: "10px" }}>
+                                    <div style={{ display: "flex", height: "10px", borderRadius: "5px", overflow: "hidden", border: "1px solid #ccc", width: "100%" }}>
+
+                                        {/* Thanh tiến độ - Completed */}
+                                        <OverlayTrigger
+                                            placement="bottom"
+                                            overlay={renderTooltip("completed", 1, 3)} // Giả sử 1 vấn đề hoàn thành trong tổng 3
+                                        >
+                                            <div
+                                                style={{
+                                                    width: `${completed}%`,
+                                                    backgroundColor: "green",
+                                                    transition: "width 0.5s ease",
+                                                }}
+                                            ></div>
+                                        </OverlayTrigger>
+
+                                        {/* Thanh tiến độ - In Progress */}
+                                        <OverlayTrigger
+                                            placement="bottom"
+                                            overlay={renderTooltip("inProgress", 2, 3)} // Giả sử 2 vấn đề đang trong tiến trình
+                                        >
+                                            <div
+                                                style={{
+                                                    width: `${inProgress}%`,
+                                                    backgroundColor: "blue",
+                                                    transition: "width 0.5s ease",
+                                                }}
+                                            ></div>
+                                        </OverlayTrigger>
+
+                                        {/* Thanh tiến độ - Pending */}
+                                        <OverlayTrigger
+                                            placement="bottom"
+                                            overlay={renderTooltip("pending", 0, 3)} // Giả sử 0 vấn đề đang chờ
+                                        >
+                                            <div
+                                                style={{
+                                                    width: `${pending}%`,
+                                                    backgroundColor: "gray",
+                                                    transition: "width 0.5s ease",
+                                                }}
+                                            ></div>
+                                        </OverlayTrigger>
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col md={2} style={{ display: "flex", alignItems: "center" }}>
+                                <span
+                                    style={{
+                                        fontSize: "14px",
+                                        fontWeight: "bold",
+                                        color: "green",
+                                        textAlign: "start",
+                                        margin: "0",
+                                    }}
+                                >
+                                    Completed: {Math.round(completed)}%
+                                </span>
+                            </Col>
+                        </Row>
+
                         <div style={{ overflowY: "auto", maxHeight: "300px", border: "1px solid black", borderRadius: "10px" }}>
+
                             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                                 {subTasks && subTasks.length > 0 ? (
                                     subTasks.map((subtask) => (
@@ -329,7 +496,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
                                 <Button variant="success" onClick={addComment} style={{ margin: "none", height: "38px" }}>Save</Button>
                                 <Button variant="secondary" onClick={() => setNewComment("")} style={{ margin: "none", height: "38px" }}>Cancel</Button>
                             </Col>
-
+                            <h>đây là user id: {user._id}</h>
                         </Row>
 
                     )}

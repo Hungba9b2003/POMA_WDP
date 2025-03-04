@@ -85,8 +85,7 @@ const changePassword = async (req, res, next) => {
 };
 const changeStatus = async (req, res, next) => {
   try {
-    const userId = req.payload.id; // Lấy ID từ URL
-    const { status } = req.body;
+    const { userId, status } = req.body;
     // Danh sách trạng thái hợp lệ
     const validStatuses = ["inactive", "active", "banned"];
     if (!validStatuses.includes(status)) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { FaUsers, FaTasks } from 'react-icons/fa';
 import { TbWorld } from "react-icons/tb";
 import { GrWorkshop } from "react-icons/gr";
@@ -10,7 +10,7 @@ const Sidebar = () => {
     const location = useLocation();
     const { projectId } = useParams();
     const [project, setProject] = useState(null);
-
+    const navigate = useNavigate();
     //console.log("Project ID from URL:", projectId);
 
     const menuItems = projectId
@@ -45,7 +45,14 @@ const Sidebar = () => {
     }
 
 
+
+    const handleGoToPro = () => {
+        // Điều hướng đến trang nâng cấp
+        navigate(`/project/${project._id}/membership`);
+    };
+
     return (
+
         <div className="d-flex flex-column vh-100 p-3" style={{ width: '250px', borderRight: '1px solid #ccc' }}>
             <h4 className="text-dark text-center mb-4">
                 {project.projectName}
@@ -63,8 +70,24 @@ const Sidebar = () => {
                 ))}
             </nav>
             <Card className="mt-auto p-3 text-center" style={{ background: 'linear-gradient(135deg, #A855F7, #EC4899)', color: 'white' }}>
-                <p className="mb-1">Upgrade to PRO to get access all features!</p>
-                <button className="btn btn-light btn-sm">Get Pro Now!</button>
+                {project.isPremium ? (
+                    // Nếu project đã premium
+                    <>
+                        <p className="mb-1">Project already premium</p>
+                        <button className="btn btn-light btn-sm">
+                            💎
+                        </button>
+                    </>
+
+                ) : (
+                    // Nếu project chưa premium
+                    <>
+                        <p className="mb-1">Upgrade to PRO to get access all features!</p>
+                        <button className="btn btn-light btn-sm" onClick={handleGoToPro}>
+                            Go to Pro
+                        </button>
+                    </>
+                )}
             </Card>
             <div className="d-flex align-items-center gap-2 mt-3">
                 <img src="https://placehold.co/40" alt="avatar" className="rounded-circle" />
@@ -74,6 +97,7 @@ const Sidebar = () => {
                 </div>
             </div>
         </div>
+
     );
 };
 

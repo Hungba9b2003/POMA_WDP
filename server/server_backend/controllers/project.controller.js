@@ -16,7 +16,7 @@ function generateProjectCode(length = 6) {
 async function createProject(req, res, next) {
     try {
         const { projectName } = req.body;
-        const { id } = req.body;//payload
+        const { id } = req.body;
         const projectCode = generateProjectCode();
         const existingProject = await db.Projects.findOne({ projectName });
         if (existingProject) {
@@ -60,7 +60,7 @@ async function createProject(req, res, next) {
 
 async function getAllProjects(req, res, next) {
     try {
-        const { id } = req.body;//payload
+        const { id } = req.body;
         const projects = await db.Projects.find({ members: { $elemMatch: { _id: id } } });
         if (!projects) {
             throw createHttpErrors(404, "Project not found")
@@ -165,6 +165,26 @@ async function deleteProject(req, res, next) {
         next(error);
     }
 }
+
+
+const updateProjectStatus = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const project = await db.Projects.findById(projectId);
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        project.status = project.status === "active" ? "inactive" : "active";
+        await project.save();
+
+        res.status(200).json({ message: "Project status updated successfully", project });
+    } catch (error) {
+        console.error("Error updating project status:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 
 async function getProjectMembers(req, res, next) {
     try {
@@ -341,8 +361,7 @@ async function getInviteMembers(req, res, next) {
 
 async function updatePremium(req, res, next) {
     try {
-        const { projectId } = req.params;
-        const { status } = req.body;
+        const { status, projectId } = req.body;
 
         // Kiểm tra đầu vào
         if (status != 1) {
@@ -368,20 +387,68 @@ async function updatePremium(req, res, next) {
         res.status(500).json({ message: "Internal Server Error" });
     }
 }
+const countProjects = async (req, res, next) => {
+    try {
+        const totalProjects = await db.Projects.countDocuments(); // Đếm tất cả dự án
 
+        res.status(200).json({ success: true, totalProjects });
+    } catch (error) {
+        console.error("Error counting projects:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
 
+const countPremiumProjects = async (req, res, next) => {
+    try {
+        const premiumProjects = await db.Projects.countDocuments({ isPremium: true }); // Đếm dự án có Premium
+
+        res.status(200).json({ success: true, premiumProjects });
+    } catch (error) {
+        console.error("Error counting premium projects:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+const leaveProjects = async (req, res, next) => {
+    try {
+        const { userId, projectId } = req.body;
+
+        const project = await db.Projects.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ success: false, message: "Project not found" });
+        }
+
+        // Kiểm tra xem user có trong nhóm
+        const memberIndex = project.members.findIndex(member => member._id.toString() === userId);
+        if (memberIndex === -1) {
+            return res.status(400).json({ success: false, message: "User is not in this project" });
+        }
+
+        // Xóa user khỏi danh sách members
+        project.members.splice(memberIndex, 1);
+        await project.save();
+
+        res.status(200).json({ success: true, message: "Left the project successfully" });
+    } catch (error) {
+        console.error("Error leaving project:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
 const ProjectController = {
     createProject,
     getAllProjects,
     getProjectById,
     updateProject,
     deleteProject,
+    updateProjectStatus,
     getProjectMembers,
     setProjectMemberRole,
     deleteProjectMember,
     getUserRole,
     updatePremium,
-    getInviteMembers
+    getInviteMembers,
+    countProjects,
+    countPremiumProjects,
+    leaveProjects,
 }
 
 module.exports = ProjectController

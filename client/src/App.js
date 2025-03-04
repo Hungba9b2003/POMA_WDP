@@ -16,19 +16,26 @@ import Landing from "./Pages/LandingPage";
 import Workspace from "./Components/Project/Workspace";
 import ListTask from "./Components/Project/ListTask";
 import { AppContext } from "./Context/AppContext";
+import Header from "./Components/Utils/Header";
+import ListProject from "./Components/Project/ListProject";
 import MemberList from "./Components/Project/MemberList";
+import Payment from "./Components/CheckOut/Payment";
+import BuyMembership from "./Components/Project/BuyMembership";
 
 const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
 
   return (
-    <div className="d-flex">
-      {showSidebar && <Sidebar />}
-      <div className="flex-grow-1 overflow-auto">
-        <Outlet /> {/* Đảm bảo render các route con tại đây */}
+    <>
+      <Header />
+      <div className="d-flex">
+        {showSidebar && <Sidebar />}
+        <div className="flex-grow-1 overflow-auto">
+          <Outlet /> {/* Đảm bảo render các route con tại đây */}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -65,6 +72,14 @@ function App() {
           <Route path="workspace" element={<Workspace />} />
           <Route path="listTask" element={<ListTask />} />
           <Route path="members" element={<MemberList />} />
+          <Route path="membership" element={<BuyMembership />} />
+          <Route path="membership/checkOut" element={<Payment />} />
+        </Route>
+      )}
+
+      {(accessToken || accessToken2) && (
+        <Route path="/" element={<Layout />}>
+          <Route path="listProject" element={<ListProject />} />
         </Route>
       )}
 
