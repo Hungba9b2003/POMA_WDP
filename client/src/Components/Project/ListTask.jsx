@@ -22,6 +22,11 @@ const ListTask = () => {
             console.error("Error fetching tasks", error);
         }
     };
+    const handleTaskUpdate = (updatedTask) => {
+        setTasks(prevTasks =>
+            prevTasks.map(task => (task._id === updatedTask._id ? updatedTask : task))
+        );
+    };
 
     const handleTaskClick = (task) => {
         setSelectedTask(task);
@@ -64,9 +69,11 @@ const ListTask = () => {
                 <TaskDetail
                     task={selectedTask}
                     showModal={showModal}
-                    onClose={handleCloseModal} // Pass close function to modal
+                    onClose={handleCloseModal}
+                    onUpdateTask={handleTaskUpdate} // Thêm hàm cập nhật task
                 />
             )}
+
         </div>
     );
 };

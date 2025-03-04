@@ -169,7 +169,7 @@ async function deleteProject(req, res, next) {
 
 const updateProjectStatus = async (req, res) => {
     try {
-        const { projectId } = req.params; 
+        const { projectId } = req.params;
         const project = await db.Projects.findById(projectId);
 
         if (!project) {
@@ -361,8 +361,7 @@ async function getInviteMembers(req, res, next) {
 
 async function updatePremium(req, res, next) {
     try {
-        const { projectId } = req.params;
-        const { status } = req.body;
+        const { status, projectId } = req.body;
 
         // Kiểm tra đầu vào
         if (status != 1) {
@@ -432,7 +431,7 @@ const leaveProjects = async (req, res, next) => {
     } catch (error) {
         console.error("Error leaving project:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
-    } 
+    }
 };
 const ProjectController = {
     createProject,

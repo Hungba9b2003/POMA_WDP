@@ -17,11 +17,11 @@ projectRouter.post(
 )
 //lấy toàn bộ dự án của user
 projectRouter.post(
-    "/get-project", ProjectController.getAllProjects, )
+    "/get-project", AuthMiddleware.verifyAccessToken, ProjectController.getAllProjects,)
 
 // tìm dự án
 projectRouter.get(
-    "/:projectId/get-project", ProjectController.getProjectById
+    "/:projectId/get-project", AuthMiddleware.verifyAccessToken, ProjectController.getProjectById
 )
 // chỉnh sửa thông tin dự án chỉ đinh
 projectRouter.put(
@@ -42,7 +42,7 @@ projectRouter.post("/:projectId/invite");
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
 projectRouter.get(
-    "/:projectId/get-member", ProjectController.getProjectMembers
+    "/:projectId/get-member", AuthMiddleware.verifyAccessToken, ProjectController.getProjectMembers
 )
 // set group member role
 projectRouter.put("/:projectId/member/:memberId/set-role", ProjectController.setProjectMemberRole);
@@ -71,32 +71,32 @@ projectRouter.delete("/:projectId/tasks/:taskId/delete", TaskController.deleteTa
 //Subtask bên trong Task có list subtask, xem model nếu không rõ
 
 //lấy subtask
-projectRouter.get("/:projectId/tasks/:taskId/subTasks/get-all", TaskController.getAllSubTasks);
+projectRouter.get("/:projectId/tasks/:taskId/subTasks/get-all", AuthMiddleware.verifyAccessToken, TaskController.getAllSubTasks);
 // tạo subtas
-projectRouter.post("/:projectId/tasks/:taskId/subTasks/create", TaskController.addSubTask);
+projectRouter.post("/:projectId/tasks/:taskId/subTasks/create", AuthMiddleware.verifyAccessToken, TaskController.addSubTask);
 // chỉnh sửa subtask
-projectRouter.put("/:projectId/tasks/:taskId/subTasks/:subTaskId/edit", TaskController.editSubTask);
+projectRouter.put("/:projectId/tasks/:taskId/subTasks/:subTaskId/edit", AuthMiddleware.verifyAccessToken, TaskController.editSubTask);
 // xoá subtask
-projectRouter.delete("/:projectId/tasks/:taskId/subTasks/:subTaskId/delete", TaskController.deleteSubTask);
+projectRouter.delete("/:projectId/tasks/:taskId/subTasks/:subTaskId/delete", AuthMiddleware.verifyAccessToken, TaskController.deleteSubTask);
 
 // Lấy tất cả comment của task trong project
 projectRouter.get(
-    "/:projectId/tasks/:taskId/comments/get-all", TaskController.getAllComments
+    "/:projectId/tasks/:taskId/comments/get-all", AuthMiddleware.verifyAccessToken, TaskController.getAllComments
 );
 
 // Thêm comment vào task trong project
 projectRouter.post(
-    "/:projectId/tasks/:taskId/comments/create", TaskController.addComment
+    "/:projectId/tasks/:taskId/comments/create", AuthMiddleware.verifyAccessToken, TaskController.addComment
 );
 
 // Sửa comment trong task của project
 projectRouter.put(
-    "/:projectId/tasks/:taskId/comments/:commentId/edit", TaskController.editComment
+    "/:projectId/tasks/:taskId/comments/:commentId/edit", AuthMiddleware.verifyAccessToken, TaskController.editComment
 );
 
 // Xóa comment trong task của project
 projectRouter.delete(
-    "/:projectId/tasks/:taskId/comments/:commentId/delete", TaskController.deleteComment
+    "/:projectId/tasks/:taskId/comments/:commentId/delete", AuthMiddleware.verifyAccessToken, TaskController.deleteComment
 );
 
 projectRouter.get("/:projectId/inviteMember", ProjectController.getInviteMembers);
