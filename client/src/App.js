@@ -80,6 +80,7 @@ function App() {
       {(accessToken || accessToken2) && (
         <Route path="/" element={<Layout />}>
           <Route path="listProject" element={<ListProject />} />
+          <Route path="projectStored" element={<ProjectStored />} />
         </Route>
       )}
 
