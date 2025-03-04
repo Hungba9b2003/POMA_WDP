@@ -1,52 +1,48 @@
 const express = require("express");
-const { upload } = require("./../controllers/upload");
+const { upload, deleteImage } = require("./../controllers/upload");
 
 const router = express.Router();
 
-// API Upload ảnh
-router.post("/upload", (req, res, next) => {
-  console.log('Files:', req.files);
-  console.log('Body:', req.body);
-  console.log('Headers:', req.headers);
-  
-  upload.single("image")(req, res, function(err) {
-    if (err) {
-      console.error('Upload error:', err);
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-        error: err
-      });
+// Hàm lấy đúng đường dẫn file từ Cloudinary URL
+function getImageNameFromUrl(url) {
+  if (!url) return null;
+  const parts = url.split("/");
+  return `${parts[parts.length - 2]}/${parts[parts.length - 1].split(".")[0]}`;
+}
+
+router.post("/upload", async (req, res) => {
+  try {
+    const oldAvatar = req.body.oldAvatar;
+    console.log("oldAvatar" + oldAvatar);
+    if (oldAvatar) {
+      const imageName = getImageNameFromUrl(oldAvatar);
+      if (imageName) {
+        console.log("Deleting old image:", imageName);
+        await deleteImage(imageName);
+      }
     }
-    
-    try {
+
+    upload.single("image")(req, res, function (err) {
+      if (err) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+
       if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: "Vui lòng upload file ảnh!",
-        });
+        return res
+          .status(400)
+          .json({ success: false, message: "No file uploaded!" });
       }
 
       res.json({
         success: true,
-        message: "Upload ảnh thành công!",
-        imageUrl: req.file.path,
-        // Thêm thông tin chi tiết về file nếu cần
-        fileDetails: {
-          filename: req.file.originalname,
-          size: req.file.size,
-          mimetype: req.file.mimetype,
-        },
+        message: "Upload successful!",
+        imageUrl: req.file.path, // Cloudinary URL
       });
-    } catch (error) {
-      console.error("Lỗi upload:", error);
-      res.status(500).json({
-        success: false,
-        message: "Upload thất bại!",
-        error: error.message,
-      });
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ success: false, message: "Upload failed!" });
+  }
 });
 
 module.exports = router;
