@@ -69,7 +69,7 @@ const Header = () => {
 
   return (
     <>
-      <Navbar expand="lg" className="px-4 py-2" style={{ backgroundColor: "#F5A9A9" }}>
+      <Navbar expand="lg" className="px-4 py-2" style={{ background: 'linear-gradient(to right,rgb(248, 218, 219),rgb(248, 159, 175))' }}>
         <Container fluid>
           {/* Logo */}
           <Navbar.Brand href="/" className="fs-3 fw-bold">
