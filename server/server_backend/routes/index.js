@@ -7,5 +7,5 @@ module.exports = {
   projectRouter,
   userRouter,
   authenticationRouter,
-  paymentRouter
+  paymentRouter,
 };
