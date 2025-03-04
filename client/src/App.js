@@ -18,6 +18,7 @@ import ListTask from "./Components/Project/ListTask";
 import { AppContext } from "./Context/AppContext";
 import Header from "./Components/Utils/Header";
 import ListProject from "./Components/Project/ListProject";
+import ProjectStored from "./Components/Project/ProjectStored";
 
 const Layout = () => {
   const location = useLocation();
@@ -74,6 +75,7 @@ function App() {
       {(accessToken || accessToken2) && (
         <Route path="/" element={<Layout />}>
           <Route path="listProject" element={<ListProject />} />
+          <Route path="projectStored" element={<ProjectStored />} />
         </Route>
       )}
 

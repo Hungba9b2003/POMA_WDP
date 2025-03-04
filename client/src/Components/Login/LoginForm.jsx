@@ -72,7 +72,7 @@ function LoginForm() {
         console.log(result);
         setTimeout(() => {
           setShowSuccessAlert(false);
-          navigate("/home");
+          navigate("/");
         }, 2000);
       } else {
         setMessage("Login failed");
