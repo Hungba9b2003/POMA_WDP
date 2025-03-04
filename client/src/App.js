@@ -16,6 +16,7 @@ import Landing from "./Pages/LandingPage";
 import Workspace from "./Components/Project/Workspace";
 import ListTask from "./Components/Project/ListTask";
 import { AppContext } from "./Context/AppContext";
+import MemberList from "./Components/Project/MemberList";
 
 const Layout = () => {
   const location = useLocation();
@@ -63,6 +64,7 @@ function App() {
         <Route path="/project/:projectId/*" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
           <Route path="listTask" element={<ListTask />} />
+          <Route path="members" element={<MemberList />} />
         </Route>
       )}
 

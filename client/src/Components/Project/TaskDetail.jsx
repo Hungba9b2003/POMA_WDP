@@ -3,7 +3,7 @@ import { Modal, Button, Form, Col, Row, Image } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const TaskDetail = ({ task, showModal, onClose }) => {
+const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     const [user, setUser] = useState(null);
     const [newComment, setNewComment] = useState("");
     const [comments, setComments] = useState(task.comments || []);  // Use task.comments directly
@@ -11,6 +11,7 @@ const TaskDetail = ({ task, showModal, onClose }) => {
     const [subTasks, setSubTasks] = useState(task.subTasks || []);  // Use task.subTasks directly
     const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
     const [subTaskName, setSubTaskName] = useState("");
+    const [taskDescription, setTaskDescription] = useState(task.description || "");
     const { projectId } = useParams();  // Get project ID from params
 
     useEffect(() => {
@@ -81,6 +82,18 @@ const TaskDetail = ({ task, showModal, onClose }) => {
         } catch (error) {
             console.error("Error fetching subtasks", error);
             setSubTasks([]);  // Fallback to empty array if an error occurs
+        }
+    };
+
+    const handleUpdateDescription = async () => {
+        try {
+            const { data } = await axios.put(
+                `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+                { description: taskDescription }
+            );
+            onUpdateTask(data); // Gọi hàm cập nhật task trong ListTask
+        } catch (error) {
+            console.error("Error updating description", error);
         }
     };
 
@@ -156,6 +169,11 @@ const TaskDetail = ({ task, showModal, onClose }) => {
         }
     };
 
+    useEffect(() => {
+        setTaskDescription(task.description || "");
+    }, [task]);
+
+
     return (
         <Modal show={showModal} onHide={onClose} size="xl">
             <Modal.Header closeButton>
@@ -167,12 +185,14 @@ const TaskDetail = ({ task, showModal, onClose }) => {
                     <p>Description:</p>
                     <Form.Control
                         as="textarea"
-                        value={task.description}
-                        onChange={(e) => (task.description = e.target.value)}
+                        value={taskDescription}
+                        onChange={(e) => setTaskDescription(e.target.value)}
                         rows={3}
                         placeholder="Edit description"
                     />
-                    <Button variant="success" className="mt-2">Update Description</Button>
+                    <Button variant="success" className="mt-2" onClick={handleUpdateDescription}>
+                        Update Description
+                    </Button>
 
                     {/* Subtask Section */}
                     <div>
