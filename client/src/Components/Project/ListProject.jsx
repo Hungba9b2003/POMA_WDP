@@ -24,13 +24,17 @@ const ListProject = () => {
 
   useEffect(() => {
     axios
-    .post("http://localhost:9999/projects/get-project", { id })
-    .then((res) => {
-      const allProjects = res.data;
-      setProjects(allProjects.filter(project => project.status === "active"));
-    })
-    .catch((err) => console.error("Error fetching projects:", err));
-}, [id]);
+      .post("http://localhost:9999/projects/get-project", { id }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        const allProjects = res.data;
+        setProjects(allProjects.filter(project => project.status === "active"));
+      })
+      .catch((err) => console.error("Error fetching projects:", err));
+  }, [id]);
 
   const filteredProjects = projects.filter((project) =>
     project.projectName.toLowerCase().includes(search.toLowerCase())
@@ -39,7 +43,7 @@ const ListProject = () => {
   const handleWorkspace = (projectId) => {
     navigate(`/project/${projectId}/workspace`);
   };
-  
+
 
   return (
     <div className="p-4">

@@ -39,7 +39,7 @@ app.post('/payment', async (req, res) => {
 
     // Tiếp tục xử lý thanh toán như trước
     const amount = 5075140;
-    const embed_data = { redirecturl: `http://localhost:3000/projects/${projectId}` };
+    const embed_data = { redirecturl: `http://localhost:3000/project/${projectId}` };
     const items = [];
     const transID = Math.floor(Math.random() * 1000000);
 
@@ -51,7 +51,7 @@ app.post('/payment', async (req, res) => {
         item: JSON.stringify(items),
         embed_data: JSON.stringify(embed_data),
         amount,
-        callback_url: 'https://0655-118-70-211-234.ngrok-free.app',
+        callback_url: 'https://19be-42-119-222-133.ngrok-free.app/callback',
         description: `POMA - Payment for the order #${transID}`,
         bank_code: ''
     };
@@ -77,6 +77,8 @@ app.post('/payment', async (req, res) => {
 app.post('/callback', async (req, res) => {
     let result = {};
     try {
+        const status = 1;
+
         let dataStr = req.body.data;
         let reqMac = req.body.mac;
         let mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
@@ -87,24 +89,24 @@ app.post('/callback', async (req, res) => {
         } else {
             let dataJson = JSON.parse(dataStr);
             const projectId = JSON.parse(dataJson.embed_data).redirecturl.split('/').pop();
-
             // Gọi API updatePremium với token được lưu từ trước
             await axios.post(
-                'http://localhost:9999/groups/updatePremium',
-                { _id: projectId, isPremium: true },
-                // {
-                //     headers: {
-                //         Authorization: storedToken,
-                //     },
-                // }
+                `http://localhost:9999/projects/${projectId}/updatePremium`,
+                JSON.stringify({ status, projectId }),
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
+
             console.log(`Cập nhật project ${projectId} thành Premium`);
 
             result.return_code = 1;
             result.return_message = 'success';
         }
     } catch (ex) {
-        console.log('lỗi:::' + ex.message);
+        console.log('lỗi:' + ex.message);
         result.return_code = 0;
         result.return_message = ex.message;
     }
