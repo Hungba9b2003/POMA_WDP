@@ -195,6 +195,22 @@ const confirmInvite = async (req, res, next) => {
   }
 };
 
+const getUser = async (req, res, next) => {
+  try {
+    const { assignee } = req.query;  // Truy cập từ req.query thay vì req.body
+    const user = await db.Users.findById(assignee);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -203,4 +219,5 @@ module.exports = {
   getAllUser,
   joinByCode,
   confirmInvite,
+  getUser
 };

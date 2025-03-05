@@ -3,6 +3,7 @@ import { Table, Button } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import TaskDetail from "./TaskDetail.jsx";  // Import TaskDetail component
+import { jwtDecode } from "jwt-decode";
 
 const ListTask = () => {
     const { projectId } = useParams();
@@ -10,13 +11,31 @@ const ListTask = () => {
     const [selectedTask, setSelectedTask] = useState(null);
     const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    let id = null;
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            id = decoded?.id || null;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    }
+
     useEffect(() => {
         fetchTasks();
     }, [projectId]);
 
     const fetchTasks = async () => {
         try {
-            const response = await axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`);
+            const response = await axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             setTasks(response.data);
         } catch (error) {
             console.error("Error fetching tasks", error);
@@ -56,7 +75,7 @@ const ListTask = () => {
                         <tr key={task._id}>
                             <td>{index + 1}</td>
                             <td>{task.taskName}</td>
-                            <td>{task.assignee?.name || "Unassigned"}</td>
+                            <td>{task.assignee?.username || "Unassigned"}</td>
                             <td>{task.status}</td>
                             <td>
                                 <Button variant="info" onClick={() => handleTaskClick(task)}>View</Button>

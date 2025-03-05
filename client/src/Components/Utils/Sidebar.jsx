@@ -4,6 +4,7 @@ import { FaUsers, FaTasks } from 'react-icons/fa';
 import { TbWorld } from "react-icons/tb";
 import { GrWorkshop } from "react-icons/gr";
 import { Card } from 'react-bootstrap';
+import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
 
 const Sidebar = () => {
@@ -13,6 +14,18 @@ const Sidebar = () => {
     const navigate = useNavigate();
     //console.log("Project ID from URL:", projectId);
 
+
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    let id = null;
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            id = decoded?.id || null;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    }
     const menuItems = projectId
         ? [
             { path: `/project/${projectId}/summary`, label: 'Summary', icon: <TbWorld /> },
@@ -29,10 +42,16 @@ const Sidebar = () => {
         const fetchProjectInfo = async () => {
             try {
                 //console.log(`Fetching project: ${projectId}`);
-                const response = await axios.get(`http://localhost:9999/projects/${projectId}/get-project`);
-                setProject(response.data.project); // Cập nhật project state
+                const response = await axios.get(`http://localhost:9999/projects/${projectId}/get-project`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                setProject(response.data.project);
             } catch (error) {
-                //console.error("Error fetching project info:", error);
+                console.error("Error fetching project info:", error);
             }
         };
 
@@ -53,7 +72,8 @@ const Sidebar = () => {
 
     return (
 
-        <div className="d-flex flex-column vh-100 p-3" style={{ width: '250px', borderRight: '1px solid #ccc' }}>
+        <div className="d-flex flex-column" style={{ width: '250px', height: '100vh', borderRight: '1px solid #ccc', backgroundColor: 'lightgray', zIndex: 999 }}>
+
             <h4 className="text-dark text-center mb-4">
                 {project.projectName}
                 {project.isPremium && <span className="ms-2" style={{ color: 'gold' }}>💎</span>}

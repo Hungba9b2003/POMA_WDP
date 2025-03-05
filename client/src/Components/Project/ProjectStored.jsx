@@ -24,7 +24,13 @@ const ProjectStored = () => {
 
     useEffect(() => {
         axios
-            .post("http://localhost:9999/projects/get-project", { id })
+            .post("http://localhost:9999/projects/get-project", { id },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
             .then((res) => {
                 const allProjects = res.data;
                 setProjects(allProjects.filter(project => project.status === "inactive"));
@@ -38,7 +44,13 @@ const ProjectStored = () => {
 
     const handleChangeStatus = async (projectId) => {
         try {
-            const response = await axios.put(`http://localhost:9999/projects/update-status/${projectId}`);
+            const response = await axios.put(`http://localhost:9999/projects/update-status/${projectId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             setProjects((prevProjects) =>
                 prevProjects.map((project) =>
                     project._id === projectId
@@ -48,7 +60,7 @@ const ProjectStored = () => {
             );
             if (response.data) {
                 alert("Cập nhật trạng thái thành công!");
-                window.location.reload(); 
+                window.location.reload();
             }
         } catch (error) {
             console.error("Lỗi khi cập nhật trạng thái:", error);
