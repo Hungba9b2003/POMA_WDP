@@ -75,7 +75,9 @@ function App() {
         </Route>
       )}
 
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Landing />} />
+      </Route>
       <Route path="/project" element={<Layout />}>
         <Route path="summary" element={<Summary />} />
       </Route>

@@ -10,7 +10,8 @@ const ListProject = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
   let id = null;
   if (token) {
@@ -24,14 +25,12 @@ const ListProject = () => {
 
   useEffect(() => {
     axios
-      .post("http://localhost:9999/projects/get-project", { id }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .post("http://localhost:9999/projects/get-project", { id })
       .then((res) => {
         const allProjects = res.data;
-        setProjects(allProjects.filter(project => project.status === "active"));
+        setProjects(
+          allProjects.filter((project) => project.status === "active")
+        );
       })
       .catch((err) => console.error("Error fetching projects:", err));
   }, [id]);
@@ -44,24 +43,30 @@ const ListProject = () => {
     navigate(`/project/${projectId}/workspace`);
   };
 
-
   return (
     <div className="p-4">
       <Row className="d-flex justify-content-between align-items-center">
-        <Col><h2 className="mb-3">Projects</h2></Col>
+        <Col>
+          <h2 className="mb-3">Projects</h2>
+        </Col>
         <Col className="text-end">
           <Dropdown>
-            <Dropdown.Toggle variant="light" id="dropdown-menu" >
+            <Dropdown.Toggle variant="light" id="dropdown-menu">
               <AiOutlineMenu size={30} />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => console.log("Join by Code Clicked")}>Join by Code</Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("/projectStored")}>Project Stored</Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => console.log("Join by Code Clicked")}
+              >
+                Join by Code
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/projectStored")}>
+                Project Stored
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Col>
       </Row>
-
 
       {/* Ô tìm kiếm */}
       <input
@@ -76,7 +81,10 @@ const ListProject = () => {
         {filteredProjects.length > 0 ? (
           filteredProjects.map((project) => (
             <div className="col-md-3 mb-3" key={project._id}>
-              <div className="card shadow-sm" onClick={() => handleWorkspace(project._id)}>
+              <div
+                className="card shadow-sm"
+                onClick={() => handleWorkspace(project._id)}
+              >
                 <img
                   src={project.projectAvatar || "default-avatar.png"}
                   alt="Avatar"
@@ -84,9 +92,17 @@ const ListProject = () => {
                   style={{ height: "90px", objectFit: "cover" }}
                 />
                 <div className="card-body">
-                  <h5 className="card-title">{project.projectName} {project.isPremium ? "💎" : ""}</h5>
-                  <p className="card-text">Project Code: {project.projectCode}</p>
-                  <span className={`badge ${project.isPremium ? "bg-warning" : "bg-secondary"}`}>
+                  <h5 className="card-title">
+                    {project.projectName} {project.isPremium ? "💎" : ""}
+                  </h5>
+                  <p className="card-text">
+                    Project Code: {project.projectCode}
+                  </p>
+                  <span
+                    className={`badge ${
+                      project.isPremium ? "bg-warning" : "bg-secondary"
+                    }`}
+                  >
                     {project.isPremium ? "Premium" : "Free"}
                   </span>
                 </div>

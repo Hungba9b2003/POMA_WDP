@@ -35,15 +35,33 @@ const Header = () => {
   }
 
   useEffect(() => {
-    if (token && id && !userInfo) {
-      axios
-        .post("http://localhost:9999/users/get-profile", { id })
-        .then((response) => setUserInfo(response.data))
-        .catch((error) =>
-          console.error("Error fetching user information:", error)
-        );
+    if (token) {
+      const fetchUserInfo = async () => {
+        try {
+          const response = await axios.get(
+            "http://localhost:9999/users/get-profile",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          console.log(response.data);
+          setUserInfo(response.data);
+        } catch (error) {
+          console.error("Lỗi khi lấy thông tin người dùng:", error);
+          if (error.response) {
+            console.error("Lỗi phản hồi:", error.response);
+          } else if (error.request) {
+            console.error("Lỗi yêu cầu:", error.request);
+          } else {
+            console.error("Thông báo lỗi:", error.message);
+          }
+        }
+      };
+      fetchUserInfo();
     }
-  }, [token, id, userInfo]);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -63,6 +81,8 @@ const Header = () => {
         "http://localhost:9999/projects/create",
         { projectName, id }
       );
+
+      console.log(createResponse);
 
       if (createResponse.data) {
         setProjectName("");
@@ -160,10 +180,10 @@ const Header = () => {
                 <Dropdown.Menu>
                   <Dropdown.Header>{userInfo.username}</Dropdown.Header>
                   <Dropdown.Divider />
-                  <Dropdown.Item href="/view-profile">
+                  <Dropdown.Item href="/profile/profileInfo">
                     <FiUser /> Profile
                   </Dropdown.Item>
-                  <Dropdown.Item href="/change-password">
+                  <Dropdown.Item href="/profile/changePassword">
                     <FiKey /> Change password
                   </Dropdown.Item>
                   <Dropdown.Divider />

@@ -17,11 +17,11 @@ projectRouter.post(
 )
 //lấy toàn bộ dự án của user
 projectRouter.post(
-    "/get-project", AuthMiddleware.verifyAccessToken, ProjectController.getAllProjects,)
+    "/get-project",  ProjectController.getAllProjects,)
 
 // tìm dự án
 projectRouter.get(
-    "/:projectId/get-project", AuthMiddleware.verifyAccessToken, ProjectController.getProjectById
+    "/:projectId/get-project",  ProjectController.getProjectById
 )
 // chỉnh sửa thông tin dự án chỉ đinh
 projectRouter.put(
