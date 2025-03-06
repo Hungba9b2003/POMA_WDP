@@ -7,7 +7,6 @@ import { jwtDecode } from "jwt-decode";
 
 
 const Workspace = () => {
-    const { projectId } = useParams();
     const [columns, setColumns] = useState(["Pending", "In Progress", "Completed"]);
     const [tasks, setTasks] = useState([]);
     const { projectId } = useParams();
@@ -35,18 +34,16 @@ const Workspace = () => {
             .then(response => setTasks(response.data))
             .catch(error => console.error("Error fetching tasks:", error));
 
-        axios.get(`http://localhost:9999/projects/${projectId}`)
+        axios.get(`http://localhost:9999/projects/${projectId}/get-project`)
             .then(response => {
-                if (response.data.classifications) {
-                    setColumns(response.data.classifications);
+                if (response.data.project.classifications) {
+                    setColumns(response.data.project.classifications);
                 }
             })
             .catch(error => console.error("Error fetching project data:", error));
-    }, [projectId]);
+    }, [projectId, token, id]);
 
-    useEffect(() => {
-        fetchProjectData();
-    }, [fetchProjectData]);
+
 
     // Thêm cột mới
     const addColumn = useCallback(async () => {
@@ -56,7 +53,7 @@ const Workspace = () => {
         try {
             const response = await axios.put(`http://localhost:9999/projects/${projectId}/edit`, {
                 newColumn,
-                id: userId
+                id
             });
 
             setColumns(response.data.classifications);
@@ -64,7 +61,7 @@ const Workspace = () => {
             console.error("Error adding column:", error);
             alert("Failed to add column!");
         }
-    }, [projectId, userId]);
+    }, [projectId, id]);
 
     return (
         <Container fluid>
@@ -78,6 +75,7 @@ const Workspace = () => {
                                 tasks={tasks.filter(task => task.status === col)}
                                 setTasks={setTasks}
                                 projectId={projectId}
+                                setColumns={setColumns}  // ✅ Truyền hàm setColumns vào Column
                             />
                         </Col>
                     ))}
@@ -85,11 +83,12 @@ const Workspace = () => {
                         <Button variant="light" onClick={addColumn} className="mt-4">+</Button>
                     </Col>
                 </Row>
+
             </div>
         </Container>
     );
-    
-})}
+
+}
 
 
 export default Workspace;

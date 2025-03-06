@@ -26,19 +26,22 @@ const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
 
     const handleDeleteColumn = useCallback(async () => {
         if (!window.confirm(`Are you sure you want to delete column "${title}"?`)) return;
-
+    
         try {
             const response = await axios.put(`http://localhost:9999/projects/${projectId}/edit`, {
                 id,
-                classifications: title 
+                removeColumn: title 
             });
-
-            setColumns(response.data.classifications); // Cập nhật danh sách cột sau khi xóa
+    
+            if (response.data.classifications) {
+                setColumns(response.data.classifications); 
+            }
         } catch (error) {
             console.error("Error deleting column:", error);
             alert("Failed to delete column!");
         }
     }, [title, projectId, id, setColumns]);
+    
 
     return (
         <Card className="p-3">

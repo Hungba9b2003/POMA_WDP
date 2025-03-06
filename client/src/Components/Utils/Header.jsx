@@ -46,7 +46,6 @@ const Header = () => {
               },
             }
           );
-          console.log(response.data);
           setUserInfo(response.data);
         } catch (error) {
           console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -61,7 +60,7 @@ const Header = () => {
       };
       fetchUserInfo();
     }
-  }, []);
+  }, [token]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -81,8 +80,6 @@ const Header = () => {
         "http://localhost:9999/projects/create",
         { projectName, id }
       );
-
-      console.log(createResponse);
 
       if (createResponse.data) {
         setProjectName("");
