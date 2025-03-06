@@ -9,18 +9,28 @@ const createHttpErrors = require("http-errors");
 async function getAllTasks(req, res, next) {
     try {
         const { projectId } = req.params;
-        const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
-        if (!project) {
-            return res.status(404).json({ error: { status: 404, message: "Project not found" } })
 
+        // Lấy danh sách task từ project
+        const project = await db.Projects.findById(projectId).lean();
+        if (!project || !project.tasks.length) {
+            return res.status(404).json({ error: { status: 404, message: "No tasks found" } });
         }
-        const { tasks } = project;
-        res.status(200).json(tasks)
 
+        // Populate dữ liệu trong task
+        const tasks = await db.Tasks.find({ _id: { $in: project.tasks } })
+            .populate("assignee", "username profile.avatar") // Lấy thông tin người thực hiện
+            .populate("reviewer", "username profile.avatar") // Lấy thông tin người review
+            .populate("comments.user", "username profile.avatar") // Lấy thông tin user trong comments
+            .populate("subTasks.assignee", "username profile.avatar") // Lấy thông tin user của subTasks
+            .lean(); // Chuyển đổi sang object thường
+
+        res.status(200).json(tasks);
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
+
+
 
 async function createTask(req, res, next) {
     try {
@@ -146,6 +156,7 @@ async function addSubTask(req, res, next) {
     try {
         const { id } = req.body;
         const { projectId, taskId } = req.params;
+        assigneeSubTask = req.payload.id
         const project = await db.Projects.findOne({ _id: projectId }).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
@@ -163,7 +174,7 @@ async function addSubTask(req, res, next) {
         const newSubTask = {
             subTaskNumber: task.subTasks.length + 1,
             subTaskName: req.body.subTaskName,
-            assignee: id,
+            assignee: assigneeSubTask,
             description: req.body.description,
             priority: "Low",
             status: "Pending"
@@ -292,46 +303,62 @@ async function getAllComments(req, res, next) {
     try {
         const { projectId, taskId } = req.params;
 
-        const project = await db.Projects.findById(projectId).populate('tasks'); // Dùng populate để lấy các task
+        // Tìm project và populate các tasks
+        const project = await db.Projects.findById(projectId).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
+        // Tìm task trong project
         const task = project.tasks.find(t => t._id.equals(taskId));
-        console.log(project.tasks);
         if (!task) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
-        const taskDetails = await db.Tasks.findById(taskId); // Lấy chi tiết của task từ task collection
+        // Tìm task chi tiết và populate thêm thông tin về user trong comments
+        const taskDetails = await db.Tasks.findById(taskId)
+            .populate({
+                path: 'comments.user', // Populate user trong comments
+                select: 'username profile.avatar', // Chỉ lấy username và avatar
+                model: 'user', // Đảm bảo rằng bạn đang populate từ model 'user'
+            });
+
+        // Trả về danh sách comments hoặc mảng rỗng nếu không có
         res.status(200).json(taskDetails.comments || []);
     } catch (error) {
+        console.error(error);
         next(error);
     }
 }
+
 
 // Thêm comment vào một task trong một project
 async function addComment(req, res, next) {
     try {
         const { projectId, taskId } = req.params;
         const { content } = req.body;
-        const userId = req.body.userId;
+        const userId = req.payload.id;
 
         if (!content?.trim()) {
             return res.status(400).json({ error: "Comment content is required" });
         }
 
+        // Tìm project và populate tasks
         const project = await db.Projects.findById(projectId).populate('tasks');
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
+        // Tìm task trong project
         const task = project.tasks.find(t => t._id.toString() == taskId);
         if (!task) {
             return res.status(404).json({ error: "Task not found in this project" });
         }
 
+        // Tạo comment mới
         const newComment = { user: userId, content, createdAt: new Date() };
+
+        // Cập nhật task và thêm comment mới
         const taskDetails = await db.Tasks.findByIdAndUpdate(
             taskId,
             { $push: { comments: newComment } },
@@ -342,7 +369,18 @@ async function addComment(req, res, next) {
             return res.status(404).json({ error: "Task not found" });
         }
 
-        res.status(201).json({ message: "Comment added successfully" });
+        // Populate 'user' trong comment để lấy thông tin người dùng
+        const populatedTask = await db.Tasks.findById(taskId)
+            .populate({
+                path: 'comments.user',
+                select: 'username profile.avatar', // Chọn các trường cần thiết
+                model: 'user',
+            });
+
+        res.status(201).json({
+            message: "Comment added successfully",
+            comments: populatedTask.comments, // Trả về các comments đã populate user
+        });
     } catch (error) {
         next(error);
     }

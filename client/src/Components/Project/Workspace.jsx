@@ -10,36 +10,38 @@ const Workspace = () => {
     const { projectId } = useParams();
     const [columns, setColumns] = useState(["Pending", "In Progress", "Completed"]);
     const [tasks, setTasks] = useState([]);
+    const { projectId } = useParams();
 
-    // Lấy token và decode ID
-    const getUserIdFromToken = () => {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        if (!token) return null;
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    let id = null;
+    if (token) {
         try {
-            return jwtDecode(token)?.id || null;
+            const decoded = jwtDecode(token);
+            id = decoded?.id || null;
         } catch (error) {
             console.error("Error decoding token:", error);
-            return null;
         }
-    };
+    }
 
-    const userId = getUserIdFromToken();
-
-    // Hàm lấy dữ liệu dự án và tasks
-    const fetchProjectData = useCallback(async () => {
-        try {
-            const [tasksRes, projectRes] = await Promise.all([
-                axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`),
-                axios.get(`http://localhost:9999/projects/${projectId}/get-project`)
-            ]);
-
-            setTasks(tasksRes.data);
-            if (projectRes.data.project?.classifications) {
-                setColumns(projectRes.data.project.classifications);
+    useEffect(() => {
+        axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             }
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        }
+        )
+            .then(response => setTasks(response.data))
+            .catch(error => console.error("Error fetching tasks:", error));
+
+        axios.get(`http://localhost:9999/projects/${projectId}`)
+            .then(response => {
+                if (response.data.classifications) {
+                    setColumns(response.data.classifications);
+                }
+            })
+            .catch(error => console.error("Error fetching project data:", error));
     }, [projectId]);
 
     useEffect(() => {
@@ -86,6 +88,8 @@ const Workspace = () => {
             </div>
         </Container>
     );
-};
+    
+})}
+
 
 export default Workspace;

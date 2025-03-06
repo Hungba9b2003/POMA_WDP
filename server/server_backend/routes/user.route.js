@@ -40,6 +40,12 @@ userRouter.post(
   UserController.confirmInvite
 );
 
+userRouter.get(
+  "/get-user",
+  //AuthMiddleware.verifyAccessToken,
+  UserController.getUser
+);
+
 //api cho admin
 //lấy danh sách người dùng
 
