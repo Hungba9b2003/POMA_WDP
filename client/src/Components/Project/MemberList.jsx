@@ -18,7 +18,7 @@ function MemberList() {
     const roles = ['member', 'viewer'];
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+    console.log(projectMembers)
     let id = null;
     if (token) {
         try {

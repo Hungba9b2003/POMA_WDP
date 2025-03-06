@@ -72,9 +72,9 @@ const Sidebar = () => {
 
     return (
 
-        <div className="d-flex flex-column" style={{ width: '250px', height: '100vh', borderRight: '1px solid #ccc', backgroundColor: 'lightgray', zIndex: 999 }}>
+        <div className="d-flex flex-column" style={{ width: '250px', height: '100vh', borderRight: '1px solid #ccc', backgroundColor: 'rgb(255, 228, 242)', zIndex: 999, padding: '10px' }}>
 
-            <h4 className="text-dark text-center mb-4">
+            <h4 className="text-dark text-center mb-4" style={{ borderBottom: '2px solid black' }}>
                 {project.projectName}
                 {project.isPremium && <span className="ms-2" style={{ color: 'gold' }}>💎</span>}
             </h4>

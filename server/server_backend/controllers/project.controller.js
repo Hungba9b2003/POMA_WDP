@@ -194,16 +194,17 @@ async function getProjectMembers(req, res, next) {
             .populate({
                 path: 'members._id',
                 model: 'user',
-                select: 'username'
             });
 
         if (!project) {
             throw createHttpErrors(404, "Project not found");
         }
+        console.log(project.members);
         const memberInfo = project.members.map(member => ({
             id: member._id ? member._id._id : null,
             name: member._id ? member._id.username : null,
-            role: member.role
+            role: member.role,
+            avatar: member._id ? member._id.profile.avatar : null
         }));
 
         res.status(200).json({ memberInfo });
