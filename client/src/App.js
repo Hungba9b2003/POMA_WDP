@@ -1,59 +1,100 @@
-import React, { useContext, useEffect } from "react";
-import { BrowserRouter, Router, Routes, Route } from "react-router-dom";
-import Login from "./Pages/Login";
-
+import React, { useContext, useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from "react-router-dom";
+import Login from "./Pages/LoginPage";
 import LoginForm from "./Components/Login/LoginForm";
-import "./App.css";
-import AppProvider, { AppContext } from "./Context/AppContext"; // Import AppContext
+import RegisterForm from "./Components/Login/RegisterForm";
+import ForgotPassword from "./Components/Login/ForgotPass";
+import ResetPassword from "./Components/Login/ResetPass";
+import Sidebar from "./Components/Utils/Sidebar";
+import VerifyRegister from "./Components/Login/VerifyRegister";
+import ProfilePage from "./Pages/ProfilePage";
+import ChangePassword from "./Components/Profile/ChangePassword";
+import EditProfile from "./Components/Profile/EditProfile";
+import ProfileInfo from "./Components/Profile/ProfileInfo";
+import ProtectedRoute from "./Components/Utils/ProtectedRoute";
+import Landing from "./Pages/LandingPage";
+import Workspace from "./Components/Project/Workspace";
+import ListTask from "./Components/Project/ListTask";
+import { AppContext } from "./Context/AppContext";
+import Header from "./Components/Utils/Header";
+import ListProject from "./Components/Project/ListProject";
+import MemberList from "./Components/Project/MemberList";
+import Payment from "./Components/CheckOut/Payment";
+import BuyMembership from "./Components/Project/BuyMembership";
+import ProjectStored from "./Components/Project/ProjectStored";
+
+const Layout = () => {
+  const location = useLocation();
+  const showSidebar = location.pathname.startsWith("/project");
+
+  return (
+    <>
+      <Header />
+      <div className="d-flex">
+        {showSidebar && <Sidebar />}
+        <div className="flex-grow-1 overflow-auto">
+          <Outlet /> {/* Đảm bảo render các route con tại đây */}
+        </div>
+      </div>
+    </>
+  );
+};
 
 function App() {
-  const { checkTokenExpiration } = useContext(AppContext); // Lấy hàm checkTokenExpiration từ context
-  const { accessToken } = useContext(AppContext);
+  const { checkTokenExpiration } = useContext(AppContext);
+  const [accessToken, setAccessToken] = useState(localStorage.getItem("token"));
+  const [accessToken2, setAccessToken2] = useState(sessionStorage.getItem("token"));
 
   useEffect(() => {
     checkTokenExpiration();
-
     const interval = setInterval(() => {
       checkTokenExpiration();
-    }, 60000); // check mỗi 1p
-
+    }, 60000);
     return () => clearInterval(interval);
   }, [checkTokenExpiration]);
 
   return (
-    <div className="App">
-      <Routes>
-        {!accessToken && (
-          <Route path="/login" element={<Login />}>
-            <Route path="loginForm" element={<LoginForm />} />
-            <Route path="registerForm" element={""} />
-            <Route path="forgotPass" element={""} />
-            <Route path="verifyAccount/:id/:token" element={""} />
-          </Route>
-        )}
-        <Route path="resetPassword/:id/:token" element={""} />
 
-        {accessToken && (
-          <Route path="/profile" element={""}>
-            <Route path="profileInfo" element={""} />
-            <Route path="editProfile" element={""} />
-            <Route path="changePassword" element={""} />
-          </Route>
-        )}
-      </Routes>
-    </div>
+    <Routes>
+      {!accessToken && !accessToken2 && (
+        <Route path="/login" element={<Login />}>
+          <Route path="loginForm" element={<LoginForm />} />
+          <Route path="registerForm" element={<RegisterForm />} />
+          <Route path="forgotPass" element={<ForgotPassword />} />
+          <Route path="verify/:id/:token" element={<VerifyRegister />} />
+          <Route path="resetPassword/:id/:token" element={<ResetPassword />} />
+        </Route>
+      )}
+
+      <Route path="/" element={<Landing />} />
+
+      {(accessToken || accessToken2) && (
+        <Route path="/project/:projectId/*" element={<Layout />}>
+          <Route path="workspace" element={<Workspace />} />
+          <Route path="listTask" element={<ListTask />} />
+          <Route path="members" element={<MemberList />} />
+          <Route path="membership" element={<BuyMembership />} />
+          <Route path="membership/checkOut" element={<Payment />} />
+        </Route>
+      )}
+
+      {(accessToken || accessToken2) && (
+        <Route path="/" element={<Layout />}>
+          <Route path="listProject" element={<ListProject />} />
+          <Route path="projectStored" element={<ProjectStored />} />
+        </Route>
+      )}
+
+      {accessToken && (
+        <Route path="/" element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
+          <Route path="view-profile" />
+          <Route path="edit-profile" />
+          <Route path="change-password" />
+        </Route>
+      )}
+    </Routes>
+
   );
 }
-
-// // Bọc App trong BrowserRouter và AppProvider
-// function indexApp() {
-//   return (
-//     <BrowserRouter>
-//       <AppProvider>
-//         <App />
-//       </AppProvider>
-//     </BrowserRouter>
-//   );
-// }
 
 export default App;

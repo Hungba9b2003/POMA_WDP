@@ -49,6 +49,21 @@ async function sendEmail(type, email, link) {
             <hr>
             <p style="text-align: center; font-size: 12px; color: #888;">© 2025 Công ty của bạn. Mọi quyền được bảo lưu.</p>
           </div>`;
+    } else if (type === "join") {
+      subject = "🔹Mời vào nhóm";
+      htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <h2 style="color: #FF5733; text-align: center;">Tham gia nhóm</h2>
+            <p style="font-size: 16px; text-align: center;">Bạn được mời tham gia dự án mới. Nhấn vào nút bên dưới để tiếp tục:</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${link}" style="background-color: #FF5733; color: white; padding: 10px 20px; font-size: 18px; text-decoration: none; border-radius: 5px;">
+                Tham gia
+              </a>
+            </div>
+            <p style="font-size: 14px; text-align: center; color: #777;">Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+            <hr>
+            <p style="text-align: center; font-size: 12px; color: #888;">© 2025 Công ty của bạn. Mọi quyền được bảo lưu.</p>
+          </div>`;
     } else {
       throw new Error("Invalid email type");
     }
@@ -69,23 +84,30 @@ async function sendEmail(type, email, link) {
 
 // Hàm đăng nhập
 async function login(req, res) {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
-    const user = await db.Users.findOne({ username });
+    const user = await db.Users.findOne({ "account.email":   email });
     if (!user) {
-      return res.status(404).json({ status: "User not found!" });
+
+      return res.status(404).json({ message: "User not found!" });
+    }
+    if (!/^(?=.*[A-Z]).{8,}$/.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters and contain at least one uppercase letter",
+      });
     }
 
     if (user.status === "inactive") {
-      return res.status(401).json({ status: "Please verify your account!" });
+      return res.status(401).json({ message: "Please verify your account!" });
     }
     if (user.status === "banned") {
-      return res.status(401).json({ status: "You have been banned" });
+      return res.status(401).json({ message: "You have been banned" });
     }
 
     const isMatch = await bcrypt.compare(password, user.account.password);
     if (!isMatch) {
-      return res.status(401).json({ status: "Invalid password!" });
+      return res.status(401).json({ message: "Invalid password or email!" });
     }
 
     const token = jwt.sign(
@@ -104,23 +126,23 @@ async function login(req, res) {
 // Hàm đăng ký
 async function register(req, res, next) {
   try {
-    const { username, email, password, rePassword, phoneNumber } = req.body;
+    const { username, email, password, repassword, phone } = req.body;
 
-    if (!username || !email || !password || !rePassword || !phoneNumber) {
+    if (!username || !email || !password || !repassword || !phone) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (password !== rePassword) {
+    if (password !== repassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    // // Kiểm tra định dạng mật khẩu
-    // if (!/^(?=.*[A-Z]).{8,}$/.test(password)) {
-    //   return res.status(400).json({
-    //     message:
-    //       "Password must be at least 8 characters and contain at least one uppercase letter",
-    //   });
-    // }
+    // Kiểm tra định dạng mật khẩu
+    if (!/^(?=.*[A-Z]).{8,}$/.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters and contain at least one uppercase letter",
+      });
+    }
 
     const existingUserName = await db.Users.findOne({ username });
     if (existingUserName) {
@@ -142,7 +164,7 @@ async function register(req, res, next) {
         password: hashedPassword,
       },
       profile: {
-        phoneNumber,
+        phoneNumber: phone,
       },
       status: "inactive",
     });
@@ -152,12 +174,13 @@ async function register(req, res, next) {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    const verificationLink = `http://localhost:9999/authentication/verify/${newUser._id}/${token}`;
+    const verificationLink = `http://${process.env.HOSTNAME}:${process.env.PORT_FRONT_END}/login/verify/${newUser._id}/${token}`;
 
     // Gửi email
     await sendEmail("verify", email, verificationLink);
 
     res.status(201).json({
+      status: "Success",
       message:
         "User registered successfully. Check your email for verification link!",
     });
@@ -227,28 +250,31 @@ async function verifyAccount(req, res) {
 
 // Hàm quên mật khẩu
 async function forgotPassword(req, res) {
-  const { username, email } = req.body;
+  const { email } = req.body;
   try {
-    const oldUser = await db.Users.findOne({
-      username,
-      "account.email": email,
-    });
+    const oldUser = await db.Users.findOne({ "account.email": email });
     if (!oldUser) {
-      return res.status(404).json({ status: "User or Email not found!" });
+      return res.status(404).json({
+        status: "User or Email not found!",
+        message: "User or Email not found!",
+      });
     }
 
     const secret = process.env.JWT_SECRET + oldUser.account.password;
     const token = jwt.sign(
       { email: oldUser.account.email, id: oldUser._id },
       secret,
-      {
-        expiresIn: "10m",
-      }
+      { expiresIn: "10m" }
     );
 
-    const link = `http://localhost:3000/resetPassword/${oldUser._id}/${token}`;
+    // Cập nhật token mới vào DB
+    await db.Users.updateOne(
+      { _id: oldUser._id },
+      { $set: { resetToken: token } },
+      { strict: false }
+    );
 
-    // Gửi email thay đổi mật khẩu
+    const link = `http://localhost:3000/login/resetPassword/${oldUser._id}/${token}`;
     await sendEmail("reset", email, link);
     res.json({ status: "Email sent, check your inbox!" });
   } catch (error) {
@@ -264,16 +290,43 @@ async function resetPassword(req, res) {
 
   try {
     if (password !== confirmPassword) {
-      return res.status(400).json({ status: "Passwords do not match!" });
+      return res.status(400).json({
+        status: "Invalid",
+        message: "Passwords do not match",
+      });
     }
 
     const oldUser = await db.Users.findById(id);
+    console.log(oldUser.resetToken);
+    if (oldUser.resetToken != token) {
+      return res.status(400).json({
+        status: "Invalid",
+        message: "Reset form has been disabled! PLease send email again",
+      });
+    }
     if (!oldUser) {
-      return res.status(404).json({ status: "User Not Exists!" });
+      return res
+        .status(404)
+        .json({ status: "User Not Exists!", message: "User Not Exists!" });
     }
 
     const secret = process.env.JWT_SECRET + oldUser.account.password;
-    jwt.verify(token, secret);
+    try {
+      const decoded = jwt.verify(token, secret);
+      console.log("Token hợp lệ:", decoded);
+    } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        return res.status(401).json({
+          status: "error",
+          message: "Expired reset form! please send email again ",
+        });
+      } else {
+        return res.status(401).json({
+          status: "error",
+          message: err.message,
+        });
+      }
+    }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
     await db.Users.updateOne(
@@ -281,7 +334,10 @@ async function resetPassword(req, res) {
       { $set: { "account.password": encryptedPassword } }
     );
 
-    res.json({ status: "Password change successful!" });
+    res.status(200).json({
+      status: "Successful",
+      message: "Password changed successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: "Something went wrong!" });
