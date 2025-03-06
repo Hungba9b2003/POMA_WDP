@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Column from "./Column";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+
 
 const Workspace = () => {
     const [columns, setColumns] = useState(["Pending", "In Progress", "Completed"]);
@@ -33,44 +34,61 @@ const Workspace = () => {
             .then(response => setTasks(response.data))
             .catch(error => console.error("Error fetching tasks:", error));
 
-        axios.get(`http://localhost:9999/projects/${projectId}`)
+        axios.get(`http://localhost:9999/projects/${projectId}/get-project`)
             .then(response => {
-                if (response.data.classifications) {
-                    setColumns(response.data.classifications);
+                if (response.data.project.classifications) {
+                    setColumns(response.data.project.classifications);
                 }
             })
             .catch(error => console.error("Error fetching project data:", error));
-    }, [projectId]);
+    }, [projectId, token, id]);
 
-    const addColumn = () => {
-        const newColumn = prompt("Enter new column title:");
+
+
+    // Thêm cột mới
+    const addColumn = useCallback(async () => {
+        const newColumn = prompt("Enter new column title:")?.trim();
         if (!newColumn) return;
 
-        axios.post(`http://localhost:9999/projects/${projectId}/add-column`, { title: newColumn })
-            .then(response => {
-                setColumns(response.data.project.classifications);
-            })
-            .catch(error => {
-                console.error("Error adding column:", error);
-                alert("Failed to add column!");
+        try {
+            const response = await axios.put(`http://localhost:9999/projects/${projectId}/edit`, {
+                newColumn,
+                id
             });
-    };
+
+            setColumns(response.data.classifications);
+        } catch (error) {
+            console.error("Error adding column:", error);
+            alert("Failed to add column!");
+        }
+    }, [projectId, id]);
 
     return (
         <Container fluid>
             <h2 className="mb-4">CRM Board</h2>
-            <Row>
-                {columns.map((col, index) => (
-                    <Col key={index} md={3}>
-                        <Column title={col} tasks={tasks.filter(task => task.status === col)} setTasks={setTasks} projectId={projectId} />
+            <div className="board-container">
+                <Row className="flex-nowrap">
+                    {columns.map((col, index) => (
+                        <Col key={index} md={3} className="column">
+                            <Column
+                                title={col}
+                                tasks={tasks.filter(task => task.status === col)}
+                                setTasks={setTasks}
+                                projectId={projectId}
+                                setColumns={setColumns}  // ✅ Truyền hàm setColumns vào Column
+                            />
+                        </Col>
+                    ))}
+                    <Col md="auto">
+                        <Button variant="light" onClick={addColumn} className="mt-4">+</Button>
                     </Col>
-                ))}
-                <Col md={1}>
-                    <Button variant="light" onClick={addColumn} className="mt-4">+</Button>
-                </Col>
-            </Row>
+                </Row>
+
+            </div>
         </Container>
     );
-};
+
+}
+
 
 export default Workspace;

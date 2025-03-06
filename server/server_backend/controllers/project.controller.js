@@ -89,7 +89,7 @@ async function getProjectById(req, res, next) {
 async function updateProject(req, res, next) {
     try {
         const { projectId } = req.params;
-        const { id, newColumn } = req.body; // Nhận newColumn từ request body
+        const { id, newColumn, removeColumn } = req.body; // Nhận removeColumn từ request body
         const { projectName, projectCode, projectAvatar } = req.body;
 
         const project = await db.Projects.findOne({ _id: projectId });
@@ -123,7 +123,7 @@ async function updateProject(req, res, next) {
                 updateProject.projectAvatar = projectAvatar;
             }
 
-            // Thêm column vào classifications
+            // Thêm column
             if (newColumn) {
                 if (project.classifications.includes(newColumn)) {
                     return res.status(400).json({ message: "Column already exists" });
@@ -131,11 +131,14 @@ async function updateProject(req, res, next) {
                 project.classifications.push(newColumn);
                 updateProject.classifications = project.classifications;
             }
-        } 
-        else if (member.role === 'member') {
-            if (projectName || projectCode || projectAvatar || newColumn) {
-                throw createHttpErrors(403, "Only the project owner can edit the project name, project code, avatar, and classifications");
+
+            // Xóa column
+            if (removeColumn) {
+                project.classifications = project.classifications.filter(col => col !== removeColumn);
+                updateProject.classifications = project.classifications;
             }
+        } else {
+            throw createHttpErrors(403, "Only the project owner can edit project details");
         }
 
         await db.Projects.updateOne({ _id: projectId }, { $set: updateProject }, { runValidators: true });
