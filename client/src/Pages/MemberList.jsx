@@ -1,22 +1,39 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Table, Button, InputGroup, FormControl } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Table, Button, InputGroup, FormControl, Dropdown, Pagination } from 'react-bootstrap';
 import { BsChevronDown, BsTrashFill } from 'react-icons/bs';
 import { useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import { jwtDecode } from 'jwt-decode';
+import './MemberList.css';
 
 function MemberList() {
     const { projectId } = useParams();
     const [projectMembers, setProjectMembers] = useState([]);
     const [accessToken] = useState(localStorage.getItem('accessToken') || '');
-    const [currentUserRole, setCurrentUserRole] = useState(null);
+    const [currentUserRole, setCurrentUserRole] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [editingMemberId, setEditingMemberId] = useState(null);
-    const [newRole, setNewRole] = useState('');
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
-
-    const [hoveredRole, setHoveredRole] = useState(null);
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const [userId, setUserId] = useState('');
+    const membersPerPage = 5;
     const roles = ['member', 'viewer'];
+
+    // Hàm lấy userId từ token
+    const getUserIdFromToken = () => {
+        const token = localStorage.getItem("token");
+        if (!token) return "Unknown";
+        try {
+            const decodedToken = jwtDecode(token);
+            console.log("Decoded Token:", decodedToken);
+            return decodedToken.userId || decodedToken.id || "Unknown";
+        } catch (error) {
+            console.error("Lỗi giải mã token:", error);
+            return "Unknown";
+        }
+    };
+
+    useEffect(() => {
+        setUserId(getUserIdFromToken());
+    }, []);
 
     useEffect(() => {
         const fetchProjectMembers = async () => {
@@ -24,9 +41,16 @@ function MemberList() {
                 const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`);
                 if (response.ok) {
                     const data = await response.json();
-                    setProjectMembers(data.memberInfo || []); // Đảm bảo luôn có mảng
+                    setProjectMembers(data.memberInfo || []);
+
+                    // Kiểm tra nếu userId từ token có trong danh sách thành viên
+                    const currentUser = data.memberInfo?.find(member => member.id === userId);
+                    if (currentUser) {
+                        setCurrentUserRole(currentUser.role);
+                        console.log("Current User Role:", currentUser.role);
+                    }
                 } else {
-                    setProjectMembers([]); // Nếu API lỗi, vẫn đảm bảo là mảng
+                    setProjectMembers([]);
                 }
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách thành viên:", error);
@@ -34,103 +58,86 @@ function MemberList() {
             }
         };
 
-        // const fetchCurrentUserRole = async () => {
-        //     try {
-        //         const response = await fetch(`http://localhost:9999/projects/user/${projectId}/get-user-role`, {
-        //             headers: { Authorization: `Bearer ${accessToken}` },
-        //             body:{
-        //                 "id":
-        //             }
-        //         });
-        //         console.log("user role", response);
-
-        //         if (response.ok) {
-        //             const data = await response.json();
-        //             console.log(data);
-
-        //             setCurrentUserRole(data.role);
-        //         }
-        //     } catch (error) {
-        //         console.error("Lỗi khi lấy vai trò người dùng:", error);
-        //     }
-        // };
-
-        fetchProjectMembers();
-        // fetchCurrentUserRole();
-        //laasy dduwoc role cua user hien tai, truoc lay duoc id cua use hien tai
-    }, [projectId, accessToken]);
-
-    const handleRoleChange = async (memberId, role) => {
-        console.log("Role change", memberId, role);
-
-        //lấy được current user roles đã
-        // if (currentUserRole?.projectRole !== 'owner' || role === 'owner') return;
-        console.log("fetched role change", memberId, role);
-
-        const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/set-role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({ id: memberId, role: role }),
-        });
-        console.log(response);
-
-        if (response.ok) {
-            setNewRole('');
-            setDropdownOpen(false);
-            setProjectMembers((prev) =>
-                prev.map((member) => (member.id === memberId ? { ...member, projectRole: role } : member))
-            );
+        if (userId !== "Unknown") {
+            fetchProjectMembers();
         }
-    };
+    }, [projectId, userId]);
 
     const handleDeleteMember = async (memberId) => {
-        if (currentUserRole?.projectRole !== 'owner') return;
+        Swal.fire({
+            title: "Bạn có chắc chắn?",
+            text: "Thao tác này sẽ xóa thành viên khỏi dự án!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Xóa",
+            cancelButtonText: "Hủy",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/delete`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
 
-        if (window.confirm('Delete this member?')) {
-            const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/delete`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${accessToken}` },
+                    if (response.ok) {
+                        setProjectMembers(prevMembers => prevMembers.filter(member => member.id !== memberId));
+                        Swal.fire("Đã xóa!", "Thành viên đã được xóa thành công.", "success");
+                    } else {
+                        Swal.fire("Lỗi!", "Không thể xóa thành viên.", "error");
+                    }
+                } catch (error) {
+                    Swal.fire("Lỗi!", "Đã xảy ra lỗi khi gọi API.", "error");
+                }
+            }
+        });
+    };
+
+    const handleSetRole = async (memberId, newRole) => {
+        try {
+            const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/set-role/${newRole}`, {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${accessToken}` }
             });
 
             if (response.ok) {
-                setProjectMembers((prev) => prev.filter((m) => m.id !== memberId));
+                setProjectMembers(prevMembers =>
+                    prevMembers.map(member =>
+                        member.id === memberId ? { ...member, role: newRole } : member
+                    )
+                );
+                Swal.fire("Thành công!", "Vai trò đã được cập nhật.", "success");
+            } else {
+                Swal.fire("Lỗi!", "Không thể cập nhật vai trò.", "error");
             }
+        } catch (error) {
+            Swal.fire("Lỗi!", "Đã xảy ra lỗi khi gọi API.", "error");
         }
     };
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-                setDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const filteredMembers = (projectMembers || []).filter((member) =>
-        member.name && member.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredMembers = projectMembers.filter(member =>
+        member.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const indexOfLastMember = currentPage * membersPerPage;
+    const indexOfFirstMember = indexOfLastMember - membersPerPage;
+    const currentMembers = filteredMembers.slice(indexOfFirstMember, indexOfLastMember);
 
+    const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
 
     return (
-        <div className="container">
-            <h2>Project Members</h2>
+        <div className="container mt-4">
+            <h2 className="text-center mb-4">Project Members</h2>
             <InputGroup className="mb-3">
                 <FormControl
-                    placeholder="Search..."
+                    placeholder="Search members..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </InputGroup>
-
-            <Table striped bordered hover responsive>
-                <thead>
+            <Table striped bordered hover responsive className="custom-table">
+                <thead className="table-dark">
                     <tr>
                         <th>#</th>
                         <th>Name</th>
@@ -139,59 +146,48 @@ function MemberList() {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredMembers.map((member, index) => (
+                    {currentMembers.map((member, index) => (
                         <tr key={member.id}>
-                            <td>{index + 1}</td>
+                            <td>{indexOfFirstMember + index + 1}</td>
                             <td>{member.name}</td>
                             <td>
-                                {member.role === 'owner' ? (
-                                    'Owner'
+                                {member.role === "owner" || currentUserRole !== "owner" ? (
+                                    <span className="badge bg-primary">{member.role}</span>
                                 ) : (
-                                    <div ref={dropdownRef} style={{ position: 'relative' }}>
-                                        {editingMemberId === member.id ? (
-                                            <>
-                                                <div onClick={() => setDropdownOpen(!dropdownOpen)} style={{ cursor: 'pointer' }}>
-                                                    {newRole || 'Select Role'} <BsChevronDown />
-                                                </div>
-                                                {dropdownOpen && (
-                                                    <div style={{ position: 'absolute', top: '100%', left: 0, background: 'white', zIndex: 1 }}>
-                                                        {roles.map((role) => (
-                                                            <div
-                                                                key={role}
-                                                                onClick={() => handleRoleChange(member.id, role)}
-                                                                onMouseEnter={() => setHoveredRole(role)}  // Set hovered role
-                                                                onMouseLeave={() => setHoveredRole(null)}   // Reset on mouse leave
-                                                                style={{
-                                                                    padding: '8px',
-                                                                    cursor: 'pointer',
-                                                                    backgroundColor: hoveredRole === role ? 'lightgray' : 'transparent', // Change background on hover
-                                                                }}
-                                                            >
-                                                                {role}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <div onClick={() => setEditingMemberId(member.id)} style={{ cursor: 'pointer' }}>
-                                                {member.role} <BsChevronDown />
-                                            </div>
-                                        )}
-                                    </div>
+                                    <Dropdown container="body">
+                                        <Dropdown.Toggle variant="secondary" size="sm">
+                                            {member.role} <BsChevronDown />
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu>
+                                            {roles.map(role => (
+                                                <Dropdown.Item key={role} onClick={() => handleSetRole(member.id, role)}>
+                                                    {role}
+                                                </Dropdown.Item>
+                                            ))}
+                                        </Dropdown.Menu>
+                                    </Dropdown>
                                 )}
                             </td>
-
                             <td>
-                                <Button variant="link" onClick={() => handleDeleteMember(member.id)}>
-                                    <BsTrashFill title="Delete" className="text-danger" />
-                                </Button>
-
+                                {currentUserRole === "owner" && member.role !== "owner" && (
+                                    <Button size="sm" variant="danger" onClick={() => handleDeleteMember(member.id)}>
+                                        <BsTrashFill title="Delete" />
+                                    </Button>
+                                )}
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </Table>
+            <Pagination className="justify-content-center">
+                <Pagination.Prev onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
+                {[...Array(totalPages).keys()].map(num => (
+                    <Pagination.Item key={num + 1} active={num + 1 === currentPage} onClick={() => setCurrentPage(num + 1)}>
+                        {num + 1}
+                    </Pagination.Item>
+                ))}
+                <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
+            </Pagination>
         </div>
     );
 }

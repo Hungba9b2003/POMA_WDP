@@ -30,12 +30,20 @@ function ProfileInfo() {
           console.log(response.data);
           setUserInfo(response.data);
         } catch (error) {
-          console.error("Error fetching user information:", error);
+          console.error("Lỗi khi lấy thông tin người dùng:", error);
+          if (error.response) {
+            console.error("Lỗi phản hồi:", error.response);
+          } else if (error.request) {
+            console.error("Lỗi yêu cầu:", error.request);
+          } else {
+            console.error("Thông báo lỗi:", error.message);
+          }
         }
       };
       fetchUserInfo();
     }
-  }, [token]);
+  }, []);
+
 
   if (!userInfo) {
     return <div>Loading...</div>;
