@@ -23,7 +23,7 @@ async function createProject(req, res, next) {
             return res.status(400).json({ message: "Project name already exists, please choose another name." });
         }
 
-        const defaultClassifications = ['todo', 'inprogress', 'done'];
+        const defaultClassifications = ['Pending', 'In Progress', 'Completed'];
         const members = [
             {
                 _id: id,
@@ -89,7 +89,7 @@ async function getProjectById(req, res, next) {
 async function updateProject(req, res, next) {
     try {
         const { projectId } = req.params;
-        const { id } = req.body;//payload
+        const { id, newColumn } = req.body; // Nhận newColumn từ request body
         const { projectName, projectCode, projectAvatar } = req.body;
 
         const project = await db.Projects.findOne({ _id: projectId });
@@ -122,10 +122,19 @@ async function updateProject(req, res, next) {
             if (projectAvatar) {
                 updateProject.projectAvatar = projectAvatar;
             }
-        }
+
+            // Thêm column vào classifications
+            if (newColumn) {
+                if (project.classifications.includes(newColumn)) {
+                    return res.status(400).json({ message: "Column already exists" });
+                }
+                project.classifications.push(newColumn);
+                updateProject.classifications = project.classifications;
+            }
+        } 
         else if (member.role === 'member') {
-            if (projectName || projectCode || projectAvatar) {
-                throw createHttpErrors(403, "Only the project owner can edit the project name, project code, and avatar");
+            if (projectName || projectCode || projectAvatar || newColumn) {
+                throw createHttpErrors(403, "Only the project owner can edit the project name, project code, avatar, and classifications");
             }
         }
 
@@ -138,6 +147,7 @@ async function updateProject(req, res, next) {
         next(error);
     }
 }
+
 
 async function deleteProject(req, res, next) {
     try {
@@ -185,7 +195,6 @@ const updateProjectStatus = async (req, res) => {
     }
 };
 
-
 async function getProjectMembers(req, res, next) {
     try {
         const { projectId } = req.params;
@@ -203,7 +212,8 @@ async function getProjectMembers(req, res, next) {
         const memberInfo = project.members.map(member => ({
             id: member._id ? member._id._id : null,
             name: member._id ? member._id.username : null,
-            role: member.role
+            role: member.role,
+          avatar: member._id ? member._id.profile.avatar : null
         }));
 
         res.status(200).json({ memberInfo });
@@ -357,8 +367,7 @@ async function getInviteMembers(req, res, next) {
 
 async function updatePremium(req, res, next) {
     try {
-        const { projectId } = req.params;
-        const { status } = req.body;
+        const { status, projectId } = req.body;
 
         // Kiểm tra đầu vào
         if (status != 1) {

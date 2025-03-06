@@ -20,13 +20,15 @@ import Workspace from "./Components/Project/Workspace";
 import ListTask from "./Components/Project/ListTask";
 import Header from "./Components/Utils/Header";
 import ListProject from "./Components/Project/ListProject";
+import MemberList from "./Components/Project/MemberList";
+import Payment from "./Components/CheckOut/Payment";
+import BuyMembership from "./Components/Project/BuyMembership";
 import ProjectStored from "./Components/Project/ProjectStored";
 import JoinProject from "./Pages/joinProject/JoinProject";
 
 const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
-
   return (
     <>
       <Header />
@@ -68,10 +70,12 @@ function App() {
       <Route path="/" element={<Landing />} />
 
       {(accessToken || accessToken2) && (
-        <Route path="/project/:projectId/*" element={<Layout />}>
+        <Route path="/project/:projectId" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
           <Route path="listTask" element={<ListTask />} />
         <Route path="members" element={<MemberList />} />
+          <Route path="membership" element={<BuyMembership />} />
+          <Route path="membership/checkOut" element={<Payment />} />
         </Route>
       )}
 

@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +17,24 @@ const AppProvider = ({ children }) => {
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState(null);
+  const isFetched = useRef(false);
+  //call api
 
- 
+  useEffect(() => {
+    if ((accessToken || accessToken2) && !isFetched.current) {
+      isFetched.current = true; // Đánh dấu là đã fetch để tránh gọi lại
+      axios
+        .get(`${users_API}/get-profile`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+        .then((res) => {
+          setUser(res.data);
+        })
+        .catch((err) => {
+          console.error("Error fetching profile:", err);
+        });
+    }
+  }, [accessToken, accessToken2]);
 
   //fuction
   const handleLogout = () => {
