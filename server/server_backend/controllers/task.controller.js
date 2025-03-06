@@ -74,54 +74,49 @@ async function createTask(req, res, next) {
 async function editTask(req, res, next) {
     try {
         const { projectId, taskId } = req.params;
+
         const project = await db.Projects.findOne({ _id: projectId });
         if (!project) {
-            return res.status(404).json({ error: { status: 404, message: "Project not found" } })
-
+            return res.status(404).json({ error: { status: 404, message: "Project not found" } });
         }
-        const task = project.tasks.find(t => t._id == taskId)
+
+        const task = await db.Tasks.findOne({ _id: taskId })
+            .populate('assignee', 'name email role avatar')  // Populate assignee với các trường cụ thể
+            .populate('reviewer', 'name email role avatar'); // Populate reviewer với các trường cụ thể
+
         if (!task) {
-            return res.status(404).json({ error: { status: 404, message: "Task not found" } })
+            return res.status(404).json({ error: { status: 404, message: "Task not found" } });
+        }
 
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ error: { status: 400, message: "Input is required" } });
         }
-        if (!req.body) {
-            return res.status(400).json({ error: { status: 400, message: "Input is reqiured" } })
 
-        }
-        const updateTask = {
-            taskName: req.body.taskName ? req.body.taskName : task.taskName,
-            description: req.body.description ? req.body.description : task.description,
-            reviewer: req.body.reviewer ? req.body.reviewer : task.reviewer,
-            assignee: req.body.assignee ? req.body.assignee : task.assignee,
-            deadline: req.body.deadline ? req.body.deadline : task.deadline,
-            status: req.body?.status,
-            updatedAt: new Date()
-        }
+        const updateFields = { updatedAt: new Date() };
+        if (req.body.taskName) updateFields.taskName = req.body.taskName;
+        if (req.body.description) updateFields.description = req.body.description;
+        if (req.body.reviewer) updateFields.reviewer = req.body.reviewer;
+        if (req.body.assignee) updateFields.assignee = req.body.assignee;
+        if (req.body.deadline) updateFields.deadline = req.body.deadline;
+        if (req.body.status) updateFields.status = req.body.status;
+
         await db.Tasks.updateOne(
-            {
-                _id: taskId,
-            },
-            {
-                $set: {
-                    "taskName": updateTask.taskName,
-                    "description": updateTask.description,
-                    "assignee": updateTask.assignee,
-                    "reviewer": updateTask.reviewer,
-                    "deadline": updateTask.deadline,
-                    "status": updateTask.status,
-                    "updatedAt": updateTask.updatedAt
-                }
-            },
-            {
-                runValidators: true,
-                isNew: false
-            })
-        res.status(200).json(updateTask)
-    } catch (error) {
-        next(error)
+            { _id: taskId },
+            { $set: updateFields },
+            { runValidators: true, isNew: false }
+        );
 
+        // Lấy lại task sau khi update để gửi về client
+        const updatedTask = await db.Tasks.findOne({ _id: taskId })
+            .populate('assignee')
+            .populate('reviewer');
+
+        res.status(200).json(updatedTask);
+    } catch (error) {
+        next(error);
     }
 }
+
 
 async function deleteTask(req, res, next) {
     try {
@@ -201,13 +196,17 @@ async function getAllSubTasks(req, res, next) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
 
         }
-        const task = project.tasks.find(t => t._id == taskId)
+        const task = project.tasks.find(t => t._id == taskId);
         if (!task) {
             return res.status(404).json({ error: { status: 404, message: "Task not found" } })
 
         }
 
-        const { subTasks } = task;
+        const populatedSubTasks = await db.Tasks.findById(task._id)
+            .populate('subTasks.assignee');
+
+        const { subTasks } = populatedSubTasks;
+
         res.status(200).json(subTasks)
 
     } catch (error) {
