@@ -25,12 +25,10 @@ const Header = () => {
   }
 
   useEffect(() => {
-    if (token && id && !userInfo) {
       axios.post("http://localhost:9999/users/get-profile", { id }) 
         .then(response => setUserInfo(response.data))
         .catch(error => console.error("Error fetching user information:", error));
-    }
-  }, [token, id, userInfo]);
+  }, []);
   
 
   const handleLogout = () => {

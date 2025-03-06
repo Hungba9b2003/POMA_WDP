@@ -123,7 +123,6 @@ async function updateProject(req, res, next) {
                 updateProject.projectAvatar = projectAvatar;
             }
 
-            // Thêm column vào classifications
             if (newColumn) {
                 if (project.classifications.includes(newColumn)) {
                     return res.status(400).json({ message: "Column already exists" });
