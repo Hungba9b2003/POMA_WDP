@@ -36,6 +36,7 @@ const ListProject = () => {
       .catch((err) => console.error("Error fetching projects:", err));
   }, [id]);
 
+
   const filteredProjects = projects.filter((project) =>
     project.projectName.toLowerCase().includes(search.toLowerCase())
   );
@@ -43,7 +44,6 @@ const ListProject = () => {
   const handleWorkspace = (projectId) => {
     navigate(`/project/${projectId}/workspace`);
   };
-
 
   return (
     <div className="p-4">
