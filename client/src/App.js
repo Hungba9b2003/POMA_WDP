@@ -26,7 +26,6 @@ import ProjectStored from "./Components/Project/ProjectStored";
 const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
-
   return (
     <>
       <Header />
@@ -69,7 +68,7 @@ function App() {
       <Route path="/" element={<Landing />} />
 
       {(accessToken || accessToken2) && (
-        <Route path="/project/:projectId/*" element={<Layout />}>
+        <Route path="/project/:projectId" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
           <Route path="listTask" element={<ListTask />} />
           <Route path="members" element={<MemberList />} />

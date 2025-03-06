@@ -21,7 +21,7 @@ projectRouter.post(
 
 // tìm dự án
 projectRouter.get(
-    "/:projectId/get-project",  ProjectController.getProjectById
+    "/:projectId/get-project", ProjectController.getProjectById
 )
 // chỉnh sửa thông tin dự án chỉ đinh
 projectRouter.put(
@@ -33,7 +33,7 @@ projectRouter.delete(
 )
 // update status dự án
 projectRouter.put(
-    "/update-status/:projectId", ProjectController.updateProjectStatus)
+    "/update-status/:projectId", AuthMiddleware.verifyAccessToken, ProjectController.updateProjectStatus)
 // vào project bằng code
 projectRouter.post("/join-by-code");
 //vào dự án bằng link email
@@ -62,11 +62,11 @@ projectRouter.delete("/:projectId/delete-workspace");
 // lấy task
 projectRouter.get("/:projectId/tasks/get-all", TaskController.getAllTasks);
 // tạo task
-projectRouter.post("/:projectId/tasks/create", TaskController.createTask);
+projectRouter.post("/:projectId/tasks/create", AuthMiddleware.verifyAccessToken, TaskController.createTask);
 // chỉnh sửa task
-projectRouter.put("/:projectId/tasks/:taskId/edit", TaskController.editTask);
+projectRouter.put("/:projectId/tasks/:taskId/edit", AuthMiddleware.verifyAccessToken, TaskController.editTask);
 // xoá task
-projectRouter.delete("/:projectId/tasks/:taskId/delete", TaskController.deleteTask);
+projectRouter.delete("/:projectId/tasks/:taskId/delete", AuthMiddleware.verifyAccessToken, TaskController.deleteTask);
 
 //Subtask bên trong Task có list subtask, xem model nếu không rõ
 
@@ -81,7 +81,7 @@ projectRouter.delete("/:projectId/tasks/:taskId/subTasks/:subTaskId/delete", Aut
 
 // Lấy tất cả comment của task trong project
 projectRouter.get(
-    "/:projectId/tasks/:taskId/comments/get-all", AuthMiddleware.verifyAccessToken, TaskController.getAllComments
+    "/:projectId/tasks/:taskId/comments/get-all", TaskController.getAllComments
 );
 
 // Thêm comment vào task trong project

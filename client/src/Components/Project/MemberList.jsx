@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Table, Button, InputGroup, FormControl } from 'react-bootstrap';
 import { BsChevronDown, BsTrashFill } from 'react-icons/bs';
 import { useParams } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode";
 
 function MemberList() {
     const { projectId } = useParams();
@@ -16,10 +17,28 @@ function MemberList() {
 
     const roles = ['member', 'viewer'];
 
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    console.log(projectMembers)
+    let id = null;
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            id = decoded?.id || null;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    }
+
     useEffect(() => {
         const fetchProjectMembers = async () => {
             try {
-                const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`);
+                const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 if (response.ok) {
                     const data = await response.json();
                     setProjectMembers(data.memberInfo || []); // Đảm bảo luôn có mảng

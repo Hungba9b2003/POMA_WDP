@@ -10,8 +10,26 @@ const Workspace = () => {
     const [tasks, setTasks] = useState([]);
     const { projectId } = useParams();
 
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    let id = null;
+    if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            id = decoded?.id || null;
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    }
+
     useEffect(() => {
-        axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`)
+        axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
             .then(response => setTasks(response.data))
             .catch(error => console.error("Error fetching tasks:", error));
 
