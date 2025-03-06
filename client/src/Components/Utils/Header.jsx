@@ -1,4 +1,14 @@
-import { Navbar, Nav, Button, Dropdown, Image, Container, NavDropdown, Modal, Form } from "react-bootstrap";
+import {
+  Navbar,
+  Nav,
+  Button,
+  Dropdown,
+  Image,
+  Container,
+  NavDropdown,
+  Modal,
+  Form,
+} from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa";
 import { FiLogOut, FiUser, FiKey } from "react-icons/fi";
@@ -11,14 +21,14 @@ const Header = () => {
   const [projectName, setProjectName] = useState(null);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
   let id = null;
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      id = decoded?.id || null; 
+      id = decoded?.id || null;
     } catch (error) {
       console.error("Error decoding token:", error);
     }
@@ -26,12 +36,14 @@ const Header = () => {
 
   useEffect(() => {
     if (token && id && !userInfo) {
-      axios.post("http://localhost:9999/users/get-profile", { id }) 
-        .then(response => setUserInfo(response.data))
-        .catch(error => console.error("Error fetching user information:", error));
+      axios
+        .post("http://localhost:9999/users/get-profile", { id })
+        .then((response) => setUserInfo(response.data))
+        .catch((error) =>
+          console.error("Error fetching user information:", error)
+        );
     }
   }, [token, id, userInfo]);
-  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -47,10 +59,9 @@ const Header = () => {
     }
 
     try {
-
       const createResponse = await axios.post(
         "http://localhost:9999/projects/create",
-        { projectName , id},
+        { projectName, id }
       );
 
       if (createResponse.data) {
@@ -65,19 +76,34 @@ const Header = () => {
     }
   };
 
-
-
   return (
     <>
-      <Navbar expand="lg" className="px-4 py-2" style={{ background: 'linear-gradient(to right,rgb(248, 218, 219),rgb(248, 159, 175))' }}>
+      <Navbar
+        expand="lg"
+        className="px-4 py-2"
+        style={{
+          background:
+            "linear-gradient(to right,rgb(248, 218, 219),rgb(248, 159, 175))",
+        }}
+      >
         <Container fluid>
           {/* Logo */}
           <Navbar.Brand href="/" className="fs-3 fw-bold">
-            <img src="/logo.png" alt="Logo" width="40" height="40" className="d-inline-block align-top" />
+            <img
+              src="/logo.png"
+              alt="Logo"
+              width="40"
+              height="40"
+              className="d-inline-block align-top"
+            />
           </Navbar.Brand>
 
           {/* Create button */}
-          <Button variant="primary" className="me-3" onClick={() => setShowModal(true)}>
+          <Button
+            variant="primary"
+            className="me-3"
+            onClick={() => setShowModal(true)}
+          >
             Create +
           </Button>
 
@@ -131,20 +157,30 @@ const Header = () => {
                     height={40}
                   />
                 </Dropdown.Toggle>
-                <Dropdown.Menu >
+                <Dropdown.Menu>
                   <Dropdown.Header>{userInfo.username}</Dropdown.Header>
                   <Dropdown.Divider />
-                  <Dropdown.Item href="/view-profile"><FiUser /> Profile</Dropdown.Item>
-                  <Dropdown.Item href="/change-password"><FiKey /> Change password</Dropdown.Item>
+                  <Dropdown.Item href="/view-profile">
+                    <FiUser /> Profile
+                  </Dropdown.Item>
+                  <Dropdown.Item href="/change-password">
+                    <FiKey /> Change password
+                  </Dropdown.Item>
                   <Dropdown.Divider />
-                  <Dropdown.Item onClick={handleLogout}><FiLogOut /> Log out</Dropdown.Item>
+                  <Dropdown.Item onClick={handleLogout}>
+                    <FiLogOut /> Log out
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </div>
           ) : (
             <div className="ms-auto d-flex gap-2">
-              <Button href="/login/loginForm" variant="outline-dark">Sign in</Button>
-              <Button href="/login/registerForm" variant="dark">Register</Button>
+              <Button href="/login/loginForm" variant="outline-dark">
+                Sign in
+              </Button>
+              <Button href="/login/registerForm" variant="dark">
+                Register
+              </Button>
             </div>
           )}
         </Container>
@@ -158,15 +194,23 @@ const Header = () => {
         <Modal.Body>
           <Form>
             <Form.Group controlId="projectName">
-              <Form.Label>Required fields are marked with an asterisk *</Form.Label>
+              <Form.Label>
+                Required fields are marked with an asterisk *
+              </Form.Label>
               <br />
               <Form.Label>Project *</Form.Label>
-              <Form.Control type="text" placeholder="Name" onChange={(e) => setProjectName(e.target.value)} />
+              <Form.Control
+                type="text"
+                placeholder="Name"
+                onChange={(e) => setProjectName(e.target.value)}
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="dark" className="w-100" onClick={handleCreate}>Create Project</Button>
+          <Button variant="dark" className="w-100" onClick={handleCreate}>
+            Create Project
+          </Button>
         </Modal.Footer>
       </Modal>
     </>

@@ -76,7 +76,9 @@ function App() {
       )}
 
       <Route path="/" element={<Landing />} />
-      <Route path="/summary" element={<Summary />} />
+      <Route path="/project" element={<Layout />}>
+        <Route path="summary" element={<Summary />} />
+      </Route>
       {(accessToken || accessToken2) && (
         <Route path="/project/:projectId" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
