@@ -78,9 +78,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />
       </Route>
-      <Route path="/project" element={<Layout />}>
-        <Route path="summary" element={<Summary />} />
-      </Route>
+
       {(accessToken || accessToken2) && (
         <Route path="/project/:projectId" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
@@ -88,6 +86,7 @@ function App() {
           <Route path="members" element={<MemberList />} />
           <Route path="membership" element={<BuyMembership />} />
           <Route path="membership/checkOut" element={<Payment />} />
+          <Route path="summary" element={<Summary />} />
         </Route>
       )}
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -8,8 +8,11 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
+import { CheckCircle, Edit, List, Clock } from "lucide-react";
 import { Bar, Pie } from "react-chartjs-2";
-
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { Container, Row, Col } from "react-bootstrap";
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -20,6 +23,29 @@ ChartJS.register(
 );
 
 const SummaryProject = () => {
+  const { projectId } = useParams();
+  const [projectInfo, setPjectInfo] = useState();
+  useEffect(() => {
+    fetchTasks();
+  }, [projectId]);
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:9999/projects/${projectId}/get-project`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.date);
+      setPjectInfo(response.data);
+    } catch (error) {
+      console.error("Error fetching tasks", error);
+    }
+  };
   const statusData = {
     labels: ["To Do", "In Progress", "Done"],
     datasets: [
@@ -64,8 +90,70 @@ const SummaryProject = () => {
     ],
   };
 
+  function StatCard({ title, value, icon }) {
+    return (
+      <div
+        style={{
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: "150px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {icon}
+          <h4 style={{ color: "#172b4d", margin: "0" }}>{title}</h4>
+        </div>
+        <p
+          style={{
+            fontSize: "24px",
+            color: "#0052cc",
+            fontWeight: "bold",
+            marginTop: "auto",
+          }}
+        >
+          {value}
+        </p>
+      </div>
+    );
+  }
+  const stats = [
+    {
+      title: "Công việc hoàn thành",
+      value: 15,
+      icon: <CheckCircle size={24} color="#0052cc" />,
+    },
+    {
+      title: "Số lần chỉnh sửa",
+      value: 45,
+      icon: <Edit size={24} color="#0052cc" />,
+    },
+    {
+      title: "Danh sách đã tạo",
+      value: 8,
+      icon: <List size={24} color="#0052cc" />,
+    },
+    {
+      title: "Sắp đến hạn",
+      value: 5,
+      icon: <Clock size={24} color="#0052cc" />,
+    },
+  ];
+
   return (
-    <div style={{ padding: "20px", background: "#f4f5f7" }}>
+    <div
+      style={{
+        padding: "20px",
+        maxWidth: "",
+        background: "#f4f5f7",
+        marginLeft: "",
+      }}
+    >
       <div style={{ marginBottom: "30px" }}>
         <h1
           style={{ fontSize: "24px", color: "#172b4d", marginBottom: "10px" }}
@@ -85,28 +173,8 @@ const SummaryProject = () => {
           marginBottom: "30px",
         }}
       >
-        {[
-          "Công việc hoàn thành",
-          "Số lần chỉnh sửa",
-          "Danh sách đã tạo",
-          "Sắp đến hạn",
-        ].map((title, index) => (
-          <div
-            key={index}
-            style={{
-              background: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-            }}
-          >
-            <h3 style={{ color: "#172b4d", marginBottom: "10px" }}>{title}</h3>
-            <p
-              style={{ fontSize: "24px", color: "#0052cc", fontWeight: "bold" }}
-            >
-              {[15, 45, 8, 5][index]}
-            </p>
-          </div>
+        {stats.map((item, index) => (
+          <StatCard key={index} {...item} />
         ))}
       </div>
 
