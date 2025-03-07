@@ -44,7 +44,6 @@ const taskSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: ["Pending", "In Progress", "Completed"],
     },
     comments: [
       {
