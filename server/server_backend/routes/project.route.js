@@ -2,10 +2,10 @@ const express = require("express");
 const projectRouter = express.Router();
 const bodyParser = require("body-parser");
 const db = require("../models/index");
-const { AuthMiddleware } = require("../middlewares");
 const { TaskController } = require("../controllers");
 //import cả controller của task lẫn projetc vào đây
 const { ProjectController } = require("../controllers/index");
+const { AuthMiddleware } = require("../middlewares");
 
 projectRouter.use(bodyParser.json());
 
@@ -32,7 +32,7 @@ projectRouter.put(
   ProjectController.updateProjectStatus
 );
 // vào project bằng code
-projectRouter.post("/join-by-code");
+projectRouter.post("/join-by-code", ProjectController.joinProjectByCode);
 //vào dự án bằng link email
 projectRouter.post("/:projectId/invite");
 // rời dự án
@@ -46,14 +46,14 @@ projectRouter.get(
 // set group member role
 projectRouter.put(
   "/:projectId/member/:memberId/set-role",
+  AuthMiddleware.verifyAccessToken,
   ProjectController.setProjectMemberRole
 );
 // đá thành viên ra khỏi dự án
 projectRouter.delete(
   "/:projectId/member/:memberId/delete",
   ProjectController.deleteProjectMember
-);
-// lấy thông tin thành viên đang có trong dự án
+); // lấy thông tin thành viên đang có trong dự án
 projectRouter.get(
   "/user/:projectId/get-user-role",
   ProjectController.getUserRole
