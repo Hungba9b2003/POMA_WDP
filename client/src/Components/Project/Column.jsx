@@ -5,6 +5,7 @@ import CreateTask from "./CreateTask";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { FiSave } from "react-icons/fi";
 
 const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
     const [showModal, setShowModal] = useState(false);
@@ -36,18 +37,22 @@ const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
             if (response.data.classifications) {
                 setColumns(response.data.classifications); 
             }
+    
+            // Cập nhật danh sách task trên giao diện
+            setTasks(prevTasks => prevTasks.filter(task => task.column !== title));
+    
         } catch (error) {
             console.error("Error deleting column:", error);
             alert("Failed to delete column!");
         }
-    }, [title, projectId, id, setColumns]);
+    }, [title, projectId, id, setColumns, setTasks]);
     
 
     return (
         <Card className="p-3">
             <Row>
-                <Col><h5>{title}</h5></Col>
-                <Col className="text-end">
+                <Col ><h5>{title}</h5><FiSave /></Col>
+                <Col className="text-end ">
                     <RiDeleteBin6Line 
                         onClick={handleDeleteColumn} 
                         style={{ cursor: "pointer", color: "red" }} 
