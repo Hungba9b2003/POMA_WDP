@@ -78,7 +78,6 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />
       </Route>
-
       {(accessToken || accessToken2) && (
         <Route path="/project/:projectId" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />

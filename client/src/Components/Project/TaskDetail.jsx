@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, Col, Row, Image, ProgressBar, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Modal, Button, Form, Col, Row, Image, Dropdown, OverlayTrigger, Tooltip } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';  // Các biểu tượng bút và thùng rác
+import { FaEdit, FaTrashAlt, FaRegCalendarAlt, FaCalendarTimes, FaCalendarCheck } from 'react-icons/fa';  // Các biểu tượng bút và thùng rác
 import moment from 'moment'; // Để tính thời gian đã trôi qua
 
-const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
+const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     const [user, setUser] = useState(null);
     const [newComment, setNewComment] = useState("");
     const [comments, setComments] = useState(task.comments || []);  // Use task.comments directly
@@ -15,10 +15,17 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
     const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
     const [subTaskName, setSubTaskName] = useState("");
     const [taskDescription, setTaskDescription] = useState(task.description || "");
-    const [assignee, setAssignee] = useState(null);
-    const [reviewer, setReviewer] = useState(null);
     const [editingCommentId, setEditingCommentId] = useState(null); // Trạng thái bình luận đang chỉnh sửa
     const [editedContent, setEditedContent] = useState(""); // Nội dung chỉnh sửa
+    const [projectMembers, setProjectMembers] = useState([]);
+    const [isOwner, setIsOwner] = useState(false);
+    const [assigneeName, setAssigneeName] = useState(task.assignee.username || null);
+    const [reviewerName, setReviewerName] = useState(task.reviewer.username || null);
+    const [assigneeAvatar, setAssigneeAvatar] = useState(task.assignee.profile?.avatar || null);
+    const [reviewerAvatar, setReviewerAvatar] = useState(task.reviewer.profile?.avatar || null);
+    const [deadline, setDeadline] = useState(task.deadline || null);
+    const [taskStatus, setTaskStatus] = useState(task.status || "");
+    const [isEditing, setIsEditing] = useState(false);
     const { projectId } = useParams();  // Get project ID from params
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -35,7 +42,6 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
 
     useEffect(() => {
         if (task) {
-            fetchAssigneeAndReviewer();
             fetchComments();
             fetchSubTasks();
             fetchUser();
@@ -53,24 +59,6 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
             setUser(response.data);
         } catch (error) {
             console.error("Error fetching user profile:", error);
-        }
-    };
-    console.log(task.assignee.username);
-    const fetchAssigneeAndReviewer = async () => {
-        try {
-            if (task.assignee) {
-                const assigneeId = typeof task.assignee === "object" ? task.assignee._id : task.assignee;
-                const assigneeResponse = await axios.get(`http://localhost:9999/users/get-user?_id=${assigneeId}`);
-                setAssignee(assigneeResponse.data);
-            }
-
-            if (task.reviewer) {
-                const reviewerId = typeof task.reviewer === "object" ? task.reviewer._id : task.reviewer;
-                const reviewerResponse = await axios.get(`http://localhost:9999/users/get-user?_id=${reviewerId}`);
-                setReviewer(reviewerResponse.data);
-            }
-        } catch (error) {
-            console.error("Lỗi khi fetch assignee hoặc reviewer:", error);
         }
     };
 
@@ -336,18 +324,161 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
         }
     };
 
+    const fetchProjectMembers = async () => {
+        try {
+            const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.ok) {
+                const data = await response.json();
+
+                // Sử dụng 'id' thay vì '_id' để so sánh
+                setProjectMembers(data.memberInfo || []);
+
+                // Kiểm tra xem có thành viên nào có role là 'owner' và id trùng với id hiện tại không
+                setIsOwner(data.memberInfo.some(member => member.id.toString() === id.toString() && member.role === 'owner'));
+
+            } else {
+                setProjectMembers([]); // Nếu API lỗi, vẫn đảm bảo là mảng
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách thành viên:", error);
+            setProjectMembers([]);
+        }
+    };
+
     useEffect(() => {
         setTaskDescription(task.description || "");
+        setAssigneeName(task.assignee?.username || "Unknown");
+        setAssigneeAvatar(task.assignee?.profile?.avatar || null);
+        setReviewerName(task.reviewer?.username || "Unknown");
+        setReviewerAvatar(task.reviewer?.profile?.avatar || null);
     }, [task]);
 
     useEffect(() => {
-        console.log("Assignee đã cập nhật:", assignee);
-    }, [assignee]);
+        fetchProjectMembers();
+    }, [projectId, token, id]);
 
-    useEffect(() => {
-        console.log("Reviewer đã cập nhật:", reviewer);
-    }, [reviewer]);
+    const handleChangeAssignee = async (newAssigneeId) => {
 
+        if (!isOwner || !isPremium) {
+            console.warn("You don't have permission to change the assignee.");
+            alert("Only the owner of a premium project can change the assignee.");
+            return;
+        }
+
+        const selectedAssignee = projectMembers.find(member => member.id === newAssigneeId);
+
+        if (!selectedAssignee) {
+            console.error("Selected assignee not found in projectMembers");
+            return;
+        }
+
+        console.log("Updating assignee with ID:", newAssigneeId); // Debugging log
+
+        setAssigneeName(selectedAssignee.name);
+        setAssigneeAvatar(selectedAssignee.avatar);
+
+        try {
+            const response = await axios.put(
+                `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+                { assignee: newAssigneeId },  // 👈 Chỉ gửi ID, không phải object
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            console.log("API Response:", response.data); // Debugging log
+
+            if (response.data) {
+                onUpdateTask(response.data); // Cập nhật task trong ListTask
+            }
+        } catch (error) {
+            console.error("Error updating assignee", error.response?.data || error);
+            setAssigneeName(task.assignee?.username || "Unassigned");
+            setAssigneeAvatar(task.assignee?.profile?.avatar || null);
+        }
+    };
+
+    const handleChangeReviewer = async (newReviewerId) => {
+
+        if (!isOwner || !isPremium) {
+            console.warn("You don't have permission to change the assignee.");
+            alert("Only the owner of a premium project can change the assignee.");
+            return;
+        }
+
+        const selectedReviewer = projectMembers.find(member => member.id === newReviewerId);
+        setReviewerName(selectedReviewer.name);
+        setReviewerAvatar(selectedReviewer.avatar);
+        try {
+            const response = await axios.put(
+                `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+                { reviewer: newReviewerId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (response.data) {
+                onUpdateTask(response.data);// Cập nhật toàn bộ task
+            }
+        } catch (error) {
+            console.error("Error updating reviewer", error);
+            setReviewerName(task.reviewer?.username || "Unknown");
+            setReviewerAvatar(task.reviewer?.profile?.avatar || null);
+        }
+    };
+
+    const handleUpdateTaskStatus = async (newStatus) => {
+        console.log("Updating task status to:", newStatus);
+        setTaskStatus(newStatus);
+        try {
+            const { data } = await axios.put(
+                `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+                { status: newStatus },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            onUpdateTask(data); // Gọi hàm cập nhật task trong ListTask
+        } catch (error) {
+            console.error("Error updating description", error);
+        }
+    }
+
+    const checkDeadlineStatus = (deadline) => {
+        const currentDate = new Date(); // Ngày hiện tại
+        const deadlineDate = new Date(deadline); // Deadline từ task
+
+        if (deadlineDate < currentDate) {
+            return "overdue"; // Nếu deadline đã qua, trả về "overdue"
+        } else {
+            return "upcoming"; // Nếu deadline chưa đến, trả về "upcoming"
+        }
+    };
+
+    const handleUpdateDeadline = async (newDeadline) => {
+        if (checkDeadlineStatus(newDeadline) === "overdue") {
+            alert("Deadline you chose has passed. Please choose another one.");
+            return;
+        }
+        setDeadline(newDeadline);
+        try {
+            const { data } = await axios.put(
+                `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+                { deadline: newDeadline },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            onUpdateTask(data); // Cập nhật task trong parent component
+        } catch (error) {
+            console.error("Error updating deadline", error);
+        }
+    };
+    const deadlineStatus = checkDeadlineStatus(deadline);
 
     return (
         <Modal show={showModal} onHide={onClose} size="xl">
@@ -509,13 +640,15 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
                                                     </Col>
 
                                                     <Col xs={1}>
-                                                        <Form.Control
-                                                            as="select"
-                                                            value={subtask?.assignee?.username}
-                                                            onChange={(e) => handleUpdateSubTask(subtask, { status: e.target.value })}
-
-                                                        >
-                                                        </Form.Control>
+                                                        <img
+                                                            src={subtask.assignee?.profile?.avatar || "default-avatar-url"}
+                                                            alt="Avatar"
+                                                            style={{
+                                                                width: "30px",
+                                                                height: "30px",
+                                                                borderRadius: "50%",
+                                                            }}
+                                                        />
                                                     </Col>
 
                                                     {/* Status */}
@@ -663,32 +796,176 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask }) => {
                         </div>
                     </Col>
                     <Col md={4}>
-                        <Row>
+                        <Row style={{ width: "100%", maxWidth: "330px" }}>
                             <Form.Control
                                 as="select"
-                                value={task.status}
-                                onChange={(e) => handleUpdateSubTask(task, { status: e.target.value })}
+                                value={taskStatus}
+                                onChange={(e) => handleUpdateTaskStatus(e.target.value)}
                                 style={{
-                                    border: 'none',
-                                    color: task.status === 'Pending' ? 'black' : task.status === 'In Progress' ? 'blue' : 'green',
+                                    border: "1px solid black",
+                                    borderRadius: "5px",
+                                    width: "120px",
+                                    textAlign: "center",
+                                    fontWeight: "bold",
+                                    color: taskStatus === "Pending" ? "black" : taskStatus === "In Progress" ? "blue" : "green",
                                 }}
                             >
-                                <option value="Pending" style={{ color: 'black' }}>Pending</option>
-                                <option value="In Progress" style={{ color: 'blue' }}>Progress</option>
-                                <option value="Completed" style={{ color: 'green' }}>Completed</option>
+                                <option value="Pending" style={{ fontWeight: "bold", color: "black" }}>
+                                    Pending
+                                </option>
+                                <option value="In Progress" style={{ fontWeight: "bold", color: "blue" }}>
+                                    In Progress
+                                </option>
+                                <option value="Completed" style={{ fontWeight: "bold", color: "green" }}>
+                                    Completed
+                                </option>
                             </Form.Control>
                         </Row>
-                        <Row>
-                            <Col sm={6}>
+
+                        <Row className="d-flex align-items-center">
+                            <Col md={2}>
                                 <strong>Assignee:</strong>
-                                {task.assignee ? task.assignee.username : "Loading..."}
                             </Col>
-                            <Col sm={6}>
-                                <strong>Reviewer:</strong>
-                                {task.reviewer ? task.reviewer.username : "Loading..."}
+                            <Col md={8}>
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="link" id="dropdown-assignee">
+                                        <Image
+                                            src={assigneeAvatar}
+                                            roundedCircle
+                                            width={30}
+                                            height={30}
+                                            style={{ marginLeft: '10px', cursor: 'pointer' }}
+                                        />
+                                        <span style={{ marginLeft: '10px' }}>
+                                            {assigneeName}
+                                        </span>
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        {projectMembers.map(member => (
+                                            <Dropdown.Item
+                                                key={member.id}
+                                                onClick={() => handleChangeAssignee(member.id)} // Cập nhật assignee
+                                            >
+                                                <Image
+                                                    src={member?.avatar}
+                                                    roundedCircle
+                                                    width={30}
+                                                    height={30}
+                                                    style={{ marginRight: '10px' }}
+                                                />
+                                                {member.name}
+                                            </Dropdown.Item>
+                                        ))}
+                                    </Dropdown.Menu>
+                                </Dropdown>
                             </Col>
                         </Row>
 
+                        <Row className="d-flex align-items-center">
+                            <Col md={2}>
+                                <strong>Reviewer:</strong>
+                            </Col>
+                            <Col md={8}>
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="link" id="dropdown-reviewer">
+                                        <Image
+                                            src={reviewerAvatar} // Sử dụng Optional chaining
+                                            roundedCircle
+                                            width={30}
+                                            height={30}
+                                            style={{ marginLeft: '10px', cursor: 'pointer' }}
+                                        />
+                                        <span style={{ marginLeft: '10px' }}>
+                                            {reviewerName}
+                                        </span>
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        {projectMembers.map(member => (
+                                            <Dropdown.Item
+                                                key={member.id}
+                                                onClick={() => handleChangeReviewer(member.id)} // Thực hiện thay đổi reviewer
+                                            >
+                                                <Image
+                                                    src={member.avatar} // Avatar của member
+                                                    roundedCircle
+                                                    width={30}
+                                                    height={30}
+                                                    style={{ marginRight: '10px' }}
+                                                />
+                                                {member.name}
+                                            </Dropdown.Item>
+                                        ))}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </Col>
+                        </Row>
+
+                        <Row>
+                            <Col md={4}>
+                                <strong>Deadline:</strong>
+                            </Col>
+                            <Col md={8}>
+                                {/* Hiển thị ngày deadline với màu sắc và icon dựa trên trạng thái */}
+                                <span
+                                    style={{
+                                        fontSize: "0.9rem",
+                                        color: deadlineStatus === "overdue" ? "red" : deadlineStatus === "upcoming" ? "green" : "gray",
+                                    }}
+                                >
+                                    {deadline ? new Date(deadline).toLocaleDateString() : "Not set"}
+                                </span>
+
+                                {/* Thêm icon tương ứng với trạng thái deadline */}
+                                <Button
+                                    variant="link"
+                                    onClick={() => setIsEditing(true)} // Khi nhấn vào biểu tượng, mở chế độ chỉnh sửa
+                                >
+                                    {deadlineStatus === "overdue" ? (
+                                        <FaCalendarTimes style={{ color: "red" }} />
+                                    ) : deadlineStatus === "upcoming" ? (
+                                        <FaCalendarCheck style={{ color: "green" }} />
+                                    ) : (
+                                        <FaRegCalendarAlt />
+                                    )}
+                                </Button>
+
+                                {/* Input cho phép chỉnh sửa deadline nếu có sự kiện chỉnh sửa */}
+                                {isEditing && (
+                                    <Form.Control
+                                        type="date"
+                                        value={deadline}
+                                        onChange={(e) => setDeadline(e.target.value)} // Cập nhật trạng thái deadline khi thay đổi
+                                        onBlur={() => handleUpdateDeadline(deadline)} // Gọi API khi mất focus
+                                        style={{ marginTop: "10px" }}
+                                    />
+                                )}
+                            </Col>
+                        </Row>
+
+                        <Row style={{ marginLeft: "10px" }}>
+                            <Col md={4}>
+                                <span style={{ fontSize: "0.9rem" }}>
+                                    <FaRegCalendarAlt /> Created At
+                                </span>
+                            </Col>
+                            <Col md={8}>
+                                <span style={{ fontSize: "0.9rem", color: "gray" }}>
+                                    {task?.createdAt ? new Date(task?.createdAt).toLocaleString() : "Not available"}
+                                </span>
+                            </Col>
+                        </Row>
+                        <Row style={{ marginLeft: "10px" }}>
+                            <Col md={4}>
+                                <span style={{ fontSize: "0.9rem" }}>
+                                    <FaRegCalendarAlt /> Updated At
+                                </span>
+                            </Col>
+                            <Col md={8}>
+                                <span style={{ fontSize: "0.9rem", color: "gray" }}>
+                                    {task?.updatedAt ? new Date(task?.updatedAt).toLocaleString() : "Not available"}
+                                </span>
+                            </Col>
+                        </Row>
                     </Col>
                 </Row>
             </Modal.Body>
