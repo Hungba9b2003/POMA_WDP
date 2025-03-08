@@ -223,7 +223,6 @@ const updateProjectStatus = async (req, res) => {
     }
 };
 
-
 async function getProjectMembers(req, res, next) {
     try {
         const { projectId } = req.params;
@@ -232,17 +231,17 @@ async function getProjectMembers(req, res, next) {
             .populate({
                 path: 'members._id',
                 model: 'user',
+                select: 'username'
             });
 
         if (!project) {
             throw createHttpErrors(404, "Project not found");
         }
-        console.log(project.members);
         const memberInfo = project.members.map(member => ({
             id: member._id ? member._id._id : null,
             name: member._id ? member._id.username : null,
             role: member.role,
-            avatar: member._id ? member._id.profile.avatar : null
+          avatar: member._id ? member._id.profile.avatar : null
         }));
 
         res.status(200).json({ memberInfo });
@@ -256,7 +255,7 @@ async function setProjectMemberRole(req, res, next) {
     try {
         const { projectId, memberId } = req.params;
         // const { id } = req.payload;
-        const { id } = req.body;
+        const { id } = req.payload;
         const { role } = req.body;
 
         const project = await db.Projects.findOne({ _id: projectId });
@@ -294,42 +293,38 @@ async function setProjectMemberRole(req, res, next) {
 async function deleteProjectMember(req, res, next) {
     try {
         const { projectId, memberId } = req.params;
-        // const { id } = req.payload;
-        const { id } = req.body;
 
-        const project = await db.Projects.findOne({ _id: projectId });
+        // Tìm dự án
+        const project = await db.Projects.findById(projectId).populate("members");
         if (!project) {
-            throw createHttpErrors(404, "Project not found");
+            return res.status(404).json({ error: "Project not found" });
         }
 
-        const owner = project.members.find(member => member._id.toString() === id && member.role === 'owner');
-        if (!owner) {
-            throw createHttpErrors(403, "Only the project owner can delete a member");
-        }
-
-        const memberToDelete = project.members.find(member => member._id.toString() === memberId);
+        // Kiểm tra xem thành viên cần xóa có tồn tại không
+        const memberToDelete = project.members.find(
+            (member) => member._id.toString() === memberId
+        );
         if (!memberToDelete) {
-            throw createHttpErrors(404, "Member not found");
+            return res.status(404).json({ error: "Member not found" });
         }
 
-        if (memberId === id) {
-            throw createHttpErrors(403, "The owner cannot remove themselves from the group");
-        }
-
-        project.members = project.members.filter(member => member._id.toString() !== memberId);
+        // Xóa thành viên khỏi danh sách dự án
+        project.members = project.members.filter(
+            (member) => member._id.toString() !== memberId
+        );
         await project.save();
 
-        const user = await db.Users.findById(memberId);
-        if (user) {
-            user.projects = user.projects.filter(project => project.toString() !== projectId);
-            await user.save();
-        }
+        // Xóa dự án khỏi danh sách của thành viên đó
+        await db.Users.findByIdAndUpdate(memberId, {
+            $pull: { projects: projectId },
+        });
 
-        res.status(200).json({ message: "Member removed from the project successfully" });
+        return res.status(200).json({ message: "Member removed successfully" });
     } catch (error) {
         next(error);
     }
 }
+
 
 
 async function getUserRole(req, res, next) {
@@ -472,6 +467,55 @@ const leaveProjects = async (req, res, next) => {
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
+const joinProjectByCode = async (req, res, next) => {
+    try {
+        const { projectCode, userId } = req.body;
+
+        if (!projectCode || !userId) {
+            return res
+                .status(400)
+                .json({ message: "Project code and user ID are required" });
+        }
+
+        // Tìm dự án theo mã projectCode
+        const project = await db.Projects.findOne({ projectCode });
+        if (!project) {
+            return res
+                .status(404)
+                .json({ message: "Invalid project code or project not found" });
+        }
+
+        // Kiểm tra xem user đã là thành viên chưa
+        const isMember = project.members.some(
+            (member) => member._id.toString() === userId
+        );
+        if (isMember) {
+            return res
+                .status(400)
+                .json({ message: "User is already a member of this project" });
+        }
+
+        // Thêm user vào danh sách members với vai trò mặc định là "member"
+        project.members.push({
+            _id: userId,
+            role: "member",
+            teams: [], // Người mới tham gia chưa thuộc nhóm nào
+        });
+
+        // Lưu thay đổi
+        await project.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Joined project successfully",
+            projectId: project._id,
+        });
+    } catch (error) {
+        console.error("Error joining project by code:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
 const ProjectController = {
     createProject,
     getAllProjects,
@@ -488,6 +532,7 @@ const ProjectController = {
     countProjects,
     countPremiumProjects,
     leaveProjects,
+    joinProjectByCode,
 }
 
 module.exports = ProjectController

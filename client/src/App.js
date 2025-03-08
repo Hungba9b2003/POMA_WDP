@@ -21,15 +21,18 @@ import EditProfile from "./Components/Profile/EditProfile";
 import ProfileInfo from "./Components/Profile/ProfileInfo";
 import ProtectedRoute from "./Components/Utils/ProtectedRoute";
 import Landing from "./Pages/LandingPage";
+import "./App.css";
+import AppProvider, { AppContext } from "./Context/AppContext"; // Import AppContext
+import MemberList from "./Pages/MemberList";
 import Workspace from "./Components/Project/Workspace";
 import ListTask from "./Components/Project/ListTask";
-import { AppContext } from "./Context/AppContext";
 import Header from "./Components/Utils/Header";
 import ListProject from "./Components/Project/ListProject";
 import MemberList from "./Components/Project/MemberList";
 import Payment from "./Components/CheckOut/Payment";
 import BuyMembership from "./Components/Project/BuyMembership";
 import ProjectStored from "./Components/Project/ProjectStored";
+import JoinProject from "./Pages/joinProject/JoinProject";
 import Summary from "./Components/Project/SummaryProject";
 
 const Layout = () => {
@@ -47,7 +50,6 @@ const Layout = () => {
     </>
   );
 };
-
 function App() {
   const { checkTokenExpiration } = useContext(AppContext);
   const [accessToken, setAccessToken] = useState(localStorage.getItem("token"));
@@ -82,7 +84,7 @@ function App() {
         <Route path="/project/:projectId" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
           <Route path="listTask" element={<ListTask />} />
-          <Route path="members" element={<MemberList />} />
+        <Route path="members" element={<MemberList />} />
           <Route path="membership" element={<BuyMembership />} />
           <Route path="membership/checkOut" element={<Payment />} />
           <Route path="summary" element={<Summary />} />
@@ -93,8 +95,16 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route path="listProject" element={<ListProject />} />
           <Route path="projectStored" element={<ProjectStored />} />
+          <Route path="/join-project" element={<JoinProject />} />
         </Route>
       )}
+ 
+      {accessToken && (
+        <Route path="/" element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
+          <Route path="view-profile" />
+          <Route path="edit-profile" />
+          <Route path="change-password" />
+
 
       {accessToken || accessToken2 ? (
         <Route path="/profile" element={<ProfilePage />}>
@@ -105,6 +115,7 @@ function App() {
       ) : (
         <Route path="*" element={<Navigate to="/login/loginForm" />} />
       )}
+
     </Routes>
   );
 }
