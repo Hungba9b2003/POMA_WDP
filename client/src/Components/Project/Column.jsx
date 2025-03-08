@@ -5,7 +5,6 @@ import CreateTask from "./CreateTask";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { FiSave } from "react-icons/fi";
 
 const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
     const [showModal, setShowModal] = useState(false);
@@ -46,12 +45,28 @@ const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
             alert("Failed to delete column!");
         }
     }, [title, projectId, id, setColumns, setTasks]);
+
+    const handleChangeName = async () => {
+        try {
+            const response = await axios.put(`http://localhost:9999/projects/${projectId}/edit`, {
+                id,
+                editColumn: title
+            });
+            console.log(response.data.classifications);
+            if (response.data.classifications) {
+                setColumns(response.data.classifications);
+            }
+        } catch (error) {
+            console.error("Error editing column:", error);
+            alert("Failed to edit column!");
+        }
+    }
     
 
     return (
         <Card className="p-3">
             <Row>
-                <Col ><h5>{title}</h5><FiSave /></Col>
+                <Col ><h5 onChange={(e)=>handleChangeName(e.target.value)}>{title}</h5></Col>
                 <Col className="text-end ">
                     <RiDeleteBin6Line 
                         onClick={handleDeleteColumn} 

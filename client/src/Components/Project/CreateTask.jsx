@@ -73,8 +73,8 @@ const CreateTask = ({ show, handleClose, projectId, setTasks }) => {
         try {
             const response = await axios.post(
                 `http://localhost:9999/projects/${projectId}/tasks/create`,
-                { ...taskData, id }, // Dữ liệu gửi đi
-                { headers: { Authorization: `Bearer ${token}` } } // Headers
+                { ...taskData, id }, 
+                { headers: { Authorization: `Bearer ${token}` } } 
             );
     
             if (response.status === 201) {

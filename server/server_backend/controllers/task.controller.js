@@ -37,8 +37,7 @@ async function createTask(req, res, next) {
         const { id } = req.payload;
         const { projectId } = req.params;
         const project = await db.Projects.findOne({ _id: projectId });
-        // const role = project.memberRole(id);
-        // console.log(role);
+        
         if (!project) {
             return res.status(404).json({ error: { status: 404, message: "Project not found" } })
         }

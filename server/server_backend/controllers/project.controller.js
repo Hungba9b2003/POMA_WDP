@@ -90,7 +90,7 @@ async function getProjectById(req, res, next) {
 async function updateProject(req, res, next) {
     try {
         const { projectId } = req.params;
-        const { id, newColumn, removeColumn } = req.body; // Nhận removeColumn từ request body
+        const { id, newColumn, removeColumn, editColumn } = req.body; 
         const { projectName, projectCode, projectAvatar } = req.body;
 
         const project = await db.Projects.findOne({ _id: projectId })
@@ -150,7 +150,17 @@ async function updateProject(req, res, next) {
                 updateProject.classifications = project.classifications;
             }
 
-            
+
+            if(editColumn) {
+                const taskToUpdate = project.tasks.find(task => task.status === editColumn);
+                if (!taskToUpdate) {
+                    return res.status(404).json({ message: "Task not found in this project" });
+                }
+                const { title, description } = req.body;
+                if (title) taskToUpdate.title = title;
+                if (description) taskToUpdate.description = description;
+                updateProject.tasks = project.tasks;
+            }
 
         } else {
             throw createHttpErrors(403, "Only the project owner can edit project details");

@@ -49,9 +49,6 @@ const Workspace = () => {
             .catch(error => console.error("Error fetching project data:", error));
     }, [projectId, token, id]);
 
-
-
-
     // Thêm cột mới
     const addColumn = useCallback(async () => {
         if (!isPremium && columns.length >= 5) {
