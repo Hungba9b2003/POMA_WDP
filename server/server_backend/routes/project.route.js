@@ -41,10 +41,11 @@ projectRouter.post("/:projectId/invite");
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
 projectRouter.get(
-    "/:projectId/get-member", AuthMiddleware.verifyAccessToken, ProjectController.getProjectMembers
-)
+    "/:projectId/get-member",
+    ProjectController.getProjectMembers
+  );
 // set group member role
-projectRouter.put("/:projectId/member/:memberId/set-role", AuthMiddleware.verifyAccessToken, ProjectController.setProjectMemberRole);
+projectRouter.put("/:projectId/member/:memberId/set-role",  ProjectController.setProjectMemberRole);
 // đá thành viên ra khỏi dự án
 projectRouter.delete(
     "/:projectId/member/:memberId/delete",
