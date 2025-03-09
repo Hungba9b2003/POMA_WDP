@@ -23,6 +23,7 @@ async function getAllTasks(req, res, next) {
       .populate("reviewer", "username profile.avatar") // Lấy thông tin người review
       .populate("comments.user", "username profile.avatar") // Lấy thông tin user trong comments
       .populate("subTasks.assignee", "username profile.avatar") // Lấy thông tin user của subTasks
+      .sort({ taskNumber: 1 })
       .lean(); // Chuyển đổi sang object thường
 
     res.status(200).json(tasks);
@@ -44,7 +45,7 @@ async function createTask(req, res, next) {
         .json({ error: { status: 404, message: "Project not found" } });
     }
     const newTask = {
-      taskNumber: project.tasks.length + 1,
+      taskNumber: (project?.tasks?.length || 0) + 1, // Kiểm tra tránh lỗi undefined
       taskName: req.body.taskName,
       description: req.body.description,
       reviewer: id,
@@ -52,12 +53,17 @@ async function createTask(req, res, next) {
       deadline: req.body.deadline,
       status: req.body.status,
     };
+    console.log(newTask);
     const newTasks = await db.Tasks.create(newTask);
+    if (!newTasks) {
+      return res.status(500).json({ error: "Task creation failed" });
+    }
     const updatedProject = await db.Projects.findByIdAndUpdate(
       projectId,
       { $push: { tasks: newTasks._id } },
       { new: true, runValidators: true }
     );
+    console.log(newTasks);
     if (!updatedProject) {
       return res
         .status(500)
@@ -479,7 +485,38 @@ async function deleteComment(req, res, next) {
   }
 }
 
+async function swapTaskNumber(req, res, next) {
+  try {
+    const { taskId1, taskId2 } = req.body;
+
+    const task1 = await db.Tasks.findById(taskId1);
+    const task2 = await db.Tasks.findById(taskId2);
+
+    if (!task1 || !task2) {
+      return res.status(404).json({ message: "One or both tasks not found" });
+    }
+
+    // Bước 1: Đặt task1.taskNumber thành giá trị tạm (-1) và lưu lại
+    const tempNumber1 = task1.taskNumber;
+    const tempNumber2 = task2.taskNumber;
+    console.log(tempNumber1, tempNumber2);
+    await db.Tasks.findByIdAndUpdate(taskId1, { taskNumber: -1 });
+
+    // Bước 2: Cập nhật taskNumber của task2 cho task1
+    await db.Tasks.findByIdAndUpdate(taskId2, { taskNumber: tempNumber1 });
+
+    // Bước 3: Cập nhật taskNumber cũ của task1 cho task2
+    await db.Tasks.findByIdAndUpdate(taskId1, { taskNumber: tempNumber2 });
+
+    res.json({ message: "Swapped successfully" });
+  } catch (error) {
+    console.error("Error swapping task numbers:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 const TaskController = {
+  swapTaskNumber,
   getAllComments,
   addComment,
   editComment,

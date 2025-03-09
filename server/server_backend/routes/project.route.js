@@ -14,6 +14,11 @@ projectRouter.post(
   "/:projectId/updatePremium",
   ProjectController.updatePremium
 );
+projectRouter.get(
+  "/:projectId/getProjectByIdSummary",
+  ProjectController.getProjectByIdSummary
+);
+
 // tao dự án
 projectRouter.post("/create", ProjectController.createProject);
 //lấy toàn bộ dự án của user
@@ -74,6 +79,11 @@ projectRouter.post(
   "/:projectId/tasks/create",
   AuthMiddleware.verifyAccessToken,
   TaskController.createTask
+);
+projectRouter.put(
+  "/:projectId/tasks/swap",
+  AuthMiddleware.verifyAccessToken,
+  TaskController.swapTaskNumber
 );
 // chỉnh sửa task
 projectRouter.put(

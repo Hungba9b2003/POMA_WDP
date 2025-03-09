@@ -28,7 +28,6 @@ import Workspace from "./Components/Project/Workspace";
 import ListTask from "./Components/Project/ListTask";
 import Header from "./Components/Utils/Header";
 import ListProject from "./Components/Project/ListProject";
-import MemberList from "./Components/Project/MemberList";
 import Payment from "./Components/CheckOut/Payment";
 import BuyMembership from "./Components/Project/BuyMembership";
 import ProjectStored from "./Components/Project/ProjectStored";
@@ -84,7 +83,7 @@ function App() {
         <Route path="/project/:projectId" element={<Layout />}>
           <Route path="workspace" element={<Workspace />} />
           <Route path="listTask" element={<ListTask />} />
-        <Route path="members" element={<MemberList />} />
+          <Route path="members" element={<MemberList />} />
           <Route path="membership" element={<BuyMembership />} />
           <Route path="membership/checkOut" element={<Payment />} />
           <Route path="summary" element={<Summary />} />
@@ -98,13 +97,17 @@ function App() {
           <Route path="/join-project" element={<JoinProject />} />
         </Route>
       )}
- 
+
       {accessToken && (
-        <Route path="/" element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
+        <Route
+          path="/"
+          element={<ProtectedRoute allowedRoles={["user", "admin"]} />}
+        >
           <Route path="view-profile" />
           <Route path="edit-profile" />
           <Route path="change-password" />
-
+        </Route>
+      )}
 
       {accessToken || accessToken2 ? (
         <Route path="/profile" element={<ProfilePage />}>
@@ -115,7 +118,6 @@ function App() {
       ) : (
         <Route path="*" element={<Navigate to="/login/loginForm" />} />
       )}
-
     </Routes>
   );
 }
