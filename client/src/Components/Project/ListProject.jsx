@@ -25,11 +25,15 @@ const ListProject = () => {
 
   useEffect(() => {
     axios
-      .post("http://localhost:9999/projects/get-project", { id }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .post(
+        "http://localhost:9999/projects/get-project",
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((res) => {
         const allProjects = res.data;
         setProjects(
@@ -59,8 +63,20 @@ const ListProject = () => {
               <AiOutlineMenu size={30} />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => navigate("/join-project")}>Join by Code</Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("/projectStored")}>Project Stored</Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/join-project")}>
+                Join by Code
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/projectStored")}>
+                Project Stored
+              </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => console.log("Join by Code Clicked")}
+              >
+                Join by Code
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/projectStored")}>
+                Project Stored
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Col>

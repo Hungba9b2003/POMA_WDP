@@ -99,7 +99,10 @@ function App() {
       )}
 
       {accessToken && (
-        <Route path="/" element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
+        <Route
+          path="/"
+          element={<ProtectedRoute allowedRoles={["user", "admin"]} />}
+        >
           <Route path="view-profile" />
           <Route path="edit-profile" />
           <Route path="change-password" />
@@ -115,7 +118,6 @@ function App() {
       ) : (
         <Route path="*" element={<Navigate to="/login/loginForm" />} />
       )}
-
     </Routes>
   );
 }
