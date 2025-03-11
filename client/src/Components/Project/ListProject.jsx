@@ -63,20 +63,8 @@ const ListProject = () => {
               <AiOutlineMenu size={30} />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => navigate("/join-project")}>
-                Join by Code
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("/projectStored")}>
-                Project Stored
-              </Dropdown.Item>
-              <Dropdown.Item
-                onClick={() => console.log("Join by Code Clicked")}
-              >
-                Join by Code
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("/projectStored")}>
-                Project Stored
-              </Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/join-project")}>Join by Code</Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/projectStored")}>Project Stored</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Col>
