@@ -3,7 +3,7 @@ import { Modal, Button, Form, Col, Row, Image, Dropdown, OverlayTrigger, Tooltip
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { FaEdit, FaTrashAlt, FaRegCalendarAlt, FaCalendarTimes, FaCalendarCheck } from 'react-icons/fa';  // Các biểu tượng bút và thùng rác
+import { FaEdit, FaTrashAlt, FaRegCalendarAlt, FaCalendarTimes, FaCalendarCheck, FaSave } from 'react-icons/fa';  // Các biểu tượng bút và thùng rác
 import moment from 'moment'; // Để tính thời gian đã trôi qua
 
 const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
@@ -796,7 +796,9 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
                                                     <Col xs={1} className="text-center">
                                                         {editingCommentId === c._id ? (
-                                                            <button onClick={() => handleSave(c._id)}>Save</button>
+                                                            <button
+                                                                style={{ backgroundColor: "white", border: "none" }}
+                                                                onClick={() => handleSave(c._id)}><FaSave style={{ color: "green", cursor: "pointer" }} /></button>
                                                         ) : (
                                                             <FaEdit
                                                                 style={{ color: "gold", cursor: "pointer" }}
