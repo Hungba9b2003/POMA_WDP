@@ -43,6 +43,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     const [taskStatus, setTaskStatus] = useState(task.status || "");
     const [isEditing, setIsEditing] = useState(false);
     const { projectId } = useParams();  // Get project ID from params
+    const [statusList, setStatusList] = useState([]);
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 

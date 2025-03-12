@@ -18,7 +18,6 @@ function MemberList() {
     const roles = ['member', 'viewer'];
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    console.log(projectMembers)
     let id = null;
     if (token) {
         try {
@@ -39,9 +38,11 @@ function MemberList() {
                         },
                     }
                 );
+                console.log(response);
                 if (response.ok) {
                     const data = await response.json();
                     setProjectMembers(data.memberInfo || []); // Đảm bảo luôn có mảng
+                    console.log(data);
                 } else {
                     setProjectMembers([]); // Nếu API lỗi, vẫn đảm bảo là mảng
                 }

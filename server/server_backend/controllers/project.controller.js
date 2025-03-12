@@ -583,7 +583,54 @@ async function createTeam(projectId, taskId, assigneeId) {
   }
 }
 
+const joinProjectByCode = async (req, res, next) => {
+  try {
+      const { projectCode, userId } = req.body;
 
+      if (!projectCode || !userId) {
+          return res
+              .status(400)
+              .json({ message: "Project code and user ID are required" });
+      }
+
+      // Tìm dự án theo mã projectCode
+      const project = await db.Projects.findOne({ projectCode });
+      if (!project) {
+          return res
+              .status(404)
+              .json({ message: "Invalid project code or project not found" });
+      }
+
+      // Kiểm tra xem user đã là thành viên chưa
+      const isMember = project.members.some(
+          (member) => member._id.toString() === userId
+      );
+      if (isMember) {
+          return res
+              .status(400)
+              .json({ message: "User is already a member of this project" });
+      }
+
+      // Thêm user vào danh sách members với vai trò mặc định là "member"
+      project.members.push({
+          _id: userId,
+          role: "member",
+          teams: [], // Người mới tham gia chưa thuộc nhóm nào
+      });
+
+      // Lưu thay đổi
+      await project.save();
+
+      res.status(200).json({
+          success: true,
+          message: "Joined project successfully",
+          projectId: project._id,
+      });
+  } catch (error) {
+      console.error("Error joining project by code:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 const ProjectController = {
   createProject,

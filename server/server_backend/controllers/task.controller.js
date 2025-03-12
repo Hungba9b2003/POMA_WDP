@@ -79,18 +79,18 @@ async function createTask(req, res, next) {
 }
 
 async function editTask(req, res, next) {
-    try {
-        const { projectId, taskId } = req.params;
-        const assigneeId = req.body.assignee;
-        const project = await db.Projects.findOne({ _id: projectId });
+  try {
+    const { projectId, taskId } = req.params;
+    const assigneeId = req.body.assignee;
+    const project = await db.Projects.findOne({ _id: projectId });
 
-        if (!project) {
-            return res.status(404).json({ error: { status: 404, message: "Project not found" } });
-        }
+    if (!project) {
+      return res.status(404).json({ error: { status: 404, message: "Project not found" } });
+    }
 
-        const task = await db.Tasks.findOne({ _id: taskId })
-            .populate('assignee', 'name email role avatar')  // Populate assignee
-            .populate('reviewer', 'name email role avatar'); // Populate reviewer
+    const task = await db.Tasks.findOne({ _id: taskId })
+      .populate('assignee', 'name email role avatar')  // Populate assignee
+      .populate('reviewer', 'name email role avatar'); // Populate reviewer
 
     if (!task) {
       return res
@@ -104,27 +104,27 @@ async function editTask(req, res, next) {
         .json({ error: { status: 400, message: "Input is required" } });
     }
 
-        const updateFields = { updatedAt: new Date() };
-        if (req.body.taskName) updateFields.taskName = req.body.taskName;
-        if (req.body.description) updateFields.description = req.body.description;
-        if (req.body.reviewer) updateFields.reviewer = req.body.reviewer;
-        if (assigneeId) {
-            updateFields.assignee = assigneeId;
+    const updateFields = { updatedAt: new Date() };
+    if (req.body.taskName) updateFields.taskName = req.body.taskName;
+    if (req.body.description) updateFields.description = req.body.description;
+    if (req.body.reviewer) updateFields.reviewer = req.body.reviewer;
+    if (assigneeId) {
+      updateFields.assignee = assigneeId;
 
-            // Gọi hàm createTeam để tạo team mới cho assignee
-            const newTeam = await createTeam(projectId, taskId, assigneeId);
-            updateFields.team = newTeam;  // Thêm team vào updateFields (nếu cần)
-        }
+      // Gọi hàm createTeam để tạo team mới cho assignee
+      const newTeam = await createTeam(projectId, taskId, assigneeId);
+      updateFields.team = newTeam;  // Thêm team vào updateFields (nếu cần)
+    }
 
-        if (req.body.deadline) updateFields.deadline = req.body.deadline;
-        if (req.body.status) updateFields.status = req.body.status;
+    if (req.body.deadline) updateFields.deadline = req.body.deadline;
+    if (req.body.status) updateFields.status = req.body.status;
 
-        // Cập nhật task với assignee mới
-        await db.Tasks.updateOne(
-            { _id: taskId },
-            { $set: updateFields },
-            { runValidators: true, isNew: false }
-        );
+    // Cập nhật task với assignee mới
+    await db.Tasks.updateOne(
+      { _id: taskId },
+      { $set: updateFields },
+      { runValidators: true, isNew: false }
+    );
 
     // Lấy lại task sau khi update để gửi về client
     const updatedTask = await db.Tasks.findOne({ _id: taskId })
@@ -495,59 +495,88 @@ async function deleteComment(req, res, next) {
 }
 
 async function createTeam(projectId, taskId, assigneeId) {
-    try {
-        // Tìm project và task tương ứng
-        const project = await db.Projects.findOne({ _id: projectId });
-        if (!project) {
-            throw createHttpErrors(404, "Project not found");
-        }
-
-        const task = await db.Tasks.findOne({ _id: taskId });
-        if (!task) {
-            throw createHttpErrors(404, "Task not found");
-        }
-
-        // Kiểm tra xem assignee đã có nhóm nào chưa
-        const existingTeam = project.members.some(member =>
-            member.teams.some(team => team.teamLeader.toString() === assigneeId)
-        );
-
-        if (existingTeam) {
-            throw createHttpErrors(400, "Assignee already has a team");
-        }
-
-        // Tạo team mới
-        const newTeam = {
-            idTeam: new mongoose.Types.ObjectId(),  // Tạo ID team mới
-            teamName: task.taskName, // Đặt tên nhóm bằng tên task
-            teamLeader: assigneeId, // Gán assignee làm team leader
-        };
-
-        // Cập nhật project với team mới cho assignee
-        const updateProject = await db.Projects.updateOne(
-            { _id: projectId },
-            {
-                $push: {
-                    'members.$[member].teams': newTeam,
-                },
-            },
-            {
-                arrayFilters: [{ 'member._id': assigneeId }],
-                new: true,
-            }
-        );
-
-        if (!updateProject) {
-            throw createHttpErrors(400, "Failed to update project with new team");
-        }
-
-        // Trả về team vừa tạo
-        return newTeam;
-    } catch (error) {
-        throw error;
+  try {
+    // Tìm project và task tương ứng
+    const project = await db.Projects.findOne({ _id: projectId });
+    if (!project) {
+      throw createHttpErrors(404, "Project not found");
     }
+
+    const task = await db.Tasks.findOne({ _id: taskId });
+    if (!task) {
+      throw createHttpErrors(404, "Task not found");
+    }
+
+    // Kiểm tra xem assignee đã có nhóm nào chưa
+    const existingTeam = project.members.some(member =>
+      member.teams.some(team => team.teamLeader.toString() === assigneeId)
+    );
+
+    if (existingTeam) {
+      throw createHttpErrors(400, "Assignee already has a team");
+    }
+
+    // Tạo team mới
+    const newTeam = {
+      idTeam: new mongoose.Types.ObjectId(),  // Tạo ID team mới
+      teamName: task.taskName, // Đặt tên nhóm bằng tên task
+      teamLeader: assigneeId, // Gán assignee làm team leader
+    };
+
+    // Cập nhật project với team mới cho assignee
+    const updateProject = await db.Projects.updateOne(
+      { _id: projectId },
+      {
+        $push: {
+          'members.$[member].teams': newTeam,
+        },
+      },
+      {
+        arrayFilters: [{ 'member._id': assigneeId }],
+        new: true,
+      }
+    );
+
+    if (!updateProject) {
+      throw createHttpErrors(400, "Failed to update project with new team");
+    }
+
+    // Trả về team vừa tạo
+    return newTeam;
+  } catch (error) {
+    throw error;
+  }
 }
 
+async function swapTaskNumber(req, res, next) {
+  try {
+    const { taskId1, taskId2 } = req.body;
+
+    const task1 = await db.Tasks.findById(taskId1);
+    const task2 = await db.Tasks.findById(taskId2);
+
+    if (!task1 || !task2) {
+      return res.status(404).json({ message: "One or both tasks not found" });
+    }
+
+    // Bước 1: Đặt task1.taskNumber thành giá trị tạm (-1) và lưu lại
+    const tempNumber1 = task1.taskNumber;
+    const tempNumber2 = task2.taskNumber;
+    console.log(tempNumber1, tempNumber2);
+    await db.Tasks.findByIdAndUpdate(taskId1, { taskNumber: -1 });
+
+    // Bước 2: Cập nhật taskNumber của task2 cho task1
+    await db.Tasks.findByIdAndUpdate(taskId2, { taskNumber: tempNumber1 });
+
+    // Bước 3: Cập nhật taskNumber cũ của task1 cho task2
+    await db.Tasks.findByIdAndUpdate(taskId1, { taskNumber: tempNumber2 });
+
+    res.json({ message: "Swapped successfully" });
+  } catch (error) {
+    console.error("Error swapping task numbers:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
 
 const TaskController = {
   swapTaskNumber,
