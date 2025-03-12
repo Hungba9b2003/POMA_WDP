@@ -39,8 +39,8 @@ async function createProject(req, res, next) {
       members,
     });
 
-        const nProject = await newProject.save();
-        const nProjectId = nProject._id;
+    const nProject = await newProject.save();
+    const nProjectId = nProject._id;
 
     const updatedUser = await db.Users.findOneAndUpdate(
       { _id: id },
@@ -255,124 +255,124 @@ const updateProjectStatus = async (req, res) => {
 };
 
 async function getProjectMembers(req, res, next) {
-    try {
-        const { projectId } = req.params;
+  try {
+    const { projectId } = req.params;
 
-        const project = await db.Projects.findOne({ _id: projectId })
-            .populate({
-                path: 'members._id',
-                model: 'user',
-            });
+    const project = await db.Projects.findOne({ _id: projectId })
+      .populate({
+        path: 'members._id',
+        model: 'user',
+      });
 
-        if (!project) {
-            throw createHttpErrors(404, "Project not found");
-        }
-
-        const memberInfo = project.members.map(member => ({
-            id: member._id ? member._id._id : null,
-            name: member._id ? member._id.username : null,
-            role: member.role,
-            avatar: member._id ? member._id.profile.avatar : null
-        }));
-
-        res.status(200).json({ memberInfo });
-
-    } catch (error) {
-      next(error);
+    if (!project) {
+      throw createHttpErrors(404, "Project not found");
     }
+
+    const memberInfo = project.members.map(member => ({
+      id: member._id ? member._id._id : null,
+      name: member._id ? member._id.username : null,
+      role: member.role,
+      avatar: member._id ? member._id.profile.avatar : null
+    }));
+
+    res.status(200).json({ memberInfo });
+
+  } catch (error) {
+    next(error);
   }
+}
 
 async function setProjectMemberRole(req, res, next) {
-    try {
-      const { projectId, memberId } = req.params;
-      const { role } = req.body;
-  
-      console.log("role", role);
-      console.log("project member", projectId, memberId);
-  
-      // Find the project
-      const project = await db.Projects.findOne({ _id: projectId });
-      if (!project) {
-        throw createHttpErrors(404, "Project not found");
-      }
-  
-      // Find the member to update
-      const member = project.members.find(
-        (member) => member._id.toString() === memberId
-      );
-      if (!member) {
-        throw createHttpErrors(404, "Member not found");
-      }
-  
-      // Prevent the owner from changing their own role (optional step if needed)
-      // if (memberId === project.ownerId) {
-      //   throw createHttpErrors(403, "You cannot change your own role");
-      // }
-  
-      // Check if there's already an owner and prevent assigning owner role to another member
-      const otherOwners = project.members.filter(
-        (member) => member.role === "owner" && member._id.toString() !== memberId
-      );
-      if (role === "owner" && otherOwners.length > 0) {
-        throw createHttpErrors(
-          400,
-          "Cannot assign owner role as there is already an owner"
-        );
-      }
-  
-      // Update the member's role
-      await db.Projects.updateOne(
-        { _id: projectId, "members._id": memberId },
-        { $set: { "members.$.role": role } }
-      );
-  
-      // Return the response
-      res.status(200).json({
-        message: "Member role updated successfully",
-        memberId,
-        newRole: role,
-      });
-    } catch (error) {
-      next(error);
+  try {
+    const { projectId, memberId } = req.params;
+    const { role } = req.body;
+
+    console.log("role", role);
+    console.log("project member", projectId, memberId);
+
+    // Find the project
+    const project = await db.Projects.findOne({ _id: projectId });
+    if (!project) {
+      throw createHttpErrors(404, "Project not found");
     }
-  }
 
-
-
-  async function deleteProjectMember(req, res, next) {
-    try {
-      const { projectId, memberId } = req.params;
-  
-      // Tìm dự án
-      const project = await db.Projects.findById(projectId).populate("members");
-      if (!project) {
-        return res.status(404).json({ error: "Project not found" });
-      }
-  
-      // Kiểm tra xem thành viên cần xóa có tồn tại không
-      const memberToDelete = project.members.find(
-        (member) => member._id.toString() === memberId
-      );
-      if (!memberToDelete) {
-        return res.status(404).json({ error: "Member not found" });
-      }
-  
-      // Xóa thành viên khỏi danh sách dự án
-      project.members = project.members.filter(
-        (member) => member._id.toString() !== memberId
-      );
-      await project.save();
-  
-      // Xóa dự án khỏi danh sách của thành viên đó
-      await db.Users.findByIdAndUpdate(memberId, {
-        $pull: { projects: projectId },
-      });
-  
-      return res.status(200).json({ message: "Member removed successfully" });
-    } catch (error) {
-      next(error);
+    // Find the member to update
+    const member = project.members.find(
+      (member) => member._id.toString() === memberId
+    );
+    if (!member) {
+      throw createHttpErrors(404, "Member not found");
     }
+
+    // Prevent the owner from changing their own role (optional step if needed)
+    // if (memberId === project.ownerId) {
+    //   throw createHttpErrors(403, "You cannot change your own role");
+    // }
+
+    // Check if there's already an owner and prevent assigning owner role to another member
+    const otherOwners = project.members.filter(
+      (member) => member.role === "owner" && member._id.toString() !== memberId
+    );
+    if (role === "owner" && otherOwners.length > 0) {
+      throw createHttpErrors(
+        400,
+        "Cannot assign owner role as there is already an owner"
+      );
+    }
+
+    // Update the member's role
+    await db.Projects.updateOne(
+      { _id: projectId, "members._id": memberId },
+      { $set: { "members.$.role": role } }
+    );
+
+    // Return the response
+    res.status(200).json({
+      message: "Member role updated successfully",
+      memberId,
+      newRole: role,
+    });
+  } catch (error) {
+    next(error);
   }
+}
+
+
+
+async function deleteProjectMember(req, res, next) {
+  try {
+    const { projectId, memberId } = req.params;
+
+    // Tìm dự án
+    const project = await db.Projects.findById(projectId).populate("members");
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Kiểm tra xem thành viên cần xóa có tồn tại không
+    const memberToDelete = project.members.find(
+      (member) => member._id.toString() === memberId
+    );
+    if (!memberToDelete) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    // Xóa thành viên khỏi danh sách dự án
+    project.members = project.members.filter(
+      (member) => member._id.toString() !== memberId
+    );
+    await project.save();
+
+    // Xóa dự án khỏi danh sách của thành viên đó
+    await db.Users.findByIdAndUpdate(memberId, {
+      $pull: { projects: projectId },
+    });
+
+    return res.status(200).json({ message: "Member removed successfully" });
+  } catch (error) {
+    next(error);
+  }
+}
 
 
 
@@ -529,107 +529,58 @@ const leaveProjects = async (req, res, next) => {
   }
 };
 
-const joinProjectByCode = async (req, res, next) => {
-  try {
-    const { projectCode, userId } = req.body;
-
-    if (!projectCode || !userId) {
-      return res
-        .status(400)
-        .json({ message: "Project code and user ID are required" });
-    }
-
-    // Tìm dự án theo mã projectCode
-    const project = await db.Projects.findOne({ projectCode });
-    if (!project) {
-      return res
-        .status(404)
-        .json({ message: "Invalid project code or project not found" });
-    }
-
-    // Kiểm tra xem user đã là thành viên chưa
-    const isMember = project.members.some(
-      (member) => member._id.toString() === userId
-    );
-    if (isMember) {
-      return res
-        .status(400)
-        .json({ message: "User is already a member of this project" });
-    }
-
-    // Thêm user vào danh sách members với vai trò mặc định là "member"
-    project.members.push({
-      _id: userId,
-      role: "member",
-      teams: [], // Người mới tham gia chưa thuộc nhóm nào
-    });
-
-    // Lưu thay đổi
-    await project.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Joined project successfully",
-      projectId: project._id,
-    });
-  } catch (error) {
-    console.error("Error joining project by code:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
 async function createTeam(projectId, taskId, assigneeId) {
-    try {
-        // Tìm project và task tương ứng
-        const project = await db.Projects.findOne({ _id: projectId });
-        if (!project) {
-            throw createHttpErrors(404, "Project not found");
-        }
-
-        const task = await db.Tasks.findOne({ _id: taskId });
-        if (!task) {
-            throw createHttpErrors(404, "Task not found");
-        }
-
-        // Kiểm tra xem assignee đã có nhóm nào chưa
-        const existingTeam = project.members.some(member =>
-            member.teams.some(team => team.teamLeader.toString() === assigneeId)
-        );
-
-        if (existingTeam) {
-            throw createHttpErrors(400, "Assignee already has a team");
-        }
-
-        // Tạo team mới
-        const newTeam = {
-            idTeam: new mongoose.Types.ObjectId(),  // Tạo ID team mới
-            teamName: task.taskName, // Đặt tên nhóm bằng tên task
-            teamLeader: assigneeId, // Gán assignee làm team leader
-        };
-
-        // Cập nhật project với team mới cho assignee
-        const updateProject = await db.Projects.updateOne(
-            { _id: projectId },
-            {
-                $push: {
-                    'members.$[member].teams': newTeam,
-                },
-            },
-            {
-                arrayFilters: [{ 'member._id': assigneeId }],
-                new: true,
-            }
-        );
-
-        if (!updateProject) {
-            throw createHttpErrors(400, "Failed to update project with new team");
-        }
-
-        // Trả về team vừa tạo
-        return newTeam;
-    } catch (error) {
-        throw error;
+  try {
+    // Tìm project và task tương ứng
+    const project = await db.Projects.findOne({ _id: projectId });
+    if (!project) {
+      throw createHttpErrors(404, "Project not found");
     }
+
+    const task = await db.Tasks.findOne({ _id: taskId });
+    if (!task) {
+      throw createHttpErrors(404, "Task not found");
+    }
+
+    // Kiểm tra xem assignee đã có nhóm nào chưa
+    const existingTeam = project.members.some(member =>
+      member.teams.some(team => team.teamLeader.toString() === assigneeId)
+    );
+
+    if (existingTeam) {
+      throw createHttpErrors(400, "Assignee already has a team");
+    }
+
+    // Tạo team mới
+    const newTeam = {
+      idTeam: new mongoose.Types.ObjectId(),  // Tạo ID team mới
+      teamName: task.taskName, // Đặt tên nhóm bằng tên task
+      teamLeader: assigneeId, // Gán assignee làm team leader
+    };
+
+    // Cập nhật project với team mới cho assignee
+    const updateProject = await db.Projects.updateOne(
+      { _id: projectId },
+      {
+        $push: {
+          'members.$[member].teams': newTeam,
+        },
+      },
+      {
+        arrayFilters: [{ 'member._id': assigneeId }],
+        new: true,
+      }
+    );
+
+    if (!updateProject) {
+      throw createHttpErrors(400, "Failed to update project with new team");
+    }
+
+    // Trả về team vừa tạo
+    return newTeam;
+  } catch (error) {
+    throw error;
+  }
 }
 
 
@@ -650,7 +601,7 @@ const ProjectController = {
   countProjects,
   countPremiumProjects,
   leaveProjects,
-    createTeam
+  createTeam,
   joinProjectByCode,
   getProjectByIdSummary,
 };

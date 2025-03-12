@@ -423,7 +423,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
         }
 
         const selectedAssignee = projectMembers.find(member => member.id === newAssigneeId);
-        console.log("Selected assignee:", selectedAssignee);
+
         if (!selectedAssignee) {
             console.error("Selected assignee not found in projectMembers");
             return;
@@ -806,53 +806,17 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                             </Form.Control>
                           </Col>
 
-                                                    <Col xs={1} className="d-flex justify-content-center align-items-center">
-                                                        <Dropdown>
-                                                            <Dropdown.Toggle variant="link" id="dropdown-assignee-subtask">
-                                                                {/* Hiển thị chỉ avatar trong trạng thái bình thường */}
-                                                                <Image
-                                                                    src={subtask.assignee?.profile?.avatar || "default-avatar-url"}
-                                                                    roundedCircle
-                                                                    width={30}
-                                                                    height={30}
-                                                                    style={{ cursor: 'pointer' }}
-                                                                />
-                                                            </Dropdown.Toggle>
-
-                                                            <Dropdown.Menu>
-                                                                {projectMembers.map(member => {
-                                                                    // Điều kiện chỉ cho phép owner hoặc assignee của task chọn subtask
-                                                                    if (
-                                                                        (isOwner && member.role !== "owner") ||  // Owner có thể chọn bất kỳ ai trừ chính mình
-                                                                        (task.assignee._id === member._id && member.role !== "owner") // Assignee của task không thể chọn owner
-                                                                    ) {
-                                                                        return (
-                                                                            <Dropdown.Item
-                                                                                key={member._id}
-                                                                                onClick={() => handleUpdateSubTask(subtask, { assignee: member.id })} // Gọi trực tiếp editSubTask
-                                                                            >
-                                                                                <Row className="d-flex align-items-center">
-                                                                                    <Col xs={2}>
-                                                                                        <Image
-                                                                                            src={member?.avatar || "default-avatar-url"}
-                                                                                            roundedCircle
-                                                                                            width={30}
-                                                                                            height={30}
-                                                                                        />
-                                                                                    </Col>
-                                                                                    <Col xs={9} style={{ marginLeft: '10px' }}>
-                                                                                        {member?.name}
-                                                                                    </Col>
-                                                                                </Row>
-                                                                            </Dropdown.Item>
-                                                                        );
-                                                                    }
-                                                                    return null;
-                                                                })}
-                                                            </Dropdown.Menu>
-                                                        </Dropdown>
+                                                    <Col xs={1}>
+                                                        <img
+                                                            src={subtask.assignee?.profile?.avatar || "default-avatar-url"}
+                                                            alt="Avatar"
+                                                            style={{
+                                                                width: "30px",
+                                                                height: "30px",
+                                                                borderRadius: "50%",
+                                                            }}
+                                                        />
                                                     </Col>
-
 
                           {/* Status */}
                           <Col xs={2}>
