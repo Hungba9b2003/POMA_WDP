@@ -632,6 +632,41 @@ const joinProjectByCode = async (req, res, next) => {
   }
 };
 
+const inviteUserToProject = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const { email } = req.body;
+
+    const project = await db.Projects.findById(projectId);
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    const user = await db.Users.findOne({ "account.email": email });
+    console.log(user);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const confirmLink = `http://localhost:${process.env.PORT_FRONT_END}/invite-confirm/${projectId}/${user._id}`;
+
+    await sendEmail("join", email, confirmLink);
+
+    res.status(200).json({
+      success: true,
+      message: "Invitation sent successfully",
+      confirmLink, 
+    });
+  } catch (error) {
+    console.error("Error inviting user:", error);
+    next(error);
+  }
+};
+
 const ProjectController = {
   createProject,
   getAllProjects,
@@ -651,6 +686,7 @@ const ProjectController = {
   createTeam,
   joinProjectByCode,
   getProjectByIdSummary,
+  inviteUserToProject,
 };
 
 module.exports = ProjectController;
