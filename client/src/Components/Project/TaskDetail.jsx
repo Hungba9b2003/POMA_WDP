@@ -23,39 +23,28 @@ import {
 import moment from "moment"; // Để tính thời gian đã trôi qua
 
 const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
-  const [user, setUser] = useState(null);
-  const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState(task.comments || []); // Use task.comments directly
-  const [newSubTask, setNewSubTask] = useState("");
-  const [subTasks, setSubTasks] = useState(task.subTasks || []); // Use task.subTasks directly
-  const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
-  const [subTaskName, setSubTaskName] = useState("");
-  const [taskDescription, setTaskDescription] = useState(
-    task.description || ""
-  );
-  const [editingCommentId, setEditingCommentId] = useState(null); // Trạng thái bình luận đang chỉnh sửa
-  const [editedContent, setEditedContent] = useState(""); // Nội dung chỉnh sửa
-  const [projectMembers, setProjectMembers] = useState([]);
-  const [isOwner, setIsOwner] = useState(false);
-  const [assigneeName, setAssigneeName] = useState(
-    task.assignee.username || null
-  );
-  const [reviewerName, setReviewerName] = useState(
-    task.reviewer.username || null
-  );
-  const [assigneeAvatar, setAssigneeAvatar] = useState(
-    task.assignee.profile?.avatar || null
-  );
-  const [reviewerAvatar, setReviewerAvatar] = useState(
-    task.reviewer.profile?.avatar || null
-  );
-  const [deadline, setDeadline] = useState(task.deadline || null);
-  const [taskStatus, setTaskStatus] = useState(task.status || "");
-  const [isEditing, setIsEditing] = useState(false);
-  const { projectId } = useParams(); // Get project ID from params
-  const [statusList, setStatusList] = useState([]);
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
+    const [user, setUser] = useState(null);
+    const [newComment, setNewComment] = useState("");
+    const [comments, setComments] = useState(task.comments || []);  // Use task.comments directly
+    const [newSubTask, setNewSubTask] = useState("");
+    const [subTasks, setSubTasks] = useState(task.subTasks || []);  // Use task.subTasks directly
+    const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
+    const [subTaskName, setSubTaskName] = useState("");
+    const [taskDescription, setTaskDescription] = useState(task.description || "");
+    const [editingCommentId, setEditingCommentId] = useState(null); // Trạng thái bình luận đang chỉnh sửa
+    const [editedContent, setEditedContent] = useState(""); // Nội dung chỉnh sửa
+    const [projectMembers, setProjectMembers] = useState([]);
+    const [isOwner, setIsOwner] = useState(false);
+    const [assigneeName, setAssigneeName] = useState(task.assignee?.username || null);
+    const [reviewerName, setReviewerName] = useState(task.reviewer?.username || null);
+    const [assigneeAvatar, setAssigneeAvatar] = useState(task.assignee?.profile?.avatar || null);
+    const [reviewerAvatar, setReviewerAvatar] = useState(task.reviewer?.profile?.avatar || null);
+    const [deadline, setDeadline] = useState(task.deadline || null);
+    const [taskStatus, setTaskStatus] = useState(task.status || "");
+    const [isEditing, setIsEditing] = useState(false);
+    const { projectId } = useParams();  // Get project ID from params
+
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   let id = null;
   if (token) {
@@ -93,31 +82,29 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     }
   };
 
-  // Add new comment
-  const addComment = async () => {
-    if (newComment) {
-      try {
-        await axios.post(
-          `http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/create`,
-          { content: newComment },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setNewComment("");
-        fetchComments(); // Re-fetch comments after adding
-      } catch (error) {
-        console.error("Error adding comment", error);
-      }
-    }
-  };
-
-  const handleEdit = (commentId, content) => {
-    setEditingCommentId(commentId); // Bắt đầu chỉnh sửa bình luận
-    setEditedContent(content); // Đặt nội dung chỉnh sửa
-  };
+    // Add new comment
+    const addComment = async () => {
+        if (newComment) {
+            try {
+                await axios.post(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/create`, { content: newComment },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                setNewComment("");
+                fetchComments(); // Re-fetch comments after adding
+            } catch (error) {
+                console.error("Error adding comment", error);
+            }
+        }
+    };
+    //console.log(projectMembers.find(member => member.id === id));
+    const handleEdit = (commentId, content) => {
+        setEditingCommentId(commentId); // Bắt đầu chỉnh sửa bình luận
+        setEditedContent(content); // Đặt nội dung chỉnh sửa
+    };
 
   // Handle khi người dùng nhấn "Save"
   const handleSave = async (commentId) => {
@@ -291,9 +278,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
         return;
       }
 
-      const updateData = {};
-      if (updates.status) updateData.status = updates.status;
-      if (updates.priority) updateData.priority = updates.priority;
+            const updateData = {};
+            if (updates.status) updateData.status = updates.status;
+            if (updates.priority) updateData.priority = updates.priority;
+            if (updates.assignee) updateData.assignee = updates.assignee;
+            console.log(updates);
 
       if (Object.keys(updateData).length === 0) {
         console.error("No valid fields to update");
@@ -426,21 +415,19 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     fetchProjectMembers();
   }, [projectId, token, id]);
 
-  const handleChangeAssignee = async (newAssigneeId) => {
-    if (!isOwner || !isPremium) {
-      console.warn("You don't have permission to change the assignee.");
-      alert("Only the owner of a premium project can change the assignee.");
-      return;
-    }
+    const handleChangeAssignee = async (newAssigneeId) => {
+        if (!isOwner || !isPremium) {
+            console.warn("You don't have permission to change the assignee.");
+            alert("Only the owner of a premium project can change the assignee.");
+            return;
+        }
 
-    const selectedAssignee = projectMembers.find(
-      (member) => member.id === newAssigneeId
-    );
-
-    if (!selectedAssignee) {
-      console.error("Selected assignee not found in projectMembers");
-      return;
-    }
+        const selectedAssignee = projectMembers.find(member => member.id === newAssigneeId);
+        console.log("Selected assignee:", selectedAssignee);
+        if (!selectedAssignee) {
+            console.error("Selected assignee not found in projectMembers");
+            return;
+        }
 
     console.log("Updating assignee with ID:", newAssigneeId); // Debugging log
 
@@ -819,20 +806,53 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                             </Form.Control>
                           </Col>
 
-                          <Col xs={1}>
-                            <img
-                              src={
-                                subtask.assignee?.profile?.avatar ||
-                                "default-avatar-url"
-                              }
-                              alt="Avatar"
-                              style={{
-                                width: "30px",
-                                height: "30px",
-                                borderRadius: "50%",
-                              }}
-                            />
-                          </Col>
+                                                    <Col xs={1} className="d-flex justify-content-center align-items-center">
+                                                        <Dropdown>
+                                                            <Dropdown.Toggle variant="link" id="dropdown-assignee-subtask">
+                                                                {/* Hiển thị chỉ avatar trong trạng thái bình thường */}
+                                                                <Image
+                                                                    src={subtask.assignee?.profile?.avatar || "default-avatar-url"}
+                                                                    roundedCircle
+                                                                    width={30}
+                                                                    height={30}
+                                                                    style={{ cursor: 'pointer' }}
+                                                                />
+                                                            </Dropdown.Toggle>
+
+                                                            <Dropdown.Menu>
+                                                                {projectMembers.map(member => {
+                                                                    // Điều kiện chỉ cho phép owner hoặc assignee của task chọn subtask
+                                                                    if (
+                                                                        (isOwner && member.role !== "owner") ||  // Owner có thể chọn bất kỳ ai trừ chính mình
+                                                                        (task.assignee._id === member._id && member.role !== "owner") // Assignee của task không thể chọn owner
+                                                                    ) {
+                                                                        return (
+                                                                            <Dropdown.Item
+                                                                                key={member._id}
+                                                                                onClick={() => handleUpdateSubTask(subtask, { assignee: member.id })} // Gọi trực tiếp editSubTask
+                                                                            >
+                                                                                <Row className="d-flex align-items-center">
+                                                                                    <Col xs={2}>
+                                                                                        <Image
+                                                                                            src={member?.avatar || "default-avatar-url"}
+                                                                                            roundedCircle
+                                                                                            width={30}
+                                                                                            height={30}
+                                                                                        />
+                                                                                    </Col>
+                                                                                    <Col xs={9} style={{ marginLeft: '10px' }}>
+                                                                                        {member?.name}
+                                                                                    </Col>
+                                                                                </Row>
+                                                                            </Dropdown.Item>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                })}
+                                                            </Dropdown.Menu>
+                                                        </Dropdown>
+                                                    </Col>
+
 
                           {/* Status */}
                           <Col xs={2}>
