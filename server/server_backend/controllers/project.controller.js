@@ -205,7 +205,6 @@ async function getProjectMembers(req, res, next) {
       const project = await db.Projects.findOne({ _id: projectId }).populate({
         path: "members._id",
         model: "user",
-        select: "username",
       });
   
       if (!project) {
