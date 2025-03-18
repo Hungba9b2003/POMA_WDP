@@ -6,6 +6,7 @@ import { GrWorkshop } from "react-icons/gr";
 import { Card } from "react-bootstrap";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import { IoSettingsSharp } from "react-icons/io5";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -47,6 +48,11 @@ const Sidebar = () => {
           path: `/project/${projectId}/listTask`,
           label: "List Tasks",
           icon: <FaTasks />,
+        },
+        {
+          path: `/project/${projectId}/setting`,
+          label: "Setting",
+          icon: <IoSettingsSharp />,
         },
       ]
     : [];
