@@ -33,8 +33,7 @@ async function getAllTasks(req, res, next) {
 
 async function createTask(req, res, next) {
     try {
-        const { id } = req.body;
-        // const { id } = req.payload;
+        const { id } = req.payload;
         const { projectId } = req.params;
         const project = await db.Projects.findOne({ _id: projectId });
         // const role = project.memberRole(id);

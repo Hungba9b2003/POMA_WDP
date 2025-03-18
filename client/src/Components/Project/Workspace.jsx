@@ -10,6 +10,7 @@ const Workspace = () => {
     const [columns, setColumns] = useState(["Pending", "In Progress", "Completed"]);
     const [tasks, setTasks] = useState([]);
     const { projectId } = useParams();
+    const [isPremium, setIsPremium] = useState(false);
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -24,20 +25,25 @@ const Workspace = () => {
     }
 
     useEffect(() => {
-        axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        )
+        axios.get(`http://localhost:9999/projects/${projectId}/tasks/get-all`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
             .then(response => setTasks(response.data))
             .catch(error => console.error("Error fetching tasks:", error));
 
-        axios.get(`http://localhost:9999/projects/${projectId}/get-project`)
+        axios.get(`http://localhost:9999/projects/${projectId}/get-project`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
             .then(response => {
                 if (response.data.project.classifications) {
                     setColumns(response.data.project.classifications);
+                }
+                if (response.data.project && response.data.project.isPremium !== undefined) {
+                    setIsPremium(response.data.project.isPremium);
+                } else {
+                    console.warn("isPremium not found in response data");
                 }
             })
             .catch(error => console.error("Error fetching project data:", error));
@@ -45,8 +51,14 @@ const Workspace = () => {
 
 
 
+
     // Thêm cột mới
     const addColumn = useCallback(async () => {
+        if (!isPremium && columns.length >= 5) {
+            alert("You have reached the maximum number of columns for a free account!");
+            return;
+        }
+
         const newColumn = prompt("Enter new column title:")?.trim();
         if (!newColumn) return;
 
@@ -61,13 +73,14 @@ const Workspace = () => {
             console.error("Error adding column:", error);
             alert("Failed to add column!");
         }
-    }, [projectId, id]);
+    }, [projectId, id, isPremium, columns]);
 
     return (
-        <Container fluid>
+        <Container fluid className="workspace-container">
             <h2 className="mb-4">CRM Board</h2>
-            <div className="board-container">
-                <Row className="flex-nowrap">
+
+            <div className="board-wrapper">
+                <Row className="flex-nowrap board-container">
                     {columns.map((col, index) => (
                         <Col key={index} md={3} className="column">
                             <Column
@@ -75,7 +88,7 @@ const Workspace = () => {
                                 tasks={tasks.filter(task => task.status === col)}
                                 setTasks={setTasks}
                                 projectId={projectId}
-                                setColumns={setColumns}  // ✅ Truyền hàm setColumns vào Column
+                                setColumns={setColumns}
                             />
                         </Col>
                     ))}
@@ -83,7 +96,6 @@ const Workspace = () => {
                         <Button variant="light" onClick={addColumn} className="mt-4">+</Button>
                     </Col>
                 </Row>
-
             </div>
         </Container>
     );

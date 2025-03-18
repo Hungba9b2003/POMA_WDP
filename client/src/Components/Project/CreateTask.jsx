@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -20,50 +20,75 @@ const CreateTask = ({ show, handleClose, projectId, setTasks }) => {
         taskName: "",
         description: "",
         deadline: "",
-        status: "Pending",
+        status: "",
     });
 
+    const [classifications, setClassifications] = useState([]); // Lưu danh sách classifications
     const [error, setError] = useState("");
 
-    const handleCreateTask = async () => {
-        setError(""); 
+    useEffect(() => {
+        const fetchClassifications = async () => {
+            try {
+                const response = await axios.get(
+                    `http://localhost:9999/projects/${projectId}/get-project`,
+                    { headers: { Authorization: `Bearer ${token}` } }  
+                );
+                if (response.status === 200 && response.data.project) { 
+                    setClassifications(response.data.project.classifications
+                    );
+                    setTaskData(prev => ({
+                        ...prev,
+                        status: response.data.project.classifications
+                        [0] || "" 
+                    }));
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy classifications:", error);
+            }
+        };
+    
+        if (show) fetchClassifications(); 
+    }, [projectId, show]); 
+    
 
+    const handleCreateTask = async () => {
+        setError("");
+    
         if (!taskData.taskName) {
             setError("Vui lòng nhập tên task!");
             return;
         }
-
+    
         if (!taskData.deadline) {
             setError("Vui lòng chọn deadline!");
             return;
         }
-
+    
         const today = new Date().toISOString().split("T")[0];
         if (taskData.deadline < today) {
             setError("Deadline phải là ngày tương lai!");
             return;
         }
-
+    
         try {
             const response = await axios.post(
                 `http://localhost:9999/projects/${projectId}/tasks/create`,
-                { ...taskData, id }
+                { ...taskData, id }, // Dữ liệu gửi đi
+                { headers: { Authorization: `Bearer ${token}` } } // Headers
             );
-
+    
             if (response.status === 201) {
                 alert("Tạo task thành công!");
-
                 setTasks(prevTasks => [...prevTasks, response.data]);
-
                 handleClose();
-                setTaskData({ taskName: "", description: "", deadline: "", status: "Pending" });
+                setTaskData({ taskName: "", description: "", deadline: "", status: classifications[0] || "" });
             }
         } catch (error) {
-            console.error("Lỗi khi tạo task:", error);
-            alert("Tạo task thất bại!");
+            console.error("Lỗi khi tạo task:", error.response?.data || error.message);
+            alert(`Tạo task thất bại! Lỗi: ${error.response?.data?.error?.message || "Không rõ nguyên nhân"}`);
         }
     };
-
+    
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
@@ -104,9 +129,9 @@ const CreateTask = ({ show, handleClose, projectId, setTasks }) => {
                             value={taskData.status}
                             onChange={(e) => setTaskData({ ...taskData, status: e.target.value })}
                         >
-                            <option value="Pending">Pending</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
+                            {classifications.map((classification, index) => (
+                                <option key={index} value={classification}>{classification}</option>
+                            ))}
                         </Form.Select>
                     </Form.Group>
 
