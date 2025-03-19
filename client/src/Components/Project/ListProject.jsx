@@ -25,11 +25,15 @@ const ListProject = () => {
 
   useEffect(() => {
     axios
-      .post("http://localhost:9999/projects/get-project", { id }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .post(
+        "http://localhost:9999/projects/get-project",
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((res) => {
         const allProjects = res.data;
         setProjects(
