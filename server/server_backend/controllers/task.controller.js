@@ -13,7 +13,7 @@ async function getAllTasks(req, res, next) {
 
     // Lấy danh sách task từ project
     const project = await db.Projects.findById(projectId).lean();
-    if (!project || !project.tasks.length) {
+    if (!project) {
       return res
         .status(404)
         .json({ error: { status: 404, message: "No tasks found" } });
@@ -38,16 +38,19 @@ async function createTask(req, res, next) {
   try {
     const { id } = req.payload;
     const { projectId } = req.params;
-    const project = await db.Projects.findOne({ _id: projectId });
-    // const role = project.memberRole(id);
-    // console.log(role);
+
+    // Kiểm tra dự án có tồn tại không
+    const project = await db.Projects.findById(projectId);
     if (!project) {
-      return res
-        .status(404)
-        .json({ error: { status: 404, message: "Project not found" } });
+      return res.status(404).json({ error: { status: 404, message: "Project not found" } });
     }
+
+    // Tìm taskNumber lớn nhất trong dự án
+    const lastTask = await db.Tasks.findOne({ projectId }).sort({ taskNumber: -1 });
+
     const newTask = {
-      taskNumber: (project?.tasks?.length || 0) + 1, // Kiểm tra tránh lỗi undefined
+      projectId,
+      taskNumber: lastTask ? lastTask.taskNumber + 1 : 1, // Lấy task lớn nhất rồi +1
       taskName: req.body.taskName,
       description: req.body.description,
       reviewer: id,
@@ -55,21 +58,22 @@ async function createTask(req, res, next) {
       deadline: req.body.deadline,
       status: req.body.status,
     };
-    console.log(newTask);
+
+    // Tạo task mới
     const newTasks = await db.Tasks.create(newTask);
     if (!newTasks) {
       return res.status(500).json({ error: "Task creation failed" });
     }
+
+    // Cập nhật dự án với task mới
     const updatedProject = await db.Projects.findByIdAndUpdate(
       projectId,
       { $push: { tasks: newTasks._id } },
       { new: true, runValidators: true }
     );
-    console.log(newTasks);
+
     if (!updatedProject) {
-      return res
-        .status(500)
-        .json({ error: "Failed to update project with new task" });
+      return res.status(500).json({ error: "Failed to update project with new task" });
     }
 
     res.status(201).json(newTasks);
@@ -77,6 +81,7 @@ async function createTask(req, res, next) {
     next(error);
   }
 }
+
 
 async function editTask(req, res, next) {
   try {
