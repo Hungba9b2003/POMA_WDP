@@ -13,43 +13,53 @@ function MemberList() {
     const [currentUserRole, setCurrentUserRole] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [userId, setUserId] = useState('');
     const membersPerPage = 5;
     const roles = ['member', 'viewer'];
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    let id = null;
+    
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          id = decoded?.id || null;
+        } catch (error) {
+          console.error("Error decoding token:", error);
+        }
+      }
 
     // Hàm lấy userId từ token
-    const getUserIdFromToken = () => {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        if (!token) return "Unknown";
-        try {
-            const decodedToken = jwtDecode(token);
-            console.log("Decoded Token:", decodedToken);
-            return decodedToken.userId || decodedToken.id || "Unknown";
-        } catch (error) {
-            console.error("Lỗi giải mã token:", error);
-            return "Unknown";
-        }
-    };
-    useEffect(() => {
-        setUserId(getUserIdFromToken());
-    }, []);
+    // const getUserIdFromToken = () => {
+        
+    //     if (!token) return "Unknown";
+    //     try {
+    //         const decodedToken = jwtDecode(token);
+    //         console.log("Decoded Token:", decodedToken);
+    //         return decodedToken.userId || decodedToken.id || "Unknown";
+    //     } catch (error) {
+    //         console.error("Lỗi giải mã token:", error);
+    //         return "Unknown";
+    //     }
+    // };
+    // useEffect(() => {
+    //     setUserId(getUserIdFromToken());
+    // }, []);
 
     useEffect(() => {
         const fetchProjectMembers = async () => {
             try {
-                const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`);
+                const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 if (response.ok) {
                     const data = await response.json();
-                    setProjectMembers(data.memberInfo || []);
-
-                    // Kiểm tra nếu userId từ token có trong danh sách thành viên
-                    const currentUser = data.memberInfo?.find(member => member.id === userId);
-                    if (currentUser) {
-                        setCurrentUserRole(currentUser.role);
-                        console.log("Current User Role:", currentUser.role);
-                    }
+                    setProjectMembers(data.memberInfo || []); // Đảm bảo luôn có mảng
                 } else {
-                    setProjectMembers([]);
+                    setProjectMembers([]); // Nếu API lỗi, vẫn đảm bảo là mảng
                 }
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách thành viên:", error);
@@ -57,10 +67,26 @@ function MemberList() {
             }
         };
 
-        if (userId !== "Unknown") {
-            fetchProjectMembers();
-        }
-    }, [projectId, userId]);
+
+        const fetchCurrentUserRole = async () => {
+            try {
+                const response = await fetch(`http://localhost:9999/projects/${projectId}/current-role`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setCurrentUserRole(data.role);
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy vai trò người dùng:", error);
+            }
+        };
+
+
+        fetchProjectMembers();
+        fetchCurrentUserRole();
+    }, [projectId, accessToken]);
+
 
     const handleDeleteMember = async (memberId) => {
         Swal.fire({
@@ -77,7 +103,7 @@ function MemberList() {
                 try {
                     const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/delete`, {
                         method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
 
                     if (response.ok) {
@@ -98,7 +124,7 @@ function MemberList() {
             const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/set-role`, {
                 method: "PUT",
                 headers: {
-                    "Authorization": `Bearer ${accessToken}`,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ role: newRole }) // Truyền role vào trong body
@@ -131,7 +157,40 @@ function MemberList() {
     };
 
 
-
+    const handleInviteMemberByEmail = async () => {
+        const email = prompt('Enter email to invite');
+        if (!email) return;
+    
+        try {    
+            // Kiểm tra email đã tồn tại trong danh sách thành viên chưa
+            const isAlreadyMember = projectMembers.filter(member => member.email === email);
+            console.log("isAlreadyMember", isAlreadyMember);
+            if (isAlreadyMember.length > 0) {
+                alert('This user is already a member of the project.');
+                return;
+            }
+    
+            // Nếu chưa là thành viên, gửi lời mời
+            const response = await fetch(`http://localhost:9999/projects/${projectId}/invite`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ email }),
+            });
+    
+            if (response.ok) {
+                alert('Invitation sent!');
+            } else {
+                alert('Failed to send invitation!');
+            }
+        } catch (error) {
+            console.error('Error inviting member:', error);
+            alert('An error occurred while inviting the user.');
+        }
+    };
+    
 
     const filteredMembers = projectMembers.filter(member =>
         member.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -205,6 +264,7 @@ function MemberList() {
                 ))}
                 <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
             </Pagination>
+            <Button onClick={handleInviteMemberByEmail}>Invite By Email</Button>
         </div>
     );
 }

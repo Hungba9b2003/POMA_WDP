@@ -33,6 +33,8 @@ import BuyMembership from "./Components/Project/BuyMembership";
 import ProjectStored from "./Components/Project/ProjectStored";
 import JoinProject from "./Pages/joinProject/JoinProject";
 import Summary from "./Components/Project/SummaryProject";
+import ConfirmInvite from "./Pages/ConfirmInvite";
+import ProjectSetting from "./Components/Project/ProjectSetting";
 
 const Layout = () => {
   const location = useLocation();
@@ -78,6 +80,7 @@ function App() {
 
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />
+        <Route path="/invite-confirm/:projectId/:userId" element={<ConfirmInvite />} />
       </Route>
       {(accessToken || accessToken2) && (
         <Route path="/project/:projectId" element={<Layout />}>
@@ -87,6 +90,7 @@ function App() {
           <Route path="membership" element={<BuyMembership />} />
           <Route path="membership/checkOut" element={<Payment />} />
           <Route path="summary" element={<Summary />} />
+          <Route path="setting" element={<ProjectSetting />} />
         </Route>
       )}
 

@@ -5,14 +5,12 @@ const router = express.Router();
 
 // Hàm lấy đúng đường dẫn file từ Cloudinary URL
 function getImageNameFromUrl(url) {
-  if (!url) return null;
-  const parts = url.split("/");
-  return `${parts[parts.length - 2]}/${parts[parts.length - 1].split(".")[0]}`;
+  return url.split("/").pop().split(".")[0]; // Cắt phần cuối, bỏ đuôi file
 }
 
 router.post("/upload", async (req, res) => {
   try {
-    const oldAvatar = req.body.oldAvatar;
+    const oldAvatar = req.query.oldAvatar;
     console.log("oldAvatar" + oldAvatar);
     if (oldAvatar) {
       const imageName = getImageNameFromUrl(oldAvatar);
