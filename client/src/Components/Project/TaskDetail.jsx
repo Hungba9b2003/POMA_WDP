@@ -44,7 +44,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { projectId } = useParams();  // Get project ID from params
   const [statusList, setStatusList] = useState([]);
-  console.log(user);
+
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   let id = null;
@@ -1008,7 +1008,13 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                                   }}
                                 />
                               ) : (
-                                <p>{c.content}</p>
+                                <p style={{
+                                  wordWrap: "break-word",
+                                  whiteSpace: "pre-wrap",
+                                  margin: 0
+                                }}>
+                                  {c.content}
+                                </p>
                               )}
                             </Col>
 
