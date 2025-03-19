@@ -44,7 +44,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { projectId } = useParams();  // Get project ID from params
   const [statusList, setStatusList] = useState([]);
-
+  console.log(user);
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
   let id = null;
@@ -922,7 +922,9 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
             {user && (
               <Row>
                 <Col md={1} style={{ display: "flex", alignItems: "center" }}>
-                  <img src={user.avatar} alt="avatar" width="50" />
+                  <img src={user?.profile?.avatar} alt="avatar"
+                    style={{ width: "50px", height: "50px", borderRadius: "50%" }}
+                  />
                 </Col>
                 <Col
                   md={11}
@@ -1012,11 +1014,9 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
                             <Col xs={1} className="text-center">
                               {editingCommentId === c._id ? (
-                                <button
-                                  style={{ backgroundColor: "white", border: "none" }}
-                                  onClick={() => handleSave(c._id)}>
-                                  <FaSave
-                                    style={{ color: "green", cursor: "pointer" }} /></button>
+                                <FaSave
+                                  style={{ color: "green", cursor: "pointer" }}
+                                  onClick={() => handleSave(c._id)}></FaSave>
                               ) : (
                                 <FaEdit
                                   style={{ color: "gold", cursor: "pointer" }}
