@@ -101,7 +101,7 @@ projectRouter.delete(
 //Subtask bên trong Task có list subtask, xem model nếu không rõ
 
 //lấy subtask
-projectRouter.get(
+projectRouter.get(  
   "/:projectId/tasks/:taskId/subTasks/get-all",
   AuthMiddleware.verifyAccessToken,
   TaskController.getAllSubTasks
