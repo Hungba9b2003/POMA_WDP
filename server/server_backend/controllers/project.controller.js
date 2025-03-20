@@ -262,9 +262,7 @@ async function getProjectMembers(req, res, next) {
     const project = await db.Projects.findOne({ _id: projectId }).populate({
       path: "members._id",
       model: "user",
-      select: "username",
     });
-
     if (!project) {
       throw createHttpErrors(404, "Project not found");
     }
@@ -274,7 +272,6 @@ async function getProjectMembers(req, res, next) {
       role: member.role,
       avatar: member._id ? member._id.profile.avatar : null,
     }));
-
     res.status(200).json({ memberInfo });
   } catch (error) {
     next(error);

@@ -397,6 +397,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
         // Sử dụng 'id' thay vì '_id' để so sánh
         setProjectMembers(data.memberInfo || []);
+        console.log(data.memberInfo);
 
         // Kiểm tra xem có thành viên nào có role là 'owner' và id trùng với id hiện tại không
         setIsOwner(

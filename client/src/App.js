@@ -33,13 +33,32 @@ import BuyMembership from "./Components/Project/BuyMembership";
 import ProjectStored from "./Components/Project/ProjectStored";
 import JoinProject from "./Pages/joinProject/JoinProject";
 import Summary from "./Components/Project/SummaryProject";
-
+import UserList from "./Components/Admin/UserList";
+import DetailUser from "./Components/Admin/DetailUser";
+import ChangePasswordUser from "./Components/Admin/ChangePasswordUser";
+import AllProjectList from "./Components/Admin/ProjectList";
+import HeaderAdmin from "./Components/Utils/HeaderAdmin";
 const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
   return (
     <>
       <Header />
+      <div className="d-flex">
+        {showSidebar && <Sidebar />}
+        <div className="flex-grow-1 overflow-auto">
+          <Outlet /> {/* Đảm bảo render các route con tại đây */}
+        </div>
+      </div>
+    </>
+  );
+};
+const LayoutAdmin = () => {
+  const location = useLocation();
+  const showSidebar = location.pathname.startsWith("/project");
+  return (
+    <>
+      <HeaderAdmin />
       <div className="d-flex">
         {showSidebar && <Sidebar />}
         <div className="flex-grow-1 overflow-auto">
@@ -75,6 +94,26 @@ function App() {
           <Route path="resetPassword/:id/:token" element={<ResetPassword />} />
         </Route>
       )}
+
+      {accessToken ||
+        (accessToken2 && (
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <LayoutAdmin />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="userList" element={<UserList />} />
+            <Route path="viewDetailUser/:userId" element={<DetailUser />} />
+            <Route
+              path="changePasswordUser/:userId"
+              element={<ChangePasswordUser />}
+            />
+            <Route path="projectList" element={<AllProjectList />} />
+          </Route>
+        ))}
 
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />

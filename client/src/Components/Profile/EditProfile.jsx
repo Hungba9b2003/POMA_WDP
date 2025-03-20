@@ -52,7 +52,7 @@ function EditProfile() {
       };
       fetchUserInfo();
     }
-  },[]);
+  }, []);
 
   const handleSaveChanges = async (event) => {
     event.preventDefault();
@@ -151,15 +151,18 @@ function EditProfile() {
 
   return (
     <div>
-      <h2>Edit User Profile</h2>
-      <form onSubmit={handleSaveChanges}>
+      <h2 style={{ color: "#2B92E4" }}>Edit User Profile</h2>
+      <form
+        onSubmit={handleSaveChanges}
+        style={{ background: "#EFF2F8", padding: "20px", borderRadius: "10px" }}
+      >
         {/* Display selected avatar above the tables */}
         <div style={{ marginBottom: "20px", textAlign: "center" }}>
-          <h3>Select an Image:</h3>
+          <h3 style={{ color: "#2B92E4" }}>Select an Image:</h3>
           <div onClick={toggleImageList} style={{ cursor: "pointer" }}>
             {tempImage ? (
               <img
-                src={tempImage} // Hiển thị ảnh tạm nếu có
+                src={tempImage}
                 alt="Temporary Avatar"
                 className={styles.avatarImage}
                 style={{
@@ -167,12 +170,12 @@ function EditProfile() {
                   height: "300px",
                   objectFit: "cover",
                   borderRadius: "50%",
-                  border: "2px solid #0F67B1",
+                  border: "2px solid #F8B5C1",
                 }}
               />
             ) : selectedImage ? (
               <img
-                src={selectedImage} // Hiển thị ảnh chính nếu chưa chọn ảnh mới
+                src={selectedImage}
                 alt="Selected Avatar"
                 className={styles.avatarImage}
                 style={{
@@ -180,23 +183,23 @@ function EditProfile() {
                   height: "300px",
                   objectFit: "cover",
                   borderRadius: "50%",
-                  border: "2px solid #0F67B1",
+                  border: "2px solid #F8B5C1",
                 }}
               />
             ) : (
-              <Button variant="primary">Select Avatar</Button>
+              <Button
+                variant="primary"
+                style={{ backgroundColor: "#2B92E4", borderColor: "#2B92E4" }}
+              >
+                Select Avatar
+              </Button>
             )}
           </div>
 
-          {/* List of images to choose from */}
           {showImageList && (
             <div
               className={styles.imageList}
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px", // Khoảng cách giữa các ảnh
-              }}
+              style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
             >
               {imageList.map((image, index) => (
                 <div key={index} className={styles.imageItem}>
@@ -208,15 +211,13 @@ function EditProfile() {
                     style={{
                       cursor: "pointer",
                       border:
-                        selectedImage === image ? "2px solid #0F67B1" : "none",
+                        selectedImage === image ? "2px solid #F8B5C1" : "none",
                       width: "100px",
                       height: "100px",
                     }}
                   />
                 </div>
               ))}
-
-              {/* Hiển thị ảnh mới chọn từ máy và có thể nhấn để chọn lại */}
               {tempImage ? (
                 <label htmlFor="fileInput">
                   <img
@@ -228,7 +229,7 @@ function EditProfile() {
                       width: "100px",
                       height: "100px",
                       objectFit: "cover",
-                      border: "2px dashed #0F67B1",
+                      border: "2px dashed #F8B5C1",
                       cursor: "pointer",
                     }}
                   />
@@ -238,25 +239,23 @@ function EditProfile() {
                   className={styles.addImageButton}
                   onClick={handleAddImage}
                   style={{
-                    display: "flex",
                     marginTop: "10px",
+                    display: "flex",
                     marginLeft: "10px",
                     justifyContent: "center",
                     alignItems: "center",
                     width: "100px",
                     height: "100px",
-                    border: "2px dashed #ccc",
+                    border: "2px dashed #F8D0D2",
                     cursor: "pointer",
                     fontSize: "24px",
                     fontWeight: "bold",
-                    color: "#0F67B1",
+                    color: "#2B92E4",
                   }}
                 >
                   +
                 </div>
               )}
-
-              {/* Input file bị ẩn nhưng dùng để nhận sự kiện chọn file */}
               <input
                 type="file"
                 id="fileInput"
@@ -266,19 +265,11 @@ function EditProfile() {
               />
             </div>
           )}
-
-          {/* Đảm bảo input luôn tồn tại trong DOM */}
-          <input
-            type="file"
-            id="fileInput"
-            style={{ display: "none" }}
-            onChange={handleFileUpload}
-          />
         </div>
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th colSpan={2} style={{ fontSize: "1.3em", color: "#0F67B1" }}>
+              <th colSpan={2} style={{ fontSize: "1.3em", color: "#2B92E4" }}>
                 <FaUser /> User Information
               </th>
             </tr>
@@ -300,11 +291,10 @@ function EditProfile() {
             </tr>
           </tbody>
         </Table>
-
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th colSpan={2} style={{ fontSize: "1.3em", color: "#0F67B1" }}>
+              <th colSpan={2} style={{ fontSize: "1.3em", color: "#2B92E4" }}>
                 <FaAddressCard /> Contact
               </th>
             </tr>
@@ -344,19 +334,27 @@ function EditProfile() {
             </tr>
           </tbody>
         </Table>
-
         <div style={{ marginTop: "10px" }}>
           <Button
             variant="primary"
             type="submit"
-            style={{ marginRight: 5 }}
+            style={{
+              backgroundColor: "#2B92E4",
+              borderColor: "#2B92E4",
+              marginRight: 5,
+            }}
             disabled={isSaving}
           >
             {isSaving ? "Saving..." : "Save"}
           </Button>
           <Button
             variant="secondary"
-            style={{ marginRight: 5 }}
+            style={{
+              backgroundColor: "#F8D0D2",
+              borderColor: "#F8D0D2",
+              color: "#2B92E4",
+              marginRight: 5,
+            }}
             type="reset"
             disabled={isSaving}
           >

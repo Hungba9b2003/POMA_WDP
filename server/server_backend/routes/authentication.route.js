@@ -18,7 +18,7 @@ authRouter.post("/forgot-password", AuthController.forgotPassword);
 //lấy người dùng bằng id
 authRouter.post(
   "/get-user",
-  // AuthMiddleware.verifyAccessToken,
+  AuthMiddleware.verifyAccessToken,
   AuthController.getUserById
 );
 
