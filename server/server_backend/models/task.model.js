@@ -6,14 +6,13 @@ const taskSchema = new Schema(
     taskNumber: {
       type: Number,
       required: true,
-      unique: true,
       min: 1,
     },
     taskName: {
       type: String,
       required: true,
       trim: true,
-      minlength: 3,
+      minlength: 1,
       maxlength: 100,
     },
     description: {
@@ -50,11 +49,9 @@ const taskSchema = new Schema(
         user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "user",
-          required: true,
         },
         content: {
           type: String,
-          required: true,
           trim: true,
           minlength: 1,
           maxlength: 500,
@@ -66,12 +63,10 @@ const taskSchema = new Schema(
       {
         subTaskNumber: {
           type: Number,
-          required: true,
           min: 1,
         },
         subTaskName: {
           type: String,
-          required: true,
           trim: true,
           minlength: 3,
           maxlength: 100,
@@ -79,22 +74,18 @@ const taskSchema = new Schema(
         assignee: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "user",
-          required: true,
         },
         description: {
-            type: String,
-            trim: true,
-            maxlength: 1000
+          type: String,
+          trim: true,
+          maxlength: 1000,
         },
         priority: {
           type: String,
-          required: true,
           enum: ["Low", "Medium", "High"],
         },
         status: {
           type: String,
-          required: true,
-          enum: ["Pending", "In Progress", "Completed"],
         },
       },
     ],

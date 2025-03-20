@@ -58,18 +58,24 @@ function EditProfile() {
     event.preventDefault();
     setIsSaving(true);
     let avatarToSave = selectedImage;
-
+    function getImageNameFromUrl(url) {
+      return url.split("/").pop(); // Lấy phần cuối cùng sau dấu "/"
+    }
     // Nếu có ảnh mới upload, tiến hành upload trước khi gửi API cập nhật
     if (tempImage) {
       const formData = new FormData();
       formData.append("image", document.getElementById("fileInput").files[0]);
       formData.append("oldAvatar", userInfo.profile.avatar);
       console.log(userInfo.profile.avatar);
+      const oldAvatar = getImageNameFromUrl(userInfo.profile.avatar);
       try {
-        const response = await fetch("http://localhost:9999/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+        const response = await fetch(
+          `http://localhost:9999/api/upload?oldAvatar=${oldAvatar}`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         const data = await response.json();
         if (data.success) {
@@ -184,7 +190,14 @@ function EditProfile() {
 
           {/* List of images to choose from */}
           {showImageList && (
-            <div className={styles.imageList}>
+            <div
+              className={styles.imageList}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "10px", // Khoảng cách giữa các ảnh
+              }}
+            >
               {imageList.map((image, index) => (
                 <div key={index} className={styles.imageItem}>
                   <img
@@ -225,9 +238,9 @@ function EditProfile() {
                   className={styles.addImageButton}
                   onClick={handleAddImage}
                   style={{
-                    objectFit: "cover",
-                    margin: "1.5%",
                     display: "flex",
+                    marginTop: "10px",
+                    marginLeft: "10px",
                     justifyContent: "center",
                     alignItems: "center",
                     width: "100px",
