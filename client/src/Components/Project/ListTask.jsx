@@ -5,7 +5,6 @@ import { useParams } from "react-router-dom";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { TbHandFinger } from "react-icons/tb";
 import TaskDetail from "./TaskDetail.jsx";
-import { jwtDecode } from "jwt-decode";
 
 const ListTask = () => {
     const { projectId } = useParams();
@@ -18,15 +17,7 @@ const ListTask = () => {
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
-    let id = null;
-    if (token) {
-        try {
-            const decoded = jwtDecode(token);
-            id = decoded?.id || null;
-        } catch (error) {
-            console.error("Error decoding token:", error);
-        }
-    }
+
 
     useEffect(() => {
         fetchTasks();

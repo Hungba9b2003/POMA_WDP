@@ -41,7 +41,7 @@ projectRouter.post("/:projectId/invite");
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
 projectRouter.get(
-    "/:projectId/get-member",
+    "/:projectId/get-member", AuthMiddleware.verifyAccessToken,
     ProjectController.getProjectMembers
   );
 // set group member role

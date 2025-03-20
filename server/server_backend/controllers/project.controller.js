@@ -1,6 +1,7 @@
 
 const createHttpErrors = require("http-errors");
 const db = require("../models");
+const { populate } = require("../models/notification.model");
 const sendEmail = require("./authentication.controller").sendEmail;
 
 
@@ -92,7 +93,9 @@ async function updateProject(req, res, next) {
         const { id, newColumn, removeColumn } = req.body; // Nhận removeColumn từ request body
         const { projectName, projectCode, projectAvatar } = req.body;
 
-        const project = await db.Projects.findOne({ _id: projectId });
+        const project = await db.Projects.findOne({ _id: projectId })
+            .populate("tasks") 
+            .exec();
         if (!project) {
             throw createHttpErrors(404, "Project not found");
         }
@@ -132,11 +135,23 @@ async function updateProject(req, res, next) {
                 updateProject.classifications = project.classifications;
             }
 
-            // Xóa column
             if (removeColumn) {
+                const tasksToDelete = project.tasks
+                    .filter(task => task.status === removeColumn)
+                    .map(task => task._id);
+                if (tasksToDelete.length > 0) {
+                    const deleteResult = await db.Tasks.deleteMany({ _id: { $in: tasksToDelete } });
+                }
+
+                project.tasks = project.tasks.filter(task => task.status !== removeColumn);
+                updateProject.tasks = project.tasks;
+
                 project.classifications = project.classifications.filter(col => col !== removeColumn);
                 updateProject.classifications = project.classifications;
             }
+
+            
+
         } else {
             throw createHttpErrors(403, "Only the project owner can edit project details");
         }
