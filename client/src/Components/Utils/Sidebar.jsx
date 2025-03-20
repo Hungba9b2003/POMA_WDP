@@ -125,14 +125,18 @@ const Sidebar = () => {
 
   return (
     <div
-      className="d-flex flex-column"
+      className="d-flex flex-column top-0 start-0"
       style={{
-        width: "250px",
-        height: "100vh",
+        width: "280px",
+        height: "calc(100vh - 60px)",
         borderRight: "1px solid #ccc",
         backgroundColor: "rgb(255, 228, 242)",
         zIndex: 999,
         padding: "10px",
+        position: "sticky",
+        top: 0,
+        overflow: "auto",
+        paddingBottom: "20px",
       }}
     >
       <h4
@@ -183,7 +187,7 @@ const Sidebar = () => {
           </>
         )}
       </Card>
-      <div className="d-flex align-items-center gap-2 mt-3">
+      <div className="d-flex align-items-center gap-2 mt-3" >
         <img
           src={userInfo?.profile.avatar || "https://placehold.co/40"}
           alt="avatar"
