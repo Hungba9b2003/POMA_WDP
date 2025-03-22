@@ -223,31 +223,35 @@ const confirmInvite = async (req, res, next) => {
   try {
     const { projectId, userId } = req.params;
 
+    // Kiểm tra dự án tồn tại không
     const project = await db.Projects.findById(projectId);
     if (!project) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Project not found" });
+      return res.status(404).json({ success: false, message: "Project not found" });
     }
 
+    // Kiểm tra user tồn tại không
     const user = await db.Users.findById(userId);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    // Kiểm tra xem user đã là thành viên chưa
+    const isAlreadyMember = project.members.some(member => member._id.toString() === userId);
+    if (isAlreadyMember) {
+      return res.status(400).json({ success: false, message: "User is already a member" });
+    }
+
+    // Thêm user vào project nếu chưa có
     project.members.push({ _id: userId, role: "member" });
     await project.save();
 
-    res
-      .status(200)
-      .json({ success: true, message: "Joined project successfully", project });
+    res.status(200).json({ success: true, message: "Joined project successfully", project });
   } catch (error) {
     console.error("Error joining project:", error);
     next(error);
   }
 };
+
 
 const getUser = async (req, res, next) => {
   try {

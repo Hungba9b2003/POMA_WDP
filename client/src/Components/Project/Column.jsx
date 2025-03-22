@@ -5,7 +5,6 @@ import CreateTask from "./CreateTask";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { FiSave } from "react-icons/fi";
 
 const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
   const [showModal, setShowModal] = useState(false);

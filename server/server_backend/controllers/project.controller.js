@@ -41,7 +41,6 @@ async function createProject(req, res, next) {
 
     const nProject = await newProject.save();
     const nProjectId = nProject._id;
-    console.log(nProjectId);
 
     const updatedUser = await db.Users.findOneAndUpdate(
       { _id: id },
@@ -266,6 +265,7 @@ async function getProjectMembers(req, res, next) {
     if (!project) {
       throw createHttpErrors(404, "Project not found");
     }
+
     const memberInfo = project.members.map((member) => ({
       id: member._id ? member._id._id : null,
       name: member._id ? member._id.username : null,
@@ -281,32 +281,31 @@ async function getProjectMembers(req, res, next) {
 async function setProjectMemberRole(req, res, next) {
   try {
     const { projectId, memberId } = req.params;
-    // const { id } = req.payload;
-    const { id } = req.payload;
     const { role } = req.body;
 
+    console.log("role", role);
+    console.log("project member", projectId, memberId);
+
+    // Find the project
     const project = await db.Projects.findOne({ _id: projectId });
     if (!project) {
       throw createHttpErrors(404, "Project not found");
     }
-    const owner = project.members.find(
-      (member) => member._id.toString() === id && member.role === "owner"
-    );
-    if (!owner) {
-      throw createHttpErrors(
-        403,
-        "Only the project owner can edit member role"
-      );
-    }
+
+    // Find the member to update
     const member = project.members.find(
       (member) => member._id.toString() === memberId
     );
     if (!member) {
       throw createHttpErrors(404, "Member not found");
     }
-    if (memberId === owner._id.toString()) {
-      throw createHttpErrors(403, "You cannot change your own role");
-    }
+
+    // Prevent the owner from changing their own role (optional step if needed)
+    // if (memberId === project.ownerId) {
+    //   throw createHttpErrors(403, "You cannot change your own role");
+    // }
+
+    // Check if there's already an owner and prevent assigning owner role to another member
     const otherOwners = project.members.filter(
       (member) => member.role === "owner" && member._id.toString() !== memberId
     );
@@ -317,10 +316,13 @@ async function setProjectMemberRole(req, res, next) {
       );
     }
 
+    // Update the member's role
     await db.Projects.updateOne(
       { _id: projectId, "members._id": memberId },
       { $set: { "members.$.role": role } }
     );
+
+    // Return the response
     res.status(200).json({
       message: "Member role updated successfully",
       memberId,
@@ -519,6 +521,60 @@ const leaveProjects = async (req, res, next) => {
   }
 };
 
+async function createTeam(projectId, taskId, assigneeId) {
+  try {
+    // Tìm project và task tương ứng
+    const project = await db.Projects.findOne({ _id: projectId });
+    if (!project) {
+      throw createHttpErrors(404, "Project not found");
+    }
+
+    const task = await db.Tasks.findOne({ _id: taskId });
+    if (!task) {
+      throw createHttpErrors(404, "Task not found");
+    }
+
+    // Kiểm tra xem assignee đã có nhóm nào chưa
+    const existingTeam = project.members.some((member) =>
+      member.teams.some((team) => team.teamLeader.toString() === assigneeId)
+    );
+
+    if (existingTeam) {
+      throw createHttpErrors(400, "Assignee already has a team");
+    }
+
+    // Tạo team mới
+    const newTeam = {
+      idTeam: new mongoose.Types.ObjectId(), // Tạo ID team mới
+      teamName: task.taskName, // Đặt tên nhóm bằng tên task
+      teamLeader: assigneeId, // Gán assignee làm team leader
+    };
+
+    // Cập nhật project với team mới cho assignee
+    const updateProject = await db.Projects.updateOne(
+      { _id: projectId },
+      {
+        $push: {
+          "members.$[member].teams": newTeam,
+        },
+      },
+      {
+        arrayFilters: [{ "member._id": assigneeId }],
+        new: true,
+      }
+    );
+
+    if (!updateProject) {
+      throw createHttpErrors(400, "Failed to update project with new team");
+    }
+
+    // Trả về team vừa tạo
+    return newTeam;
+  } catch (error) {
+    throw error;
+  }
+}
+
 const joinProjectByCode = async (req, res, next) => {
   try {
     const { projectCode, userId } = req.body;
@@ -567,6 +623,42 @@ const joinProjectByCode = async (req, res, next) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+const inviteUserToProject = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const { email } = req.body;
+
+    const project = await db.Projects.findById(projectId);
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    const user = await db.Users.findOne({ "account.email": email });
+    console.log(user);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const confirmLink = `http://localhost:${process.env.PORT_FRONT_END}/invite-confirm/${projectId}/${user._id}`;
+
+    await sendEmail("join", email, confirmLink);
+
+    res.status(200).json({
+      success: true,
+      message: "Invitation sent successfully",
+      confirmLink,
+    });
+  } catch (error) {
+    console.error("Error inviting user:", error);
+    next(error);
+  }
+};
+
 const ProjectController = {
   createProject,
   getAllProjects,
@@ -583,8 +675,10 @@ const ProjectController = {
   countProjects,
   countPremiumProjects,
   leaveProjects,
+  createTeam,
   joinProjectByCode,
   getProjectByIdSummary,
+  inviteUserToProject,
 };
 
 module.exports = ProjectController;

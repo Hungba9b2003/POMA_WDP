@@ -38,6 +38,9 @@ import DetailUser from "./Components/Admin/DetailUser";
 import ChangePasswordUser from "./Components/Admin/ChangePasswordUser";
 import AllProjectList from "./Components/Admin/ProjectList";
 import HeaderAdmin from "./Components/Utils/HeaderAdmin";
+import ConfirmInvite from "./Pages/ConfirmInvite";
+import ProjectSetting from "./Components/Project/ProjectSetting";
+
 const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
@@ -117,6 +120,10 @@ function App() {
 
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />
+        <Route
+          path="/invite-confirm/:projectId/:userId"
+          element={<ConfirmInvite />}
+        />
       </Route>
       {(accessToken || accessToken2) && (
         <Route path="/project/:projectId" element={<Layout />}>
@@ -126,6 +133,7 @@ function App() {
           <Route path="membership" element={<BuyMembership />} />
           <Route path="membership/checkOut" element={<Payment />} />
           <Route path="summary" element={<Summary />} />
+          <Route path="setting" element={<ProjectSetting />} />
         </Route>
       )}
 
@@ -133,7 +141,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route path="listProject" element={<ListProject />} />
           <Route path="projectStored" element={<ProjectStored />} />
-          <Route path="/join-project" element={<JoinProject />} />
+          <Route path="join-project" element={<JoinProject />} />
         </Route>
       )}
 

@@ -39,7 +39,7 @@ projectRouter.put(
 // vào project bằng code
 projectRouter.post("/join-by-code", ProjectController.joinProjectByCode);
 //vào dự án bằng link email
-projectRouter.post("/:projectId/invite");
+projectRouter.post("/:projectId/invite", ProjectController.inviteUserToProject, AuthMiddleware.verifyAccessToken);
 // rời dự án
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
@@ -101,7 +101,7 @@ projectRouter.delete(
 //Subtask bên trong Task có list subtask, xem model nếu không rõ
 
 //lấy subtask
-projectRouter.get(
+projectRouter.get(  
   "/:projectId/tasks/:taskId/subTasks/get-all",
   AuthMiddleware.verifyAccessToken,
   TaskController.getAllSubTasks
