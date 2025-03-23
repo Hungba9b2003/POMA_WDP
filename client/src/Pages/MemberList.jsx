@@ -13,53 +13,45 @@ function MemberList() {
     const [currentUserRole, setCurrentUserRole] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [userId, setUserId] = useState('');
     const membersPerPage = 5;
     const roles = ['member', 'viewer'];
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
-    let id = null;
-    
-      if (token) {
-        try {
-          const decoded = jwtDecode(token);
-          id = decoded?.id || null;
-        } catch (error) {
-          console.error("Error decoding token:", error);
-        }
-      }
 
     // Hàm lấy userId từ token
-    // const getUserIdFromToken = () => {
-        
-    //     if (!token) return "Unknown";
-    //     try {
-    //         const decodedToken = jwtDecode(token);
-    //         console.log("Decoded Token:", decodedToken);
-    //         return decodedToken.userId || decodedToken.id || "Unknown";
-    //     } catch (error) {
-    //         console.error("Lỗi giải mã token:", error);
-    //         return "Unknown";
-    //     }
-    // };
-    // useEffect(() => {
-    //     setUserId(getUserIdFromToken());
-    // }, []);
+    const getUserIdFromToken = () => {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        if (!token) return "Unknown";
+        try {
+            const decodedToken = jwtDecode(token);
+            console.log("Decoded Token:", decodedToken);
+            return decodedToken.userId || decodedToken.id || "Unknown";
+        } catch (error) {
+            console.error("Lỗi giải mã token:", error);
+            return "Unknown";
+        }
+    };
+
+    useEffect(() => {
+        setUserId(getUserIdFromToken());
+    }, []);
 
     useEffect(() => {
         const fetchProjectMembers = async () => {
             try {
-                const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const response = await fetch(`http://localhost:9999/projects/${projectId}/get-member`);
                 if (response.ok) {
                     const data = await response.json();
-                    setProjectMembers(data.memberInfo || []); // Đảm bảo luôn có mảng
+                    console.log(data)
+                    setProjectMembers(data.memberInfo || []);
+
+                    // Kiểm tra nếu userId từ token có trong danh sách thành viên
+                    const currentUser = data.memberInfo?.find(member => member.id === userId);
+                    if (currentUser) {
+                        setCurrentUserRole(currentUser.role);
+                        console.log("Current User Role:", currentUser.role);
+                    }
                 } else {
-                    setProjectMembers([]); // Nếu API lỗi, vẫn đảm bảo là mảng
+                    setProjectMembers([]);
                 }
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách thành viên:", error);
@@ -67,26 +59,10 @@ function MemberList() {
             }
         };
 
-
-        const fetchCurrentUserRole = async () => {
-            try {
-                const response = await fetch(`http://localhost:9999/projects/${projectId}/current-role`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setCurrentUserRole(data.role);
-                }
-            } catch (error) {
-                console.error("Lỗi khi lấy vai trò người dùng:", error);
-            }
-        };
-
-
-        fetchProjectMembers();
-        fetchCurrentUserRole();
-    }, [projectId, accessToken]);
-
+        if (userId !== "Unknown") {
+            fetchProjectMembers();
+        }
+    }, [projectId, userId]);
 
     const handleDeleteMember = async (memberId) => {
         Swal.fire({
@@ -103,7 +79,7 @@ function MemberList() {
                 try {
                     const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/delete`, {
                         method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
                     });
 
                     if (response.ok) {
@@ -124,25 +100,21 @@ function MemberList() {
             const response = await fetch(`http://localhost:9999/projects/${projectId}/member/${memberId}/set-role`, {
                 method: "PUT",
                 headers: {
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${accessToken}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ role: newRole }) // Truyền role vào trong body
             });
             console.log("member", memberId, newRole);
             console.log(accessToken)
-
-            // Kiểm tra response từ server
             if (response.ok) {
                 const result = await response.json(); // Nhận kết quả từ API
-
-                // Cập nhật lại danh sách thành viên nếu thành công
-                setProjectMembers(prevMembers =>
+                 // Cập nhật lại danh sách thành viên nếu thành công
+                 setProjectMembers(prevMembers =>
                     prevMembers.map(member =>
                         member.id === memberId ? { ...member, role: newRole } : member
                     )
                 );
-
                 Swal.fire("Thành công!", result.message, "success");
             } else {
                 const errorData = await response.json();
@@ -150,13 +122,11 @@ function MemberList() {
                 Swal.fire("Lỗi!", errorData.message || "Không thể cập nhật vai trò. Vui lòng thử lại.", "error");
             }
         } catch (error) {
-            // Xử lý lỗi khi gọi API
-            console.error("Error:", error);
+             // Xử lý lỗi khi gọi API
+             console.error("Error:", error);
             Swal.fire("Lỗi!", "Đã xảy ra lỗi khi gọi API.", "error");
         }
     };
-
-
     const handleInviteMemberByEmail = async () => {
         const email = prompt('Enter email to invite');
         if (!email) return;
@@ -175,7 +145,7 @@ function MemberList() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({ email }),
             });
@@ -190,7 +160,6 @@ function MemberList() {
             alert('An error occurred while inviting the user.');
         }
     };
-    
 
     const filteredMembers = projectMembers.filter(member =>
         member.name?.toLowerCase().includes(searchTerm.toLowerCase())
