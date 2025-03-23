@@ -255,7 +255,8 @@ const updateProjectStatus = async (req, res) => {
 };
 
 async function getProjectMembers(req, res, next) {
-  try {
+
+    try {
     const { projectId } = req.params;
 
     const project = await db.Projects.findOne({ _id: projectId })
