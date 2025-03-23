@@ -67,12 +67,28 @@ function LoginForm() {
           sessionStorage.setItem("token", result.token);
         }
 
+        let decodedToken;
+        try {
+          decodedToken = jwtDecode(result.token);
+          console.log("Decoded Token:", decodedToken);
+        } catch (error) {
+          console.error("Error decoding token:", error);
+        }
+
         setUser(result.user);
         setShowSuccessAlert(true);
-        console.log(result);
+
+        // Điều hướng dựa trên role
         setTimeout(() => {
           setShowSuccessAlert(false);
-          navigate("/");
+          if (decodedToken?.role === "admin") {
+            setShowSuccessAlert(false);
+            window.location.pathname = "/admin/userList";
+            // navigate("/admin/userList");
+          } else {
+            setShowSuccessAlert(false);
+            navigate("/");
+          }
         }, 2000);
       } else {
         setMessage("Login failed");

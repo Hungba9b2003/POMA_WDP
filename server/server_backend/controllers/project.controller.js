@@ -258,25 +258,21 @@ async function getProjectMembers(req, res, next) {
   try {
     const { projectId } = req.params;
 
-    const project = await db.Projects.findOne({ _id: projectId })
-      .populate({
-        path: 'members._id',
-        model: 'user',
-      });
-
+    const project = await db.Projects.findOne({ _id: projectId }).populate({
+      path: "members._id",
+      model: "user",
+    });
     if (!project) {
       throw createHttpErrors(404, "Project not found");
     }
 
-    const memberInfo = project.members.map(member => ({
+    const memberInfo = project.members.map((member) => ({
       id: member._id ? member._id._id : null,
       name: member._id ? member._id.username : null,
       role: member.role,
-      avatar: member._id ? member._id.profile.avatar : null
+      avatar: member._id ? member._id.profile.avatar : null,
     }));
-
     res.status(200).json({ memberInfo });
-
   } catch (error) {
     next(error);
   }
@@ -337,8 +333,6 @@ async function setProjectMemberRole(req, res, next) {
   }
 }
 
-
-
 async function deleteProjectMember(req, res, next) {
   try {
     const { projectId, memberId } = req.params;
@@ -373,8 +367,6 @@ async function deleteProjectMember(req, res, next) {
     next(error);
   }
 }
-
-
 
 async function getUserRole(req, res, next) {
   try {
@@ -543,8 +535,8 @@ async function createTeam(projectId, taskId, assigneeId) {
     }
 
     // Kiểm tra xem assignee đã có nhóm nào chưa
-    const existingTeam = project.members.some(member =>
-      member.teams.some(team => team.teamLeader.toString() === assigneeId)
+    const existingTeam = project.members.some((member) =>
+      member.teams.some((team) => team.teamLeader.toString() === assigneeId)
     );
 
     if (existingTeam) {
@@ -553,7 +545,7 @@ async function createTeam(projectId, taskId, assigneeId) {
 
     // Tạo team mới
     const newTeam = {
-      idTeam: new mongoose.Types.ObjectId(),  // Tạo ID team mới
+      idTeam: new mongoose.Types.ObjectId(), // Tạo ID team mới
       teamName: task.taskName, // Đặt tên nhóm bằng tên task
       teamLeader: assigneeId, // Gán assignee làm team leader
     };
@@ -563,11 +555,11 @@ async function createTeam(projectId, taskId, assigneeId) {
       { _id: projectId },
       {
         $push: {
-          'members.$[member].teams': newTeam,
+          "members.$[member].teams": newTeam,
         },
       },
       {
-        arrayFilters: [{ 'member._id': assigneeId }],
+        arrayFilters: [{ "member._id": assigneeId }],
         new: true,
       }
     );

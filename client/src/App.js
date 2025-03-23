@@ -33,6 +33,11 @@ import BuyMembership from "./Components/Project/BuyMembership";
 import ProjectStored from "./Components/Project/ProjectStored";
 import JoinProject from "./Pages/joinProject/JoinProject";
 import Summary from "./Components/Project/SummaryProject";
+import UserList from "./Components/Admin/UserList";
+import DetailUser from "./Components/Admin/DetailUser";
+import ChangePasswordUser from "./Components/Admin/ChangePasswordUser";
+import AllProjectList from "./Components/Admin/ProjectList";
+import HeaderAdmin from "./Components/Utils/HeaderAdmin";
 import ConfirmInvite from "./Pages/ConfirmInvite";
 import ProjectSetting from "./Components/Project/ProjectSetting";
 
@@ -49,6 +54,21 @@ const Layout = () => {
         </div>
       </div>
     </div>
+  );
+};
+const LayoutAdmin = () => {
+  const location = useLocation();
+  const showSidebar = location.pathname.startsWith("/project");
+  return (
+    <>
+      <HeaderAdmin />
+      <div className="d-flex">
+        {showSidebar && <Sidebar />}
+        <div className="flex-grow-1 overflow-auto">
+          <Outlet /> {/* Đảm bảo render các route con tại đây */}
+        </div>
+      </div>
+    </>
   );
 };
 function App() {
@@ -78,9 +98,32 @@ function App() {
         </Route>
       )}
 
+      {accessToken ||
+        (accessToken2 && (
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <LayoutAdmin />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="userList" element={<UserList />} />
+            <Route path="viewDetailUser/:userId" element={<DetailUser />} />
+            <Route
+              path="changePasswordUser/:userId"
+              element={<ChangePasswordUser />}
+            />
+            <Route path="projectList" element={<AllProjectList />} />
+          </Route>
+        ))}
+
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />
-        <Route path="/invite-confirm/:projectId/:userId" element={<ConfirmInvite />} />
+        <Route
+          path="/invite-confirm/:projectId/:userId"
+          element={<ConfirmInvite />}
+        />
       </Route>
       {(accessToken || accessToken2) && (
         <Route path="/project/:projectId" element={<Layout />}>
@@ -125,6 +168,5 @@ function App() {
     </Routes>
   );
 }
-
 
 export default App;
