@@ -6,55 +6,71 @@ import { Link } from 'react-router-dom';
 
 function BuyMembership() {
     return (
-        <Container fluid className=' vh-83'>
-
-            <Row className='d-flex justify-content-around mt-5 ms-2'>
-                <Col md={5} className='mx-2 p-0 background-color-secondary'>
-                    <Container fluid className='mt-2'>
-                        <Row className='border-bottom border-black pb-3'>
-                            <h3 className='m-0 text-center'>Basic</h3>
-                            <h4 className='m-0 text-center'>(Free)</h4>
-                        </Row>
-
-                        <Row className='m-3 py-5'>
-
-                            <p className='py-2'> <FaCheck /> Limit 3 columns </p>
-                            <p className='py-2'> <FaCheck /> Limit 5 members </p>
-                            <p className='py-2'> <FaCheck /> Limit special functions</p>
-
-                        </Row>
-
-                        <Row>
-                            <Button className='rounded-0 bg-secondary disabled py-3 fw-bolder'>Free</Button>
-                        </Row>
-                    </Container>
-
-                </Col>
-                <Col md={5} className='mx-2 p-0 background-color-secondary'>
-                    <Container fluid className='mt-2'>
-                        <Row className='border-bottom border-black pb-3'>
-                            <h3 className='m-0 text-center'>Premium</h3>
-                            <h4 className='m-0 text-center'>(2000$)</h4>
-                        </Row>
-
-                        <Row className='m-3 py-5'>
-
-                            <p className='py-2 text-success'> <FaCheck /> Unlimit columns </p>
-                            <p className='py-2 text-success'> <FaCheck /> Unlimit members </p>
-                            <p className='py-2 text-success'> <FaCheck /> Unrestrict special functions</p>
-
-                        </Row>
-
-                        <Row>
-                            <Button className='rounded-0 btn-membership border-0 py-3 fw-bolder'>
-                                <Link to="checkOut" className="text-decoration-none">Upgrade</Link>
+        <Container fluid className='vh-83 py-5 bg-light'>
+            <Row className='d-flex justify-content-center align-items-center h-100'>
+                <Col md={4} className='mx-4'>
+                    <div className='card shadow-sm h-100'>
+                        <div className='card-header bg-white border-0 pt-4'>
+                            <h3 className='text-center mb-1'>Basic</h3>
+                            <h4 className='text-center text-muted mb-0'>Free</h4>
+                        </div>
+                        <div className='card-body d-flex flex-column'>
+                            <div className='py-4'>
+                                <p className='mb-3 d-flex align-items-center'>
+                                    <FaCheck className='text-secondary me-2' />
+                                    <span>Limit 3 columns</span>
+                                </p>
+                                <p className='mb-3 d-flex align-items-center'>
+                                    <FaCheck className='text-secondary me-2' />
+                                    <span>Limit 5 members</span>
+                                </p>
+                                <p className='mb-3 d-flex align-items-center'>
+                                    <FaCheck className='text-secondary me-2' />
+                                    <span>Limit special functions</span>
+                                </p>
+                            </div>
+                            <hr className='border-black  my-4' />
+                            <Button variant="secondary" className='mt-auto py-3 fw-bold' disabled>
+                                Current Plan
                             </Button>
-                        </Row>
-                    </Container>
-
+                        </div>
+                    </div>
                 </Col>
 
-
+                <Col md={4} className='mx-4'>
+                    <div className='card shadow h-100 border-primary' style={{ backgroundColor: '#2C3140' }}>
+                        <div className='card-header border-0 pt-4 position-relative' style={{ backgroundColor: '#2C3140' }}>
+                            <span className='position-absolute top-0 end-0 m-2'>
+                                <FaStar className='text-warning' />
+                            </span>
+                            <h3 className='text-center mb-1 text-white'>Premium</h3>
+                            <h4 className='text-center text-white mb-0'>$199</h4>
+                        </div>
+                        <div className='card-body d-flex flex-column'>
+                            <div className='py-4'>
+                                <p className='mb-3 d-flex align-items-center text-white'>
+                                    <FaCheck className='text-white me-2' />
+                                    <span>Unlimited columns</span>
+                                </p>
+                                <p className='mb-3 d-flex align-items-center text-white'>
+                                    <FaCheck className='text-white me-2' />
+                                    <span>Unlimited members</span>
+                                </p>
+                                <p className='mb-3 d-flex align-items-center text-white'>
+                                    <FaCheck className='text-white me-2' />
+                                    <span>All special functions</span>
+                                </p>
+                            </div>
+                            <hr className='border-white my-4' />
+                            <Link
+                                to="checkOut"
+                                className="btn btn-light mt-auto py-3 fw-bold text-decoration-none text-primary"
+                            >
+                                Upgrade Now
+                            </Link>
+                        </div>
+                    </div>
+                </Col>
             </Row>
         </Container>
     )

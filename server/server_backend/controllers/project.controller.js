@@ -269,7 +269,8 @@ async function getProjectMembers(req, res, next) {
       id: member._id ? member._id._id : null,
       name: member._id ? member._id.username : null,
       role: member.role,
-      avatar: member._id ? member._id.profile.avatar : null
+      avatar: member._id ? member._id.profile.avatar : null,
+      email: member._id ? member._id.account.email : null
     }));
 
     res.status(200).json({ memberInfo });

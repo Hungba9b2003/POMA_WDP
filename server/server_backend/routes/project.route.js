@@ -72,7 +72,7 @@ projectRouter.delete("/:projectId/delete-workspace");
 
 // api xử lý logic bên task.controller
 // lấy task
-projectRouter.get("/:projectId/tasks/get-all", TaskController.getAllTasks);
+projectRouter.get("/:projectId/tasks/get-all", AuthMiddleware.verifyAccessToken, TaskController.getAllTasks);
 // tạo task
 projectRouter.post(
   "/:projectId/tasks/create",

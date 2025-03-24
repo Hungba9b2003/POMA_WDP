@@ -13,7 +13,8 @@ const Sidebar = () => {
   const { projectId } = useParams();
   const [project, setProject] = useState(null);
   const navigate = useNavigate();
-  //console.log("Project ID from URL:", projectId);
+  const [userInfo, setUserInfo] = useState(null);
+  console.log("Project ID from URL:", userInfo);
 
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -27,34 +28,35 @@ const Sidebar = () => {
       console.error("Error decoding token:", error);
     }
   }
+
   const menuItems = projectId
     ? [
-        {
-          path: `/project/${projectId}/summary`,
-          label: "Summary",
-          icon: <TbWorld />,
-        },
-        {
-          path: `/project/${projectId}/workspace`,
-          label: "Workspace",
-          icon: <GrWorkshop />,
-        },
-        {
-          path: `/project/${projectId}/members`,
-          label: "Member",
-          icon: <FaUsers />,
-        },
-        {
-          path: `/project/${projectId}/listTask`,
-          label: "List Tasks",
-          icon: <FaTasks />,
-        },
-        {
-          path: `/project/${projectId}/setting`,
-          label: "Setting",
-          icon: <IoSettingsSharp />,
-        },
-      ]
+      {
+        path: `/project/${projectId}/summary`,
+        label: "Summary",
+        icon: <TbWorld />,
+      },
+      {
+        path: `/project/${projectId}/workspace`,
+        label: "Workspace",
+        icon: <GrWorkshop />,
+      },
+      {
+        path: `/project/${projectId}/members`,
+        label: "Member",
+        icon: <FaUsers />,
+      },
+      {
+        path: `/project/${projectId}/listTask`,
+        label: "List Tasks",
+        icon: <FaTasks />,
+      },
+      {
+        path: `/project/${projectId}/setting`,
+        label: "Setting",
+        icon: <IoSettingsSharp />,
+      },
+    ]
     : [];
 
   // useEffect để fetch project info
@@ -79,28 +81,62 @@ const Sidebar = () => {
     };
 
     fetchProjectInfo();
-  }, [projectId]); // Trigger khi projectId thay đổi
+  }, [projectId, token]); // Added token as dependency
 
-  // Kiểm tra nếu project chưa có dữ liệu thì render "Loading..."
-  if (!project) {
-    return <div></div>; // Chỉ hiển thị Loading nếu project vẫn là null
-  }
+  // Move this useEffect before any conditional returns
+  useEffect(() => {
+    if (token) {
+      const fetchUserInfo = async () => {
+        try {
+          const response = await axios.get(
+            "http://localhost:9999/users/get-profile",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          // console.log(response.data);
+          setUserInfo(response.data);
+        } catch (error) {
+          console.error("Lỗi khi lấy thông tin người dùng:", error);
+          if (error.response) {
+            console.error("Lỗi phản hồi:", error.response);
+          } else if (error.request) {
+            console.error("Lỗi yêu cầu:", error.request);
+          } else {
+            console.error("Thông báo lỗi:", error.message);
+          }
+        }
+      };
+      fetchUserInfo();
+    }
+  }, [token]);
 
   const handleGoToPro = () => {
     // Điều hướng đến trang nâng cấp
     navigate(`/project/${project._id}/membership`);
   };
 
+  // Kiểm tra nếu project chưa có dữ liệu thì render "Loading..."
+  if (!project || !userInfo) {
+    return <div></div>; // Loading state for both project and userInfo
+  }
+
   return (
     <div
-      className="d-flex flex-column"
+      className="d-flex flex-column top-0 start-0"
       style={{
-        width: "250px",
-        height: "100vh",
+        width: "280px",
+        height: "calc(100vh - 60px)",
         borderRight: "1px solid #ccc",
         backgroundColor: "rgb(255, 228, 242)",
         zIndex: 999,
         padding: "10px",
+        position: "sticky",
+        top: 0,
+        overflow: "auto",
+        paddingBottom: "20px",
       }}
     >
       <h4
@@ -119,11 +155,10 @@ const Sidebar = () => {
           <Link
             key={item.path}
             to={item.path}
-            className={`d-flex align-items-center gap-2 p-2 rounded text-decoration-none ${
-              location.pathname === item.path
-                ? "bg-primary text-white"
-                : "text-dark"
-            }`}
+            className={`d-flex align-items-center gap-2 p-2 rounded text-decoration-none ${location.pathname === item.path
+              ? "bg-primary text-white"
+              : "text-dark"
+              }`}
           >
             {item.icon} {item.label}
           </Link>
@@ -152,15 +187,16 @@ const Sidebar = () => {
           </>
         )}
       </Card>
-      <div className="d-flex align-items-center gap-2 mt-3">
+      <div className="d-flex align-items-center gap-2 mt-3" >
         <img
-          src="https://placehold.co/40"
+          src={userInfo?.profile.avatar || "https://placehold.co/40"}
           alt="avatar"
           className="rounded-circle"
+          style={{ width: "40px", height: "40px", objectFit: "cover" }}
         />
         <div>
-          <p className="mb-0">Olala</p>
-          <small>Project Manager</small>
+          <p className="mb-0">{userInfo.username}</p>
+          <small>{userInfo.account.email}</small>
         </div>
       </div>
     </div>

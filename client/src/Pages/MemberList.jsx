@@ -50,6 +50,10 @@ function MemberList() {
                         setCurrentUserRole(currentUser.role);
                         console.log("Current User Role:", currentUser.role);
                     }
+                    // Loại bỏ thành viên trùng lặp theo `id`
+                    const uniqueMembers = Array.from(new Set(data.memberInfo.map(m => m.id)))
+                        .map(id => data.memberInfo.find(m => m.id === id));
+                    setProjectMembers(uniqueMembers);
                 } else {
                     setProjectMembers([]);
                 }
@@ -109,8 +113,8 @@ function MemberList() {
             console.log(accessToken)
             if (response.ok) {
                 const result = await response.json(); // Nhận kết quả từ API
-                 // Cập nhật lại danh sách thành viên nếu thành công
-                 setProjectMembers(prevMembers =>
+                // Cập nhật lại danh sách thành viên nếu thành công
+                setProjectMembers(prevMembers =>
                     prevMembers.map(member =>
                         member.id === memberId ? { ...member, role: newRole } : member
                     )
@@ -122,20 +126,19 @@ function MemberList() {
                 Swal.fire("Lỗi!", errorData.message || "Không thể cập nhật vai trò. Vui lòng thử lại.", "error");
             }
         } catch (error) {
-             // Xử lý lỗi khi gọi API
-             console.error("Error:", error);
+            // Xử lý lỗi khi gọi API
+            console.error("Error:", error);
             Swal.fire("Lỗi!", "Đã xảy ra lỗi khi gọi API.", "error");
         }
     };
     const handleInviteMemberByEmail = async () => {
-        if (!email.trim()) {
-            alert("Email is required!");
-            return;
-        }
+        const email = prompt('Enter email to invite');
+        if (!email) return;
 
         try {
             // Kiểm tra email đã tồn tại trong danh sách thành viên chưa
             const isAlreadyMember = projectMembers.filter(member => member.email === email);
+            console.log("Email entered:", email);
             console.log("isAlreadyMember", isAlreadyMember);
             if (isAlreadyMember.length > 0) {
                 alert('This user is already a member of the project.');
