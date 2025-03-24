@@ -50,6 +50,10 @@ function MemberList() {
                         setCurrentUserRole(currentUser.role);
                         console.log("Current User Role:", currentUser.role);
                     }
+                    // Loại bỏ thành viên trùng lặp theo `id`
+                    const uniqueMembers = Array.from(new Set(data.memberInfo.map(m => m.id)))
+                        .map(id => data.memberInfo.find(m => m.id === id));
+                    setProjectMembers(uniqueMembers);
                 } else {
                     setProjectMembers([]);
                 }
@@ -109,8 +113,8 @@ function MemberList() {
             console.log(accessToken)
             if (response.ok) {
                 const result = await response.json(); // Nhận kết quả từ API
-                 // Cập nhật lại danh sách thành viên nếu thành công
-                 setProjectMembers(prevMembers =>
+                // Cập nhật lại danh sách thành viên nếu thành công
+                setProjectMembers(prevMembers =>
                     prevMembers.map(member =>
                         member.id === memberId ? { ...member, role: newRole } : member
                     )
@@ -122,24 +126,25 @@ function MemberList() {
                 Swal.fire("Lỗi!", errorData.message || "Không thể cập nhật vai trò. Vui lòng thử lại.", "error");
             }
         } catch (error) {
-             // Xử lý lỗi khi gọi API
-             console.error("Error:", error);
+            // Xử lý lỗi khi gọi API
+            console.error("Error:", error);
             Swal.fire("Lỗi!", "Đã xảy ra lỗi khi gọi API.", "error");
         }
     };
     const handleInviteMemberByEmail = async () => {
         const email = prompt('Enter email to invite');
         if (!email) return;
-    
-        try {    
+
+        try {
             // Kiểm tra email đã tồn tại trong danh sách thành viên chưa
             const isAlreadyMember = projectMembers.filter(member => member.email === email);
+            console.log("Email entered:", email);
             console.log("isAlreadyMember", isAlreadyMember);
             if (isAlreadyMember.length > 0) {
                 alert('This user is already a member of the project.');
                 return;
             }
-    
+
             // Nếu chưa là thành viên, gửi lời mời
             const response = await fetch(`http://localhost:9999/projects/${projectId}/invite`, {
                 method: 'POST',
@@ -149,7 +154,7 @@ function MemberList() {
                 },
                 body: JSON.stringify({ email }),
             });
-    
+
             if (response.ok) {
                 alert('Invitation sent!');
             } else {
