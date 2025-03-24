@@ -5,6 +5,7 @@ import CreateTask from "./CreateTask";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { HiMiniPencilSquare } from "react-icons/hi2";
 
 const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
   const [showModal, setShowModal] = useState(false);
@@ -57,6 +58,7 @@ const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
       <Row>
         <Col>
           <h5>{title}</h5>
+          <HiMiniPencilSquare />
           <FiSave />
         </Col>
         <Col className="text-end ">

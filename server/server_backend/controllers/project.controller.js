@@ -112,25 +112,14 @@ async function getProjectByIdSummary(req, res, next) {
 async function updateProject(req, res, next) {
   try {
     const { projectId } = req.params;
-    const { id, newColumn, removeColumn } = req.body; // Nhận removeColumn từ request body
+    const { id, newColumn, removeColumn, renameColumn } = req.body;
     const { projectName, projectCode, projectAvatar } = req.body;
 
-    const project = await db.Projects.findOne({ _id: projectId })
-      .populate("tasks")
-      .exec();
-    if (!project) {
-      throw createHttpErrors(404, "Project not found");
-    }
+    const project = await db.Projects.findOne({ _id: projectId }).populate("tasks");
+    if (!project) throw createHttpErrors(404, "Project not found");
 
-    const member = project.members.find(
-      (member) => member._id.toString() === id
-    );
-    if (!member) {
-      throw createHttpErrors(
-        403,
-        "You don't have permission to edit this project"
-      );
-    }
+    const member = project.members.find((m) => m._id.toString() === id);
+    if (!member) throw createHttpErrors(403, "No permission to edit this project");
 
     const updateProject = {};
 
@@ -138,22 +127,14 @@ async function updateProject(req, res, next) {
       if (projectName) updateProject.projectName = projectName;
 
       if (projectCode) {
-        const existingProjectByCode = await db.Projects.findOne({
-          projectCode,
-          _id: { $ne: projectId },
-        });
-        if (existingProjectByCode) {
-          res.status(409).json({ error: "Project code already exists" });
-          return;
-        }
+        const existingProject = await db.Projects.findOne({ projectCode, _id: { $ne: projectId } });
+        if (existingProject) return res.status(409).json({ error: "Project code already exists" });
         updateProject.projectCode = projectCode;
       }
 
-      if (projectAvatar) {
-        updateProject.projectAvatar = projectAvatar;
-      }
+      if (projectAvatar) updateProject.projectAvatar = projectAvatar;
 
-      // Thêm column
+      // **Thêm column**
       if (newColumn) {
         if (project.classifications.includes(newColumn)) {
           return res.status(400).json({ message: "Column already exists" });
@@ -162,45 +143,60 @@ async function updateProject(req, res, next) {
         updateProject.classifications = project.classifications;
       }
 
+      // **Xóa column**
       if (removeColumn) {
-        const tasksToDelete = project.tasks
-          .filter((task) => task.status === removeColumn)
-          .map((task) => task._id);
+        const tasksToDelete = project.tasks.filter((task) => task.status === removeColumn).map((task) => task._id);
+
         if (tasksToDelete.length > 0) {
-          const deleteResult = await db.Tasks.deleteMany({
-            _id: { $in: tasksToDelete },
-          });
+          await db.Tasks.deleteMany({ _id: { $in: tasksToDelete } });
         }
 
-        project.tasks = project.tasks.filter(
-          (task) => task.status !== removeColumn
-        );
+        project.tasks = project.tasks.filter((task) => task.status !== removeColumn);
         updateProject.tasks = project.tasks;
-
-        project.classifications = project.classifications.filter(
-          (col) => col !== removeColumn
-        );
+        project.classifications = project.classifications.filter((col) => col !== removeColumn);
         updateProject.classifications = project.classifications;
       }
-    } else {
-      throw createHttpErrors(
-        403,
-        "Only the project owner can edit project details"
-      );
+
+      // **Đổi tên column**
+      if (renameColumn) {
+        const { oldName, newName } = renameColumn;
+        if (!oldName || !newName) return res.status(400).json({ message: "Invalid rename request" });
+
+        const columnIndex = project.classifications.indexOf(oldName);
+        if (columnIndex === -1) return res.status(404).json({ message: "Column not found" });
+
+        if (project.classifications.includes(newName)) {
+          return res.status(400).json({ message: "New column name already exists" });
+        }
+
+        project.classifications[columnIndex] = newName;
+        updateProject.classifications = project.classifications;
+
+        const taskIdsToUpdate = project.tasks
+          .filter((task) => task.status === oldName)
+          .map((task) => task._id);
+
+        if (taskIdsToUpdate.length > 0) {
+          await db.Tasks.updateMany(
+            { _id: { $in: taskIdsToUpdate } },
+            { $set: { status: newName } }
+          );
+        }
+      } else {
+        throw createHttpErrors(403, "Only the project owner can edit project details");
+      }
+
+      await db.Projects.updateOne({ _id: projectId }, { $set: updateProject }, { runValidators: true });
+      const updatedProject = await db.Projects.findOne({ _id: projectId });
+
+      res.status(200).json(updatedProject);
     }
-
-    await db.Projects.updateOne(
-      { _id: projectId },
-      { $set: updateProject },
-      { runValidators: true }
-    );
-    const saveProject = await db.Projects.findOne({ _id: projectId });
-
-    res.status(200).json(saveProject);
   } catch (error) {
     next(error);
   }
 }
+
+
 
 async function deleteProject(req, res, next) {
   try {
@@ -585,50 +581,50 @@ async function createTeam(projectId, taskId, assigneeId) {
 
 const joinProjectByCode = async (req, res, next) => {
   try {
-      const { projectCode, userId } = req.body;
+    const { projectCode, userId } = req.body;
 
-      if (!projectCode || !userId) {
-          return res
-              .status(400)
-              .json({ message: "Project code and user ID are required" });
-      }
+    if (!projectCode || !userId) {
+      return res
+        .status(400)
+        .json({ message: "Project code and user ID are required" });
+    }
 
-      // Tìm dự án theo mã projectCode
-      const project = await db.Projects.findOne({ projectCode });
-      if (!project) {
-          return res
-              .status(404)
-              .json({ message: "Invalid project code or project not found" });
-      }
+    // Tìm dự án theo mã projectCode
+    const project = await db.Projects.findOne({ projectCode });
+    if (!project) {
+      return res
+        .status(404)
+        .json({ message: "Invalid project code or project not found" });
+    }
 
-      // Kiểm tra xem user đã là thành viên chưa
-      const isMember = project.members.some(
-          (member) => member._id.toString() === userId
-      );
-      if (isMember) {
-          return res
-              .status(400)
-              .json({ message: "User is already a member of this project" });
-      }
+    // Kiểm tra xem user đã là thành viên chưa
+    const isMember = project.members.some(
+      (member) => member._id.toString() === userId
+    );
+    if (isMember) {
+      return res
+        .status(400)
+        .json({ message: "User is already a member of this project" });
+    }
 
-      // Thêm user vào danh sách members với vai trò mặc định là "member"
-      project.members.push({
-          _id: userId,
-          role: "member",
-          teams: [], // Người mới tham gia chưa thuộc nhóm nào
-      });
+    // Thêm user vào danh sách members với vai trò mặc định là "member"
+    project.members.push({
+      _id: userId,
+      role: "member",
+      teams: [], // Người mới tham gia chưa thuộc nhóm nào
+    });
 
-      // Lưu thay đổi
-      await project.save();
+    // Lưu thay đổi
+    await project.save();
 
-      res.status(200).json({
-          success: true,
-          message: "Joined project successfully",
-          projectId: project._id,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Joined project successfully",
+      projectId: project._id,
+    });
   } catch (error) {
-      console.error("Error joining project by code:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error joining project by code:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -659,7 +655,7 @@ const inviteUserToProject = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Invitation sent successfully",
-      confirmLink, 
+      confirmLink,
     });
   } catch (error) {
     console.error("Error inviting user:", error);
