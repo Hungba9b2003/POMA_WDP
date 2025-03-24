@@ -513,13 +513,13 @@ async function createTeam(projectId, taskId, assigneeId) {
     }
 
     // Kiểm tra xem assignee đã có nhóm nào chưa
-    const existingTeam = project.members.some(member =>
-      member.teams.some(team => team.teamLeader.toString() === assigneeId)
-    );
+    // const existingTeam = project.members.some(member =>
+    //   member.teams.some(team => team.teamLeader.toString() === assigneeId)
+    // );
 
-    if (existingTeam) {
-      throw createHttpErrors(400, "Assignee already has a team");
-    }
+    // if (existingTeam) {
+    //   throw createHttpErrors(400, "Assignee already has a team");
+    // }
 
     // Tạo team mới
     const newTeam = {

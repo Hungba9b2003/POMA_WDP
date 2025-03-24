@@ -38,7 +38,7 @@ app.post('/payment', async (req, res) => {
     //storedToken = req.headers['authorization']; // Lưu token vào biến toàn cục
 
     // Tiếp tục xử lý thanh toán như trước
-    const amount = 5075140;
+    const amount = 5084948;
     const embed_data = { redirecturl: `http://localhost:3000/project/${projectId}` };
     const items = [];
     const transID = Math.floor(Math.random() * 1000000);
