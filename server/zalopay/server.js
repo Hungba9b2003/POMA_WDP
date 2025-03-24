@@ -1,4 +1,3 @@
-// Node v10.15.3
 const axios = require('axios').default; // npm install axios
 const CryptoJS = require('crypto-js'); // npm install crypto-js
 const express = require('express'); // npm install express
@@ -25,7 +24,7 @@ app.get('/', (req, res) => {
 });
 
 //lưu token tạm thời
-let storedToken;
+//let storedToken;
 
 /**
  * method: POST
@@ -35,12 +34,12 @@ let storedToken;
  */
 
 app.post('/payment', async (req, res) => {
-    const { groupId } = req.body;
-    storedToken = req.headers['authorization']; // Lưu token vào biến toàn cục
+    const { projectId } = req.body;
+    //storedToken = req.headers['authorization']; // Lưu token vào biến toàn cục
 
     // Tiếp tục xử lý thanh toán như trước
     const amount = 5075140;
-    const embed_data = { redirecturl: `http://localhost:3000/groups/${groupId}` };
+    const embed_data = { redirecturl: `http://localhost:3000/project/${projectId}` };
     const items = [];
     const transID = Math.floor(Math.random() * 1000000);
 
@@ -52,8 +51,8 @@ app.post('/payment', async (req, res) => {
         item: JSON.stringify(items),
         embed_data: JSON.stringify(embed_data),
         amount,
-        callback_url: 'https://a885-113-23-104-170.ngrok-free.app/callback',
-        description: `Lazada - Payment for the order #${transID}`,
+        callback_url: 'https://19be-42-119-222-133.ngrok-free.app/callback',
+        description: `POMA - Payment for the order #${transID}`,
         bank_code: ''
     };
 
@@ -78,6 +77,8 @@ app.post('/payment', async (req, res) => {
 app.post('/callback', async (req, res) => {
     let result = {};
     try {
+        const status = 1;
+
         let dataStr = req.body.data;
         let reqMac = req.body.mac;
         let mac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
@@ -87,25 +88,25 @@ app.post('/callback', async (req, res) => {
             result.return_message = 'mac not equal';
         } else {
             let dataJson = JSON.parse(dataStr);
-            const groupId = JSON.parse(dataJson.embed_data).redirecturl.split('/').pop();
-
+            const projectId = JSON.parse(dataJson.embed_data).redirecturl.split('/').pop();
             // Gọi API updatePremium với token được lưu từ trước
             await axios.post(
-                'http://localhost:9999/groups/updatePremium',
-                { _id: groupId, isPremium: true },
+                `http://localhost:9999/projects/${projectId}/updatePremium`,
+                JSON.stringify({ status, projectId }),
                 {
                     headers: {
-                        Authorization: storedToken,
-                    },
+                        'Content-Type': 'application/json'
+                    }
                 }
             );
-            console.log(`Cập nhật group ${groupId} thành Premium`);
+
+            console.log(`Cập nhật project ${projectId} thành Premium`);
 
             result.return_code = 1;
             result.return_message = 'success';
         }
     } catch (ex) {
-        console.log('lỗi:::' + ex.message);
+        console.log('lỗi:' + ex.message);
         result.return_code = 0;
         result.return_message = ex.message;
     }
