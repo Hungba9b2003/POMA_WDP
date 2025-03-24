@@ -14,7 +14,7 @@ const {
   authenticationRouter,
   adminRouter,
 } = require("./routes");
-const uploadRoutes = require("./routes/upload");
+const uploadRoutes = require("./routes/upload.route");
 // Sử dụng cors middleware để cho phép request từ localhost:3000
 app.use(
   cors({

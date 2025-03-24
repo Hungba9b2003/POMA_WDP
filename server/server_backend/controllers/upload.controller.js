@@ -38,12 +38,18 @@ const upload = multer({
 const deleteImage = async (fileName) => {
   try {
     const result = await cloudinary.uploader.destroy(`POMA/${fileName}`);
+
+    if (result.result === "not found") {
+      console.log("Image not found, skipping deletion:", fileName);
+      return { success: false, message: "Image not found, no deletion needed" };
+    }
+
     if (result.result === "ok") {
       console.log("Deleted successfully:", fileName);
       return { success: true, message: "Image deleted successfully" };
-    } else {
-      throw new Error("Image deletion failed");
     }
+
+    throw new Error("Image deletion failed");
   } catch (error) {
     console.error("Error deleting image:", error);
     return { success: false, message: error.message };

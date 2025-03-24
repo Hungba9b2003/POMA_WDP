@@ -111,17 +111,22 @@ async function getProjectByIdSummary(req, res, next) {
 
 async function updateProject(req, res, next) {
   try {
-    const { projectId } = req.params;
-    const { id, newColumn, removeColumn } = req.body; // Nhận removeColumn từ request body
-    const { projectName, projectCode, projectAvatar } = req.body;
-
+    const projectId = req.params.projectId;
+    const { id = null, newColumn = null, removeColumn = null } = req.body;
+    // Nhận removeColumn từ request body
+    const {
+      projectName = null,
+      projectCode = null,
+      projectAvatar = null,
+    } = req.body;
+    console.log(projectId);
     const project = await db.Projects.findOne({ _id: projectId })
       .populate("tasks")
       .exec();
+    console.log(id);
     if (!project) {
       throw createHttpErrors(404, "Project not found");
     }
-
     const member = project.members.find(
       (member) => member._id.toString() === id
     );
@@ -188,14 +193,16 @@ async function updateProject(req, res, next) {
         "Only the project owner can edit project details"
       );
     }
+    console.log(updateProject);
 
-    await db.Projects.updateOne(
+    const result = await db.Projects.updateOne(
       { _id: projectId },
       { $set: updateProject },
       { runValidators: true }
     );
-    const saveProject = await db.Projects.findOne({ _id: projectId });
 
+    const saveProject = await db.Projects.findOne({ _id: projectId });
+    console.log(result);
     res.status(200).json(saveProject);
   } catch (error) {
     next(error);
