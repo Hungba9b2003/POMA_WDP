@@ -187,11 +187,16 @@ const Workspace = () => {
   const handleSaveColumn = async (oldName) => {
     if (!editableColumn) return;
 
+    if (!id) {
+      console.error("User ID not found in token!");
+      return;
+    }
+
     try {
       const response = await axios.put(
         `http://localhost:9999/projects/${projectId}/edit`,
         {
-          id,
+          id,  // Kiểm tra id có tồn tại không
           renameColumn: {
             oldName,
             newName: editableColumn,
@@ -202,13 +207,19 @@ const Workspace = () => {
         }
       );
 
-      setColumns(response.data.classifications);
+      if (response.data.classifications) {
+        setColumns(response.data.classifications);
+      } else {
+        console.error("API response missing classifications:", response.data);
+      }
+
       setSelectedColumnIndex(null);
     } catch (error) {
       console.error("Error updating column:", error);
       alert("Failed to update column name!");
     }
   };
+
 
 
 

@@ -196,6 +196,8 @@ async function updateProject(req, res, next) {
   }
 }
 
+
+
 async function deleteProject(req, res, next) {
   try {
     const { projectId } = req.params;
