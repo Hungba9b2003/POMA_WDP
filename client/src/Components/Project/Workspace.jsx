@@ -187,6 +187,11 @@ const Workspace = () => {
   const handleSaveColumn = async (oldName) => {
     if (!editableColumn) return;
 
+    if (editableColumn === oldName) {
+      setSelectedColumnIndex(null);
+      return;
+    }
+
     if (!id) {
       console.error("User ID not found in token!");
       return;
@@ -196,7 +201,7 @@ const Workspace = () => {
       const response = await axios.put(
         `http://localhost:9999/projects/${projectId}/edit`,
         {
-          id,  // Kiểm tra id có tồn tại không
+          id,  
           renameColumn: {
             oldName,
             newName: editableColumn,

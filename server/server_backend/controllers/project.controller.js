@@ -112,7 +112,7 @@ async function getProjectByIdSummary(req, res, next) {
 async function updateProject(req, res, next) {
   try {
     const projectId = req.params.projectId;
-    const { id = null, newColumn = null, removeColumn = null } = req.body;
+    const { id = null, newColumn = null, removeColumn = null , renameColumn = null} = req.body;
     // Nhận removeColumn từ request body
     const {
       projectName = null,
@@ -172,21 +172,46 @@ async function updateProject(req, res, next) {
         project.classifications = project.classifications.filter((col) => col !== removeColumn);
         updateProject.classifications = project.classifications;
       }
-    } else {
-      throw createHttpErrors(
-        403,
-        "Only the project owner can edit project details"
-      );
-    }
 
-    await db.Projects.updateOne(
+      // **Đổi tên column**
+      if (renameColumn) {
+        const { oldName, newName } = renameColumn;
+        if (!oldName || !newName) return res.status(400).json({ message: "Invalid rename request" });
+
+        const columnIndex = project.classifications.indexOf(oldName);
+        if (columnIndex === -1) return res.status(404).json({ message: "Column not found" });
+
+        if (project.classifications.includes(newName)) {
+          return res.status(400).json({ message: "New column name already exists" });
+        }
+
+        project.classifications[columnIndex] = newName;
+        updateProject.classifications = project.classifications;
+
+        const taskIdsToUpdate = project.tasks
+          .filter((task) => task.status === oldName)
+          .map((task) => task._id);
+
+        if (taskIdsToUpdate.length > 0) {
+          await db.Tasks.updateMany(
+            { _id: { $in: taskIdsToUpdate } },
+            { $set: { status: newName } }
+          );
+        }
+      } else {
+        throw createHttpErrors(403, "Only the project owner can edit project details");
+      }
+
+    const result = await db.Projects.updateOne(
       { _id: projectId },
       { $set: updateProject },
       { runValidators: true }
     );
-    const saveProject = await db.Projects.findOne({ _id: projectId });
 
+    const saveProject = await db.Projects.findOne({ _id: projectId });
+    console.log(result);
     res.status(200).json(saveProject);
+  }
   } catch (error) {
     next(error);
   }
@@ -263,7 +288,8 @@ async function getProjectMembers(req, res, next) {
       id: member._id ? member._id._id : null,
       name: member._id ? member._id.username : null,
       role: member.role,
-      avatar: member._id ? member._id.profile.avatar : null
+      avatar: member._id ? member._id.profile.avatar : null,
+      email: member._id ? member._id.account.email : null
     }));
     res.status(200).json({ memberInfo });
   } catch (error) {

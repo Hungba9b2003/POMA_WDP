@@ -75,6 +75,10 @@ const Header = () => {
       return;
     }
 
+    if (!id){
+      window.location.href = "/login/loginForm";
+    }
+
     try {
       const createResponse = await axios.post(
         "http://localhost:9999/projects/create",
