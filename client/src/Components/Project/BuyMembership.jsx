@@ -18,7 +18,7 @@ function BuyMembership() {
                             <div className='py-4'>
                                 <p className='mb-3 d-flex align-items-center'>
                                     <FaCheck className='text-secondary me-2' />
-                                    <span>Limit 3 columns</span>
+                                    <span>Limit 5 columns</span>
                                 </p>
                                 <p className='mb-3 d-flex align-items-center'>
                                     <FaCheck className='text-secondary me-2' />

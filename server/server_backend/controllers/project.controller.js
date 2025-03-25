@@ -112,7 +112,7 @@ async function getProjectByIdSummary(req, res, next) {
 async function updateProject(req, res, next) {
   try {
     const projectId = req.params.projectId;
-    const { id = null, newColumn = null, removeColumn = null , renameColumn = null} = req.body;
+    const { id = null, newColumn = null, removeColumn = null, renameColumn = null } = req.body;
     // Nhận removeColumn từ request body
     const {
       projectName = null,
@@ -202,16 +202,16 @@ async function updateProject(req, res, next) {
         throw createHttpErrors(403, "Only the project owner can edit project details");
       }
 
-    const result = await db.Projects.updateOne(
-      { _id: projectId },
-      { $set: updateProject },
-      { runValidators: true }
-    );
+      const result = await db.Projects.updateOne(
+        { _id: projectId },
+        { $set: updateProject },
+        { runValidators: true }
+      );
 
-    const saveProject = await db.Projects.findOne({ _id: projectId });
-    console.log(result);
-    res.status(200).json(saveProject);
-  }
+      const saveProject = await db.Projects.findOne({ _id: projectId });
+      console.log(result);
+      res.status(200).json(saveProject);
+    }
   } catch (error) {
     next(error);
   }
