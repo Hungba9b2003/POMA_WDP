@@ -164,12 +164,12 @@ function DetailUser() {
               text="Edit profile"
               color="#2B92E4"
             /> */}
-            <ProfileButton
+            {/* <ProfileButton
               to={`/admin/changePasswordUser/${userInfo._id}`}
               icon={<FaKey />}
               text="Change password"
               color="#F8B5C1"
-            />
+            /> */}
             <ProfileButton
               to="/admin/userList"
               icon={<FaHome />}

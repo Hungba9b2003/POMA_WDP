@@ -70,9 +70,13 @@ const Header = () => {
   };
 
   const handleCreate = async () => {
-    if (!projectName.trim()) {
+    if (!projectName) {
       alert("Project name is required!");
       return;
+    }
+
+    if (!id){
+      window.location.href = "/login/loginForm";
     }
 
     try {

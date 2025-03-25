@@ -7,7 +7,6 @@ const projectSchema = new mongoose.Schema(
       type: String,
       unique: [true, "Group name existed"],
       required: [true, "Group name is required"],
-      maxlength: 15,
     },
     //code để vào dự án
     projectCode: {

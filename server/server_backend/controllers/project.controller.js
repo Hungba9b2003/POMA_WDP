@@ -112,7 +112,7 @@ async function getProjectByIdSummary(req, res, next) {
 async function updateProject(req, res, next) {
   try {
     const projectId = req.params.projectId;
-    const { id = null, newColumn = null, removeColumn = null } = req.body;
+    const { id = null, newColumn = null, removeColumn = null, renameColumn = null } = req.body;
     // Nhận removeColumn từ request body
     const {
       projectName = null,
@@ -143,22 +143,14 @@ async function updateProject(req, res, next) {
       if (projectName) updateProject.projectName = projectName;
 
       if (projectCode) {
-        const existingProjectByCode = await db.Projects.findOne({
-          projectCode,
-          _id: { $ne: projectId },
-        });
-        if (existingProjectByCode) {
-          res.status(409).json({ error: "Project code already exists" });
-          return;
-        }
+        const existingProject = await db.Projects.findOne({ projectCode, _id: { $ne: projectId } });
+        if (existingProject) return res.status(409).json({ error: "Project code already exists" });
         updateProject.projectCode = projectCode;
       }
 
-      if (projectAvatar) {
-        updateProject.projectAvatar = projectAvatar;
-      }
+      if (projectAvatar) updateProject.projectAvatar = projectAvatar;
 
-      // Thêm column
+      // **Thêm column**
       if (newColumn) {
         if (project.classifications.includes(newColumn)) {
           return res.status(400).json({ message: "Column already exists" });
@@ -167,47 +159,65 @@ async function updateProject(req, res, next) {
         updateProject.classifications = project.classifications;
       }
 
+      // **Xóa column**
       if (removeColumn) {
-        const tasksToDelete = project.tasks
-          .filter((task) => task.status === removeColumn)
-          .map((task) => task._id);
+        const tasksToDelete = project.tasks.filter((task) => task.status === removeColumn).map((task) => task._id);
+
         if (tasksToDelete.length > 0) {
-          const deleteResult = await db.Tasks.deleteMany({
-            _id: { $in: tasksToDelete },
-          });
+          await db.Tasks.deleteMany({ _id: { $in: tasksToDelete } });
         }
 
-        project.tasks = project.tasks.filter(
-          (task) => task.status !== removeColumn
-        );
+        project.tasks = project.tasks.filter((task) => task.status !== removeColumn);
         updateProject.tasks = project.tasks;
-
-        project.classifications = project.classifications.filter(
-          (col) => col !== removeColumn
-        );
+        project.classifications = project.classifications.filter((col) => col !== removeColumn);
         updateProject.classifications = project.classifications;
       }
-    } else {
-      throw createHttpErrors(
-        403,
-        "Only the project owner can edit project details"
+
+      // **Đổi tên column**
+      if (renameColumn) {
+        const { oldName, newName } = renameColumn;
+        if (!oldName || !newName) return res.status(400).json({ message: "Invalid rename request" });
+
+        const columnIndex = project.classifications.indexOf(oldName);
+        if (columnIndex === -1) return res.status(404).json({ message: "Column not found" });
+
+        if (project.classifications.includes(newName)) {
+          return res.status(400).json({ message: "New column name already exists" });
+        }
+
+        project.classifications[columnIndex] = newName;
+        updateProject.classifications = project.classifications;
+
+        const taskIdsToUpdate = project.tasks
+          .filter((task) => task.status === oldName)
+          .map((task) => task._id);
+
+        if (taskIdsToUpdate.length > 0) {
+          await db.Tasks.updateMany(
+            { _id: { $in: taskIdsToUpdate } },
+            { $set: { status: newName } }
+          );
+        }
+      } else {
+        throw createHttpErrors(403, "Only the project owner can edit project details");
+      }
+
+      const result = await db.Projects.updateOne(
+        { _id: projectId },
+        { $set: updateProject },
+        { runValidators: true }
       );
+
+      const saveProject = await db.Projects.findOne({ _id: projectId });
+      console.log(result);
+      res.status(200).json(saveProject);
     }
-    console.log(updateProject);
-
-    const result = await db.Projects.updateOne(
-      { _id: projectId },
-      { $set: updateProject },
-      { runValidators: true }
-    );
-
-    const saveProject = await db.Projects.findOne({ _id: projectId });
-    console.log(result);
-    res.status(200).json(saveProject);
   } catch (error) {
     next(error);
   }
 }
+
+
 
 async function deleteProject(req, res, next) {
   try {
@@ -262,7 +272,8 @@ const updateProjectStatus = async (req, res) => {
 };
 
 async function getProjectMembers(req, res, next) {
-  try {
+
+    try {
     const { projectId } = req.params;
 
     const project = await db.Projects.findOne({ _id: projectId }).populate({
@@ -278,7 +289,10 @@ async function getProjectMembers(req, res, next) {
       name: member._id ? member._id.username : null,
       role: member.role,
       avatar: member._id ? member._id.profile.avatar : null,
-      email: member._id ? member._id.account.email : null,
+<<<<<<<<< Temporary merge branch 1
+      email: member._id ? member._id.account.email : null
+=========
+>>>>>>>>> Temporary merge branch 2
     }));
     res.status(200).json({ memberInfo });
   } catch (error) {
