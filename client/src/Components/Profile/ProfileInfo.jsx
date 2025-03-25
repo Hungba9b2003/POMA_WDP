@@ -180,7 +180,7 @@ function ProfileInfo() {
               }}
               onMouseOver={(e) => (e.target.style.opacity = 0.8)}
               onMouseOut={(e) => (e.target.style.opacity = 1)}
-              onClick={() => navigate(-1)} // ✅ Quay lại trang trước đó
+              onClick={() => navigate("/")} // ✅ Quay lại trang trước đó
             >
               <FaHome /> Back
             </Button>

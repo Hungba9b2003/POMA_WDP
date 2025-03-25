@@ -45,6 +45,15 @@ function EditProfile() {
           );
           setUserInfo(response.data);
 
+          setImageList((prevList) => {
+            if (
+              response.data.profile.avatar &&
+              !prevList.includes(response.data.profile.avatar)
+            ) {
+              return [...prevList, response.data.profile.avatar];
+            }
+            return prevList;
+          });
           setSelectedImage(response.data.profile.avatar || null); // Ensure we reference the correct avatar path
         } catch (error) {
           console.error("Error fetching user information:", error);
@@ -142,6 +151,7 @@ function EditProfile() {
 
   const handleImageSelect = (image) => {
     setSelectedImage(image);
+    setTempImage(null);
     setShowImageList(false);
   };
 
@@ -355,10 +365,10 @@ function EditProfile() {
               color: "#2B92E4",
               marginRight: 5,
             }}
-            type="reset"
+            onClick={() => navigate("/profile/profileInfo")}
             disabled={isSaving}
           >
-            Clear
+            Back
           </Button>
         </div>
       </form>

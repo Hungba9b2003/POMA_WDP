@@ -7,7 +7,6 @@ const projectSchema = new mongoose.Schema(
       type: String,
       unique: [true, "Group name existed"],
       required: [true, "Group name is required"],
-      maxlength: 15,
     },
     //code để vào dự án
     projectCode: {
@@ -18,7 +17,7 @@ const projectSchema = new mongoose.Schema(
     },
     projectAvatar: {
       type: String, // Store URL or path to the group image
-      default: null, // Set default to null if no image is provided
+      default: "/images/avatar/imageDefault.jpg", // Set default to null if no image is provided
     },
     classifications: [
       {
