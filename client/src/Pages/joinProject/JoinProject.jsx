@@ -9,8 +9,7 @@ const JoinProject = ({ handleJoin }) => {
 
     // Hàm lấy userId từ token
     const getUserIdFromToken = () => {
-        const token = localStorage.getItem("token");
-        console.log("token", token);
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         if (!token) return null;
         try {
             const decodedToken = jwtDecode(token);
@@ -20,7 +19,6 @@ const JoinProject = ({ handleJoin }) => {
             return null;
         }
     };
-    console.log("userId", getUserIdFromToken());
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!projectCode.trim()) {
@@ -28,7 +26,7 @@ const JoinProject = ({ handleJoin }) => {
             return;
         }
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         if (!token) {
             Swal.fire("Lỗi", "Bạn chưa đăng nhập", "error");
             return;
