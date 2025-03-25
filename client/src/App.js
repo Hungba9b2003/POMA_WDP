@@ -45,15 +45,15 @@ const Layout = () => {
   const location = useLocation();
   const showSidebar = location.pathname.startsWith("/project");
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Header />
-      <div className="d-flex">
+      <div className="d-flex" style={{ flexGrow: 1, overflow: "hidden" }}>
         {showSidebar && <Sidebar />}
-        <div className="flex-grow-1 overflow-auto">
+        <div className="flex-grow-1" style={{ overflowY: "auto", height: "100%" }}>
           <Outlet /> {/* Đảm bảo render các route con tại đây */}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 const LayoutAdmin = () => {

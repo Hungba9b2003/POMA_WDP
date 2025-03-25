@@ -44,14 +44,13 @@ projectRouter.post("/:projectId/invite", ProjectController.inviteUserToProject, 
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
 projectRouter.get(
-  "/:projectId/get-member",
-  AuthMiddleware.verifyAccessToken,
-  ProjectController.getProjectMembers
-);
+    "/:projectId/get-member",
+    ProjectController.getProjectMembers
+  );
+
 // set group member role
 projectRouter.put(
   "/:projectId/member/:memberId/set-role",
-  AuthMiddleware.verifyAccessToken,
   ProjectController.setProjectMemberRole
 );
 // đá thành viên ra khỏi dự án
@@ -73,7 +72,7 @@ projectRouter.delete("/:projectId/delete-workspace");
 
 // api xử lý logic bên task.controller
 // lấy task
-projectRouter.get("/:projectId/tasks/get-all", TaskController.getAllTasks);
+projectRouter.get("/:projectId/tasks/get-all", AuthMiddleware.verifyAccessToken, TaskController.getAllTasks);
 // tạo task
 projectRouter.post(
   "/:projectId/tasks/create",
