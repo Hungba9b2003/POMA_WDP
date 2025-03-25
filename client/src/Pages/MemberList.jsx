@@ -133,8 +133,10 @@ function MemberList() {
     };
     const handleInviteMemberByEmail = async () => {
         const email = prompt('Enter email to invite');
-        if (!email) return;
-
+        if (!email) {
+            alert('Email is required!');
+            return;
+        };
         try {
             // Kiểm tra email đã tồn tại trong danh sách thành viên chưa
             const isAlreadyMember = projectMembers.filter(member => member.email === email);
