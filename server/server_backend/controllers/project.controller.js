@@ -111,15 +111,31 @@ async function getProjectByIdSummary(req, res, next) {
 
 async function updateProject(req, res, next) {
   try {
-    const { projectId } = req.params;
-    const { id, newColumn, removeColumn, renameColumn } = req.body;
-    const { projectName, projectCode, projectAvatar } = req.body;
-
-    const project = await db.Projects.findOne({ _id: projectId }).populate("tasks");
-    if (!project) throw createHttpErrors(404, "Project not found");
-
-    const member = project.members.find((m) => m._id.toString() === id);
-    if (!member) throw createHttpErrors(403, "No permission to edit this project");
+    const projectId = req.params.projectId;
+    const { id = null, newColumn = null, removeColumn = null } = req.body;
+    // Nhận removeColumn từ request body
+    const {
+      projectName = null,
+      projectCode = null,
+      projectAvatar = null,
+    } = req.body;
+    console.log(projectId);
+    const project = await db.Projects.findOne({ _id: projectId })
+      .populate("tasks")
+      .exec();
+    console.log(id);
+    if (!project) {
+      throw createHttpErrors(404, "Project not found");
+    }
+    const member = project.members.find(
+      (member) => member._id.toString() === id
+    );
+    if (!member) {
+      throw createHttpErrors(
+        403,
+        "You don't have permission to edit this project"
+      );
+    }
 
     const updateProject = {};
 
@@ -156,41 +172,21 @@ async function updateProject(req, res, next) {
         project.classifications = project.classifications.filter((col) => col !== removeColumn);
         updateProject.classifications = project.classifications;
       }
-
-      // **Đổi tên column**
-      if (renameColumn) {
-        const { oldName, newName } = renameColumn;
-        if (!oldName || !newName) return res.status(400).json({ message: "Invalid rename request" });
-
-        const columnIndex = project.classifications.indexOf(oldName);
-        if (columnIndex === -1) return res.status(404).json({ message: "Column not found" });
-
-        if (project.classifications.includes(newName)) {
-          return res.status(400).json({ message: "New column name already exists" });
-        }
-
-        project.classifications[columnIndex] = newName;
-        updateProject.classifications = project.classifications;
-
-        const taskIdsToUpdate = project.tasks
-          .filter((task) => task.status === oldName)
-          .map((task) => task._id);
-
-        if (taskIdsToUpdate.length > 0) {
-          await db.Tasks.updateMany(
-            { _id: { $in: taskIdsToUpdate } },
-            { $set: { status: newName } }
-          );
-        }
-      } else {
-        throw createHttpErrors(403, "Only the project owner can edit project details");
-      }
-
-      await db.Projects.updateOne({ _id: projectId }, { $set: updateProject }, { runValidators: true });
-      const updatedProject = await db.Projects.findOne({ _id: projectId });
-
-      res.status(200).json(updatedProject);
+    } else {
+      throw createHttpErrors(
+        403,
+        "Only the project owner can edit project details"
+      );
     }
+
+    await db.Projects.updateOne(
+      { _id: projectId },
+      { $set: updateProject },
+      { runValidators: true }
+    );
+    const saveProject = await db.Projects.findOne({ _id: projectId });
+
+    res.status(200).json(saveProject);
   } catch (error) {
     next(error);
   }
@@ -255,26 +251,21 @@ async function getProjectMembers(req, res, next) {
   try {
     const { projectId } = req.params;
 
-    const project = await db.Projects.findOne({ _id: projectId })
-      .populate({
-        path: 'members._id',
-        model: 'user',
-      });
-
+    const project = await db.Projects.findOne({ _id: projectId }).populate({
+      path: "members._id",
+      model: "user",
+    });
     if (!project) {
       throw createHttpErrors(404, "Project not found");
     }
 
-    const memberInfo = project.members.map(member => ({
+    const memberInfo = project.members.map((member) => ({
       id: member._id ? member._id._id : null,
       name: member._id ? member._id.username : null,
       role: member.role,
-      avatar: member._id ? member._id.profile.avatar : null,
-      email: member._id ? member._id.account.email : null
+      avatar: member._id ? member._id.profile.avatar : null
     }));
-
     res.status(200).json({ memberInfo });
-
   } catch (error) {
     next(error);
   }
@@ -335,8 +326,6 @@ async function setProjectMemberRole(req, res, next) {
   }
 }
 
-
-
 async function deleteProjectMember(req, res, next) {
   try {
     const { projectId, memberId } = req.params;
@@ -371,8 +360,6 @@ async function deleteProjectMember(req, res, next) {
     next(error);
   }
 }
-
-
 
 async function getUserRole(req, res, next) {
   try {
@@ -541,8 +528,8 @@ async function createTeam(projectId, taskId, assigneeId) {
     }
 
     // Kiểm tra xem assignee đã có nhóm nào chưa
-    const existingTeam = project.members.some(member =>
-      member.teams.some(team => team.teamLeader.toString() === assigneeId)
+    const existingTeam = project.members.some((member) =>
+      member.teams.some((team) => team.teamLeader.toString() === assigneeId)
     );
 
     if (existingTeam) {
@@ -551,7 +538,7 @@ async function createTeam(projectId, taskId, assigneeId) {
 
     // Tạo team mới
     const newTeam = {
-      idTeam: new mongoose.Types.ObjectId(),  // Tạo ID team mới
+      idTeam: new mongoose.Types.ObjectId(), // Tạo ID team mới
       teamName: task.taskName, // Đặt tên nhóm bằng tên task
       teamLeader: assigneeId, // Gán assignee làm team leader
     };
@@ -561,11 +548,11 @@ async function createTeam(projectId, taskId, assigneeId) {
       { _id: projectId },
       {
         $push: {
-          'members.$[member].teams': newTeam,
+          "members.$[member].teams": newTeam,
         },
       },
       {
-        arrayFilters: [{ 'member._id': assigneeId }],
+        arrayFilters: [{ "member._id": assigneeId }],
         new: true,
       }
     );

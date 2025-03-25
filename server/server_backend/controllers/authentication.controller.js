@@ -86,9 +86,8 @@ async function sendEmail(type, email, link) {
 async function login(req, res) {
   const { email, password } = req.body;
   try {
-    const user = await db.Users.findOne({ "account.email":   email });
+    const user = await db.Users.findOne({ "account.email": email });
     if (!user) {
-
       return res.status(404).json({ message: "User not found!" });
     }
     if (!/^(?=.*[A-Z]).{8,}$/.test(password)) {
@@ -111,7 +110,7 @@ async function login(req, res) {
     }
 
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { id: user._id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
@@ -331,7 +330,18 @@ async function resetPassword(req, res) {
     const encryptedPassword = await bcrypt.hash(password, 10);
     await db.Users.updateOne(
       { _id: id },
-      { $set: { "account.password": encryptedPassword } }
+      {
+        $set: {
+          "account.password": encryptedPassword,
+          status: {
+            $cond: {
+              if: { $eq: ["$status", "deactive"] },
+              then: "active",
+              else: "$status",
+            },
+          },
+        },
+      }
     );
 
     res.status(200).json({

@@ -11,6 +11,16 @@ const getProfile = async (req, res, next) => {
     next(error);
   }
 };
+const getProfileById = async (req, res, next) => {
+  const userId = req.params.id;
+  console.log(userId);
+  try {
+    const user = await db.Users.findById(userId);
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
 
 const updateProfile = async (req, res, next) => {
   const userId = req.payload.id;
@@ -44,10 +54,49 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+const changePasswordById = async (req, res, next) => {
+  const userId = req.params.id; // Get the user ID from the request payload
+  const { newPassword, confirmPassword } = req.body; // Destructure the request body
+  try {
+    // Check if the user exists and validate the old password
+    const user = await db.Users.findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Validate the new password and confirmation
+    if (newPassword !== confirmPassword) {
+      return res
+        .status(400)
+        .json({ message: "New password and confirmation do not match" });
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message:
+          "New password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number.",
+      });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in a single operation
+    await db.Users.findOneAndUpdate(
+      { _id: userId }, // Filter by user ID
+      { "account.password": hashedNewPassword }, // Update the password
+      { new: true } // Return the updated document
+    );
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    next(error); // Pass errors to the error handling middleware
+  }
+};
 const changePassword = async (req, res, next) => {
   const userId = req.payload.id; // Get the user ID from the request payload
   const { oldPassword, newPassword, confirmPassword } = req.body; // Destructure the request body
-
   try {
     // Check if the user exists and validate the old password
     const user = await db.Users.findOne({ _id: userId });
@@ -66,6 +115,13 @@ const changePassword = async (req, res, next) => {
       return res
         .status(400)
         .json({ message: "New password and confirmation do not match" });
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message:
+          "New password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number.",
+      });
     }
 
     // Hash the new password
@@ -104,13 +160,11 @@ const changeStatus = async (req, res, next) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Status updated successfully",
-        data: updatedUser,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Status updated successfully",
+      data: updatedUser,
+    });
   } catch (error) {
     console.error("Error updating status:", error);
     next(error);
@@ -201,7 +255,7 @@ const confirmInvite = async (req, res, next) => {
 
 const getUser = async (req, res, next) => {
   try {
-    const { assignee } = req.query;  // Truy cập từ req.query thay vì req.body
+    const { assignee } = req.query; // Truy cập từ req.query thay vì req.body
     const user = await db.Users.findById(assignee);
 
     if (!user) {
@@ -214,7 +268,6 @@ const getUser = async (req, res, next) => {
   }
 };
 
-
 module.exports = {
   getProfile,
   updateProfile,
@@ -223,5 +276,7 @@ module.exports = {
   getAllUser,
   joinByCode,
   confirmInvite,
-  getUser
+  getUser,
+  getProfileById,
+  changePasswordById,
 };

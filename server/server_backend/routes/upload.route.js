@@ -1,5 +1,5 @@
 const express = require("express");
-const { upload, deleteImage } = require("./../controllers/upload");
+const { upload, deleteImage } = require("../controllers/upload.controller");
 
 const router = express.Router();
 
@@ -11,13 +11,20 @@ function getImageNameFromUrl(url) {
 router.post("/upload", async (req, res) => {
   try {
     const oldAvatar = req.query.oldAvatar;
-    console.log("oldAvatar" + oldAvatar);
+
+    console.log("oldAvatar:", oldAvatar);
+
     if (oldAvatar) {
       const imageName = getImageNameFromUrl(oldAvatar);
+
       if (imageName) {
         console.log("Deleting old image:", imageName);
         await deleteImage(imageName);
+      } else {
+        console.log("No valid image name extracted, skipping deletion.");
       }
+    } else {
+      console.log("No old avatar provided, skipping deletion.");
     }
 
     upload.single("image")(req, res, function (err) {
