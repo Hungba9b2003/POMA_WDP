@@ -6,8 +6,8 @@ import { jwtDecode } from "jwt-decode";
 import TaskCard from "./TaskCard";
 import CreateTask from "./CreateTask";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { FiSave } from "react-icons/fi";
 import DropArea from "./DropArea";
+import { HiMiniPencilSquare } from "react-icons/hi2";
 const Workspace = () => {
   const [columns, setColumns] = useState([
     "Pending",
@@ -21,6 +21,9 @@ const Workspace = () => {
   const [selectedColumn, setSelectedColumn] = useState(null);
   const [activeCard, setactiveCard] = useState(null);
   const [activeCardId, setactiveCardId] = useState(null);
+  const [editableColumn, setEditableColumn] = useState("");
+  const [selectedColumnIndex, setSelectedColumnIndex] = useState(null);
+
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   let id = null;
@@ -66,8 +69,8 @@ const Workspace = () => {
     if (swapTaskId1 && swapTaskId2) {
       // Gửi yêu cầu đổi vị trí taskNumber
       axios
-        .put(
-          `http://localhost:9999/projects/${projectId}/tasks/swap`,
+        .put(`
+          http://localhost:9999/projects/${projectId}/tasks/swap`,
           {
             position: position,
             taskId1: swapTaskId1,
@@ -108,14 +111,14 @@ const Workspace = () => {
   useEffect(() => {
     axios
       .get(`http://localhost:9999/projects/${projectId}/tasks/get-all`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token} ` },
       })
       .then((response) => setTasks(response.data))
       .catch((error) => console.error("Error fetching tasks:", error));
 
     axios
       .get(`http://localhost:9999/projects/${projectId}/get-project`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token} ` },
       })
       .then((response) => {
         if (response.data.project.classifications) {
@@ -176,6 +179,55 @@ const Workspace = () => {
   };
   const handleCloseModal = () => setShowModal(false);
 
+  const handleEditColumn = (index, col) => {
+    setSelectedColumnIndex(index);
+    setEditableColumn(col);
+  };
+
+  const handleSaveColumn = async (oldName) => {
+    if (!editableColumn) return;
+
+    if (editableColumn === oldName) {
+      setSelectedColumnIndex(null);
+      return;
+    }
+
+    if (!id) {
+      console.error("User ID not found in token!");
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        `http://localhost:9999/projects/${projectId}/edit`,
+        {
+          id,  
+          renameColumn: {
+            oldName,
+            newName: editableColumn,
+          },
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.classifications) {
+        setColumns(response.data.classifications);
+      } else {
+        console.error("API response missing classifications:", response.data);
+      }
+
+      setSelectedColumnIndex(null);
+    } catch (error) {
+      console.error("Error updating column:", error);
+      alert("Failed to update column name!");
+    }
+  };
+
+
+
+
   return (
     <Container fluid className="workspace-container">
       <h2 className="mb-4">CRM Board</h2>
@@ -186,8 +238,23 @@ const Workspace = () => {
               <Card className="p-3">
                 <Row>
                   <Col>
-                    <h5>{col}</h5>
-                    <FiSave />
+                    {selectedColumnIndex === index ? (
+                      <input
+                        type="text"
+                        value={editableColumn}
+                        onChange={(e) => setEditableColumn(e.target.value)}
+                        onBlur={() => handleSaveColumn(col)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveColumn(col);
+                        }}
+
+                        autoFocus
+                      />
+                    ) : (
+                      <h5 onClick={() => handleEditColumn(index, col)} style={{ cursor: "pointer" }}>
+                        {col} <HiMiniPencilSquare />
+                      </h5>
+                    )}
                   </Col>
                   <Col className="text-end">
                     <RiDeleteBin6Line
@@ -239,7 +306,7 @@ const Workspace = () => {
         projectId={projectId}
         setTasks={setTasks}
       />
-    </Container>
+    </Container >
   );
 };
 

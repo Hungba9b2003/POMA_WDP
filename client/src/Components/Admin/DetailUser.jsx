@@ -2,23 +2,24 @@ import React, { useState, useEffect } from "react";
 import { FaAddressCard, FaUser, FaPhone, FaKey, FaHome } from "react-icons/fa";
 import { IoMail } from "react-icons/io5";
 import { Table, Button } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import imageDefault from "./../../assets/user/avatar/imageDefault.jpg";
 import styles from "../../Styles/Profile/Profile.module.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-function ProfileInfo() {
+function DetailUser() {
+  const { userId } = useParams();
   const [userInfo, setUserInfo] = useState(null);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
-  const navigate = useNavigate();
+
   useEffect(() => {
     if (token) {
       const fetchUserInfo = async () => {
         try {
           const response = await axios.get(
-            "http://localhost:9999/users/get-profile",
+            `http://localhost:9999/users/get-profileById/${userId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -157,33 +158,24 @@ function ProfileInfo() {
 
           {/* Nút điều hướng */}
           <div className="d-flex flex-wrap justify-content-center gap-2 mt-3">
-            <ProfileButton
+            {/* <ProfileButton
               to="/profile/editProfile"
               icon={<FaUser />}
               text="Edit profile"
               color="#2B92E4"
-            />
+            /> */}
             <ProfileButton
-              to="/profile/changePassword"
+              to={`/admin/changePasswordUser/${userInfo._id}`}
               icon={<FaKey />}
               text="Change password"
               color="#F8B5C1"
             />
-            <Button
-              style={{
-                minWidth: "160px",
-                fontSize: "1rem",
-                borderRadius: "8px",
-                backgroundColor: "#F8D0D2",
-                border: "none",
-                transition: "0.3s",
-              }}
-              onMouseOver={(e) => (e.target.style.opacity = 0.8)}
-              onMouseOut={(e) => (e.target.style.opacity = 1)}
-              onClick={() => navigate("/")} // ✅ Quay lại trang trước đó
-            >
-              <FaHome /> Back
-            </Button>
+            <ProfileButton
+              to="/admin/userList"
+              icon={<FaHome />}
+              text="Back"
+              color="#F8D0D2"
+            />
           </div>
         </div>
 
@@ -253,4 +245,4 @@ const InfoCard = ({ title, content }) => (
   </div>
 );
 
-export default ProfileInfo;
+export default DetailUser;

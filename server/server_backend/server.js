@@ -8,8 +8,13 @@ const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const app = express();
 const db = require("./models/index");
-const { projectRouter, userRouter, authenticationRouter } = require("./routes");
-const uploadRoutes = require("./routes/upload");
+const {
+  projectRouter,
+  userRouter,
+  authenticationRouter,
+  adminRouter,
+} = require("./routes");
+const uploadRoutes = require("./routes/upload.route");
 // Sử dụng cors middleware để cho phép request từ localhost:3000
 app.use(
   cors({
@@ -28,7 +33,7 @@ app.get("/", async (req, res, next) => {
 
 // Định tuyến theo các chức năng thực tế
 app.use("/api", uploadRoutes);
-
+app.use("/admins", adminRouter);
 // app.use("/projects", projectRouter);
 app.use("/users", userRouter);
 // app.use("/authentication", authenticationRouter);

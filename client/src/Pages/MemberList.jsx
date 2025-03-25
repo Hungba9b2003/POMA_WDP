@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, InputGroup, FormControl, Dropdown, Pagination } from 'react-bootstrap';
+import { Table, Button, InputGroup, FormControl, Dropdown, Pagination, Modal, Form } from 'react-bootstrap';
 import { BsChevronDown, BsTrashFill } from 'react-icons/bs';
 import { useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -33,7 +33,7 @@ function MemberList() {
 
     useEffect(() => {
         setUserId(getUserIdFromToken());
-    }, []);
+    }, [])
 
     useEffect(() => {
         const fetchProjectMembers = async () => {
@@ -156,7 +156,10 @@ function MemberList() {
             });
 
             if (response.ok) {
-                alert('Invitation sent!');
+                setEmail("");
+                setShowSuccessAlert(true);
+                setTimeout(() => setShowSuccessAlert(false), 2000);
+                setShowModal(false);
             } else {
                 alert('Failed to send invitation!');
             }
@@ -179,6 +182,25 @@ function MemberList() {
     return (
         <div className="container mt-4">
             <h2 className="text-center mb-4">Project Members</h2>
+            {showSuccessAlert && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: "20px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        backgroundColor: "#4CAF50",
+                        color: "white",
+                        padding: "15px 30px",
+                        borderRadius: "5px",
+                        zIndex: 1000,
+                        boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                        animation: "slideDown 0.5s ease-out",
+                    }}
+                >
+                    Invite Successful!
+                </div>
+            )}
             <InputGroup className="mb-3">
                 <FormControl
                     placeholder="Search members..."
@@ -238,7 +260,34 @@ function MemberList() {
                 ))}
                 <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
             </Pagination>
-            <Button onClick={handleInviteMemberByEmail}>Invite By Email</Button>
+            <Button onClick={() => setShowModal(true)}>Invite By Email</Button>
+
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Invite member</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="email">
+                            <Form.Label>
+                                Required fields are marked with an asterisk *
+                            </Form.Label>
+                            <br />
+                            <Form.Label>Email *</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Email"
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="dark" className="w-100" onClick={handleInviteMemberByEmail}>
+                        Invite Member
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }

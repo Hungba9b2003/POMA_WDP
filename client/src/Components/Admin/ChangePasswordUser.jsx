@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { Table } from "react-bootstrap";
 import styles from "../../Styles/Profile/Profile.module.css";
 import { Button } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-function ChangePassword() {
-  const [oldPassword, setOldPassword] = useState("");
+function ChangePasswordUser() {
+  const { userId } = useParams();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,7 +20,7 @@ function ChangePassword() {
     e.preventDefault();
 
     // Validation
-    if (!oldPassword || !newPassword || !confirmPassword) {
+    if (!newPassword || !confirmPassword) {
       setError("All fields are required.");
       return;
     }
@@ -34,9 +34,8 @@ function ChangePassword() {
         ? localStorage.getItem("token")
         : sessionStorage.getItem("token"); // Retrieve token from local storage
       const response = await axios.put(
-        "http://localhost:9999/users/change-password", // Update to your actual API endpoint
+        `http://localhost:9999/users/change-passwordById/${userId}`, // Update to your actual API endpoint
         {
-          oldPassword,
           newPassword,
           confirmPassword, // Include confirmPassword for server-side validation
         },
@@ -50,14 +49,13 @@ function ChangePassword() {
       // Handle success
       if (response.status === 200) {
         setSuccess("Password changed successfully!");
-        setOldPassword("");
         setNewPassword("");
         setConfirmPassword("");
         setError("");
 
         // Redirect after success, optionally after a short delay
         setTimeout(() => {
-          navigate("/profile/profileinfo");
+          navigate(`/admin/viewDetailUser/${userId}`);
         }, 2000);
       }
     } catch (err) {
@@ -77,54 +75,14 @@ function ChangePassword() {
       <form onSubmit={handleSubmit}>
         <div>
           <Table className="border border-gray-300 rounded-lg shadow-md">
-            {/* <thead>
+            <thead>
               <tr>
                 <th style={{ fontSize: "1.3em", color: "#0F67B1" }}>
                   Change Password
                 </th>
               </tr>
-            </thead> */}
+            </thead>
             <tbody>
-              <tr>
-                <td>
-                  <label htmlFor="password">Password</label>
-                  <div style={{ position: "relative" }}>
-                    <i
-                      className="fas fa-lock"
-                      style={{
-                        position: "absolute",
-                        left: "10px",
-                        top: "40%",
-                        transform: "translateY(-50%)",
-                        color: "#666",
-                      }}
-                    ></i>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password"
-                      value={oldPassword}
-                      placeholder="Enter your password"
-                      onChange={(e) => setOldPassword(e.target.value)}
-                      style={{ paddingLeft: "35px" }}
-                      required
-                    />
-                    <i
-                      className={
-                        showPassword ? "fas fa-eye-slash" : "fas fa-eye"
-                      }
-                      style={{
-                        position: "absolute",
-                        right: "10px",
-                        top: "40%",
-                        transform: "translateY(-50%)",
-                        color: "#666",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => setShowPassword(!showPassword)}
-                    ></i>
-                  </div>
-                </td>
-              </tr>
               <tr>
                 <td>
                   <label htmlFor="password">New Password</label>
@@ -213,10 +171,10 @@ function ChangePassword() {
             <Button
               type="button"
               className="bg-gray-500 hover:bg-gray-600 text-white"
-              onClick={() => navigate(-1)}
             >
               Back
             </Button>
+            <Button type="reset">Clear</Button>
             <Button type="submit">save</Button>
           </div>
         </div>
@@ -229,4 +187,4 @@ function ChangePassword() {
   );
 }
 
-export default ChangePassword;
+export default ChangePasswordUser;
