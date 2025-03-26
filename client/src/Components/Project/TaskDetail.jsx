@@ -31,6 +31,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
   const [subTaskName, setSubTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState(task.description || "");
+  const [taskName, setTaskName] = useState(task.taskName || "");
   const [editingCommentId, setEditingCommentId] = useState(null); // Trạng thái bình luận đang chỉnh sửa
   const [editedContent, setEditedContent] = useState(""); // Nội dung chỉnh sửa
   const [projectMembers, setProjectMembers] = useState([]);
@@ -231,6 +232,24 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
       onUpdateTask(data); // Gọi hàm cập nhật task trong ListTask
     } catch (error) {
       console.error("Error updating description", error);
+    }
+  };
+
+  const handleUpdateTaskName = async () => {
+    try {
+      const { data } = await axios.put(
+        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+        { taskName: taskName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      onUpdateTask(data); // Gọi hàm cập nhật task trong ListTask
+      setTaskName(data.taskName);
+    } catch (error) {
+      console.error("Error updating task name", error);
     }
   };
 
@@ -539,8 +558,47 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   return (
     <Modal show={showModal} onHide={onClose} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title style={{ fontWeight: "bold" }}>
-          {task.taskName}
+        <Modal.Title style={{ fontWeight: "bold", display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {isEditing ? (
+            <>
+              <Form.Control
+                type="text"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+                onBlur={handleUpdateTaskName}
+                autoFocus
+              />
+              <Button
+                variant="success"
+                size="sm"
+                onClick={() => {
+                  handleUpdateTaskName();
+                  setIsEditing(false);
+                }}
+              >
+                <FaSave />
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  setIsEditing(false);
+                  setTaskName(task.taskName); // Reset to original name if cancelled
+                }}
+                style={{ padding: '5px 10px' }}
+              >
+                X
+              </Button>
+            </>
+          ) : (
+            <>
+              {task.taskName}
+              <FaEdit
+                style={{ cursor: 'pointer', marginLeft: '10px' }}
+                onClick={() => setIsEditing(true)}
+              />
+            </>
+          )}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
