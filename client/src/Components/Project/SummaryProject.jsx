@@ -300,12 +300,10 @@ const SummaryProject = () => {
           }}
         >
           <h3 style={{ color: "#172b4d", marginBottom: "20px" }}>
-            Hoạt động gần đây
+            Activity history
           </h3>
           <div>
-            <p>• Nguyễn Văn A đã hoàn thành task ABC</p>
-            <p>• Trần Thị B đã tạo mới Epic XYZ</p>
-            <p>• Lê Văn C đã cập nhật tiến độ task DEF</p>
+            <p>• Comming Soon</p>
           </div>
         </div>
       </div>
