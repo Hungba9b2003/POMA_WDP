@@ -1,137 +1,125 @@
 .login_bg {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-image: url('../../../public/images/background_login.jpg');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('../../../public/images/background_login.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  padding: 20px;
 }
 
 .wapper {
-    width: 500px;
-    background-color: transparent;
-    border: 2px solid rgb(255, 255, 255, .2);
-    backdrop-filter: blur(40px);
-    color: #f0f2f5;
-    padding: 30px 40px;
+  width: 90%;
+  max-width: 500px;
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(40px);
+  color: #f0f2f5;
+  padding: 30px;
+  border-radius: 10px;
 }
 
 .wapper h1 {
-    font-size: 36px;
-    text-align: center;
+  font-size: 32px;
+  text-align: center;
 }
 
 .wapper form {
-    padding: 10px;
+  padding: 10px;
 }
 
-.wapper form .formGroup {
-    position: relative;
-    height: 50px;
-    width: 100%;
-    margin: 30px 0px;
+.formGroup {
+  position: relative;
+  width: 100%;
+  margin: 20px 0px;
 }
 
 .formGroup input {
-    height: 100%;
-    width: 90%;
-    border: 1px solid rgb(255, 255, 255, .2);
-    padding: 0px 20px;
-    font-size: 18px;
-    background-color: transparent;
-    outline: none;
-    color: #f0f2f5;
-    border-radius: 40px;
-}
-
-.formGroup input::placeholder {
-    color: #f0f2f5;
+  width: 100%;
+  height: 45px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 40px 10px 15px;
+  font-size: 16px;
+  background-color: transparent;
+  outline: none;
+  color: #f0f2f5;
+  border-radius: 25px;
 }
 
 .formGroup .icon {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #f0f2f5;
-    font-size: 16px;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #f0f2f5;
+  font-size: 18px;
 }
 
-.wapper form .remember {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 14.5px;
-    margin: -15px 0 15px 0;
+.remember {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 15px;
 }
 
 .remember label {
-    font-size: 18px;
-    color: #f0f2f5;
-    cursor: pointer;
-}
-
-.remember a {
-    text-decoration: none;
-    color: #f0f2f5;
-}
-
-.remember a:hover {
-    text-decoration: underline;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 .formButton {
-    height: 50px;
-    width: 100%;
-    border: none;
-    outline: none;
-    border-radius: 40px;
-    background-color: #f0f2f5;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    color: #333;
-    text-transform: uppercase;
-    font-weight: 700;
-    cursor: pointer;
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 25px;
+  background-color: #f0f2f5;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
 
 .formButton:hover {
-    background-color: #333;
-    color: #f0f2f5;
+  background-color: #333;
+  color: #f0f2f5;
 }
 
+
+
 .register {
-    font-size: 14.5px;
-    text-align: center;
-    margin: 20px 0 15px;
+  font-size: 14.5px;
+  text-align: center;
+  margin: 20px 0 15px;
 }
 
 .register p a {
-    text-decoration: none;
-    color: #f0f2f5;
-    font-weight: 600;
+  text-decoration: none;
+  color: #f0f2f5;
+  font-weight: 600;
 }
 
 .register p a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .forgot {
-    margin: 0px;
+  margin: 0px;
 }
+
 .message {
-    color: red;
-    background-color: pink;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 10px;
+  color: red;
+  background-color: pink;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
 }
 
 .container {
-  width: 70%;
-  height: 90vh;
+  width: 60%;
+  min-width: 400px;
   padding: 20px 50px;
   background: #EFF2F8;
   position: relative;
@@ -147,7 +135,7 @@
   text-align: left;
   letter-spacing: -2px;
   text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  margin-top: 40px;
+  margin-top: 10px;
 }
 
 .registerButton {
@@ -178,7 +166,7 @@
 .title {
   font-size: 36px;
   font-family: Inter, sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 25px;
 }
 
@@ -190,6 +178,7 @@
 }
 
 .inputGroup {
+
   max-width: 350px;
   margin-bottom: 20px;
 }
@@ -202,11 +191,13 @@
   margin-bottom: 10px;
 }
 
+
 .inputGroup input {
+  background-color: #F8D0D2;
   width: 100%;
   height: 40px;
   border-radius: 5px;
-  border: 1px solid #ccc;
+  border: 1px solid #ffffff;
   padding: 0 15px;
 }
 
@@ -255,4 +246,83 @@
 .message {
   max-width: 350px;
   margin-bottom: 20px;
+}
+
+.registerSection {
+  margin-top: 20px;
+}
+
+
+@media only screen and (max-width: 768px) {
+  .image_container{
+    display: none;
+  }
+  .image_container_register{
+    display: none;
+  }
+  .container {
+    flex-direction: column-reverse !important;
+    gap: 20px !important;
+  }
+
+  .logo {
+    font-size: 60px;
+    text-align: center;
+  }
+
+  .title {
+    font-size: 28px;
+    text-align: center;
+  }
+
+  .subtitle {
+    text-align: center;
+  }
+
+  .inputGroup {
+    margin: 0 auto 20px;
+  }
+
+  .options {
+    margin: 20px auto;
+  }
+
+  .loginButton {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .registerSection {
+    text-align: center;
+  }
+}
+
+@media  only screen and (max-width: 480px) {
+  .image_container{
+    display: none; 
+  }
+  .image_container_register{
+    display: none;
+  }
+  
+  .container {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .logo {
+    font-size: 50px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .inputGroup {
+    max-width: 100%;
+  }
+
+  .loginButton {
+    max-width: 100%;
+  }
 }

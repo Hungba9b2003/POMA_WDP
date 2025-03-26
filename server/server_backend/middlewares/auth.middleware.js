@@ -29,6 +29,7 @@ async function verifyAccessToken(req, res, next) {
 // check admin
 async function verifyAdmin(req, res, next) {
   try {
+    
     if (!req.payload || req.payload.role !== "admin") {
       return next(createError.Forbidden("Access denied! Admins only."));
     }

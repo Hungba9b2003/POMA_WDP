@@ -1,0 +1,51 @@
+.admin-navbar {
+    background: linear-gradient(135deg, #2a2a72, #009ffd);
+    padding: 15px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .nav-item {
+    color: white !important;
+    transition: color 0.3s ease-in-out;
+  }
+  
+  .nav-item:hover {
+    color: #ffdd57 !important;
+  }
+  
+  .dropdown-toggle-custom {
+    border: none;
+    background: transparent;
+  }
+  
+  .user-avatar {
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .user-avatar:hover {
+    transform: scale(1.1);
+  }
+  
+  .animated-dropdown {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .logout-item {
+    color: red !important;
+  }
+  
+  .logout-item:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+  

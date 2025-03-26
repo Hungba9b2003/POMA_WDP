@@ -1,30 +1,35 @@
 import React, { useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { AppContext } from "../../Context/AppContext";
-import { FaUser, FaLock } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
 import { Alert } from "react-bootstrap";
 import axios from "axios";
+import loginImage from "../../assets/login/images/image1.jpg";
 import styles from "../../Styles/Login/Login.module.css";
+import Header from "../../Components/Utils/Header";
+
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function LoginForm() {
   const { authentication_API, setUser } = useContext(AppContext);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageS, setMessageS] = useState("");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const login_API = `${authentication_API}/login`;
-  //check token
+
   const checkTokenExpiration = () => {
     const token = localStorage.getItem("token");
     if (token) {
       const { exp } = jwtDecode(token);
       if (Date.now() >= exp * 1000) {
-        localStorage.removeItem("token"); // Xóa token
-        setMessage("Session expired, please log in again"); // Thông báo hết phiên đăng nhập
-        setTimeout(() => {
-          navigate("/login/loginForm"); // Điều hướng về trang đăng nhập sau 2 giây
-        }, 2000);
+        localStorage.removeItem("token");
+        setMessage("Session expired, please login again");
+        setTimeout(() => navigate("/login/loginForm"), 2000);
       }
     }
   };
@@ -33,117 +38,238 @@ function LoginForm() {
     checkTokenExpiration();
   }, []);
 
-  const loginUser = async (username, password) => {
+  const loginUser = async (email, password) => {
     try {
-      const response = await axios.post(login_API, { username, password });
-      return response.data;
+      const { data } = await axios.post(login_API, { email, password });
+      return data;
     } catch (error) {
-      console.error("Login error:", error);
       throw error;
     }
   };
 
   const onSubmit = async (event) => {
     event.preventDefault();
-
+    setMessage("");
+    setMessageS("");
     try {
-      const result = await loginUser(username, password);
-
+      const result = await loginUser(email, password);
+      console.log(result);
       if (result.status === "Login successful!" && result.token) {
-        localStorage.setItem("token", result.token);
+        setMessageS("Login successful!");
+        const expiresInDays = 30; // Thời gian hết hạn nếu chọn "Remember Me" (30 ngày)
+        const expirationTime =
+          new Date().getTime() + expiresInDays * 24 * 60 * 60 * 1000; // Tính timestamp hết hạn
 
-        // Set user information in context
+        if (rememberMe) {
+          localStorage.setItem("token", result.token);
+          localStorage.setItem("token_expiration", expirationTime); // Lưu thời gian hết hạn
+        } else {
+          sessionStorage.setItem("token", result.token);
+        }
+
+        let decodedToken;
+        try {
+          decodedToken = jwtDecode(result.token);
+          console.log("Decoded Token:", decodedToken);
+        } catch (error) {
+          console.error("Error decoding token:", error);
+        }
+
         setUser(result.user);
-        navigate("/home");
-        console.log("Login Successfully");
+        setShowSuccessAlert(true);
+
+        // Điều hướng dựa trên role
+        setTimeout(() => {
+          setShowSuccessAlert(false);
+          if (decodedToken?.role === "admin") {
+            setShowSuccessAlert(false);
+            window.location.pathname = "/admin/userList";
+            // navigate("/admin/userList");
+          } else {
+            setShowSuccessAlert(false);
+            navigate("/");
+          }
+        }, 2000);
       } else {
         setMessage("Login failed");
       }
     } catch (error) {
-      console.error("Login error:", error); // In thông tin lỗi vào console để kiểm tra
-
-      if (error.response && error.response.data) {
-        const { status, message } = error.response.data;
-
-        if (status === "Please verify your account!") {
-          setMessage(
-            "Please verify your account! Check your email for the verification link."
-          );
-        } else if (status === "User not found!") {
-          setMessage("Username or password is incorrect");
-        } else if (status === "You have been banned") {
-          setMessage("You have been banned");
-        } else {
-          setMessage("An unexpected error occurred 1");
-        }
-      } else {
-        setMessage("An unexpected error occurred 2");
-      }
+      setMessage(error.response?.data?.message);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.logo}>POMA</div>
+    <div
+      className={styles.container}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "50px",
+        minWidth: "800px",
+      }}
+    >
+      {showSuccessAlert && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            padding: "15px 30px",
+            borderRadius: "5px",
+            zIndex: 1000,
+            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+            animation: "slideDown 0.5s ease-out",
+          }}
+        >
+          Login Successful!
+        </div>
+      )}
+      <div style={{ flex: 1 }}>
+        <div className={styles.logo}>POMA</div>
 
-      <div className={styles.registerButton}>
-        <Link to="/login/registerForm">Register</Link>
+        <div className={styles.loginSection}>
+          <h1 className={styles.title}>Login</h1>
+          <p className={styles.subtitle}>Welcome back 👋</p>
+
+          <form onSubmit={onSubmit}>
+            {message && (
+              <Alert variant="danger" className={styles.message}>
+                {message}
+              </Alert>
+            )}
+            {messageS && (
+              <Alert variant="success" className={styles.message}>
+                {messageS}
+              </Alert>
+            )}
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="email">Email</label>
+              <div style={{ position: "relative" }}>
+                <i
+                  className="fas fa-envelope"
+                  style={{
+                    position: "absolute",
+                    left: "10px",
+                    top: "40%",
+                    transform: "translateY(-50%)",
+                    color: "#666",
+                  }}
+                ></i>
+                <input
+                  type="text"
+                  id="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Nhập email của bạn"
+                  style={{ paddingLeft: "35px" }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="password">Password</label>
+              <div style={{ position: "relative" }}>
+                <i
+                  className="fas fa-lock"
+                  style={{
+                    position: "absolute",
+                    left: "10px",
+                    top: "40%",
+                    transform: "translateY(-50%)",
+                    color: "#666",
+                  }}
+                ></i>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  placeholder="Enter your password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ paddingLeft: "35px" }}
+                  required
+                />
+                <i
+                  className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "40%",
+                    transform: "translateY(-50%)",
+                    color: "#666",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setShowPassword(!showPassword)}
+                ></i>
+              </div>
+            </div>
+
+            <div className={styles.options}>
+              <label className={styles.rememberMe}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={() => setRememberMe(!rememberMe)}
+                />
+                <span>Remember me</span>
+              </label>
+              <Link to="/login/forgotPass" className={styles.forgotPassword}>
+                Forgot Password?
+              </Link>
+            </div>
+
+            <button type="submit" className={styles.loginButton}>
+              Login
+            </button>
+
+            <div className={styles.registerSection}>
+              <p>
+                Not registered yet?{" "}
+                <Link
+                  to="/login/registerForm"
+                  style={{ textDecoration: "none" }}
+                >
+                  <span
+                    style={{
+                      fontWeight: "500",
+                      color: "rgb(235 185 188)",
+                      transition: "color 0.3s ease",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.target.style.color = "rgb(200, 150, 155)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.target.style.color = "rgb(235 185 188)")
+                    }
+                  >
+                    Register
+                  </span>
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
 
-      <div className={styles.loginSection}>
-        <h1 className={styles.title}>Login</h1>
-        <p className={styles.subtitle}>Hi, Welcome back 👋</p>
-
-        <form onSubmit={onSubmit}>
-          {message && (
-            <Alert variant="danger" className={styles.message}>
-              {message}
-            </Alert>
-          )}
-
-          <div className={styles.inputGroup}>
-            <label htmlFor="username">Email</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={message ? styles.errorInput : ""}
-              required
-            />
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className={styles.options}>
-            <label className={styles.rememberMe}>
-              <input type="checkbox" />
-              Remember Me
-            </label>
-            <Link to="/login/forgotPass" className={styles.forgotPassword}>
-              Forgot Password?
-            </Link>
-          </div>
-
-          <button type="submit" className={styles.loginButton}>
-            Login
-          </button>
-          <div className={styles.registerSection}>
-            <p>
-              Not registered yet? Create an account{" "}
-              <Link to="/login/registerForm">Register</Link>
-            </p>
-          </div>
-        </form>
+      <div className={styles.image_container} style={{ flex: 1 }}>
+        <div>
+          <img
+            src={loginImage}
+            alt="login"
+            style={{
+              width: "120%",
+              marginLeft: "-15%",
+              height: "auto",
+              maxHeight: "500px",
+              objectFit: "cover",
+              borderRadius: "10px",
+            }}
+          />
+        </div>
       </div>
     </div>
   );
