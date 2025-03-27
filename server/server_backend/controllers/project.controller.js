@@ -609,7 +609,11 @@ const joinProjectByCode = async (req, res, next) => {
         .status(404)
         .json({ message: "Invalid project code or project not found" });
     }
-
+    if(project.members.length >= 5 && project.isPremium == false){
+      return res
+        .status(400)
+        .json({ message: "Project is full!" });
+    }
     // Kiểm tra xem user đã là thành viên chưa
     const isMember = project.members.some(
       (member) => member._id.toString() === userId
@@ -695,7 +699,7 @@ const ProjectController = {
   createTeam,
   joinProjectByCode,
   getProjectByIdSummary,
-  inviteUserToProject,
+  inviteUserToProject
 };
 
 module.exports = ProjectController;
