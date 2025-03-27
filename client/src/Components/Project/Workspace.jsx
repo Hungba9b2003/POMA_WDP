@@ -26,6 +26,7 @@ const Workspace = () => {
   const [newColumn, setNewColumn] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showModalColumn, setShowModalColumn] = useState(false);
+  const [role, setRole] = useState(null)
 
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -113,6 +114,19 @@ const Workspace = () => {
 
   useEffect(() => {
     axios
+      .get(`http://localhost:9999/projects/user/${projectId}/get-user-role`,
+        {
+          headers: { Authorization: `Bearer ${token} ` },
+        })
+      .then((response) => {
+        setRole(response.data.role)
+      }).catch((error) =>
+        console.error("Error fetching project data:", error)
+      )
+  })
+
+  useEffect(() => {
+    axios
       .get(`http://localhost:9999/projects/${projectId}/tasks/get-all`, {
         headers: { Authorization: `Bearer ${token} ` },
       })
@@ -133,6 +147,10 @@ const Workspace = () => {
   }, [projectId, token, id]);
 
   const addColumn = useCallback(async () => {
+    if (role === "viewer") {
+      alert("Viewer don't have permission to add column.");
+      return;
+    }
     if (!isPremium && columns.length >= 5) {
       alert(
         "You have reached the maximum number of columns for a free account!"
@@ -162,9 +180,13 @@ const Workspace = () => {
 
   const deleteColumn = useCallback(
     async (title) => {
+      if (role === "viewer") {
+        alert("Viewer don't have permission to delete column.");
+        return;
+      }
       if (!window.confirm(`Are you sure you want to delete column "${title}"?`))
         return;
-      
+
       try {
         const response = await axios.put(
           `http://localhost:9999/projects/${projectId}/edit`,
@@ -183,12 +205,20 @@ const Workspace = () => {
   );
 
   const handleOpenModal = (column) => {
+    if (role === "viewer") {
+      alert("Viewer don't have permission to create task.");
+      return
+    }
     setSelectedColumn(column);
     setShowModal(true);
   };
   const handleCloseModal = () => setShowModal(false);
 
   const handleEditColumn = (index, col) => {
+    if (role === "viewer") {
+      alert("Viewer don't have permission to rename column.");
+      return
+    }
     setSelectedColumnIndex(index);
     setEditableColumn(col);
   };
@@ -228,12 +258,12 @@ const Workspace = () => {
             task.status === oldName ? { ...task, status: editableColumn } : task
           )
         );
-      } 
+      }
 
       setSelectedColumnIndex(null);
     } catch (error) {
       setEditableColumn(oldName);
-      alert("Failed to update column name!");      
+      alert("Failed to update column name!");
     }
   };
 

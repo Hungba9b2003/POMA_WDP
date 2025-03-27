@@ -388,8 +388,7 @@ async function deleteProjectMember(req, res, next) {
 async function getUserRole(req, res, next) {
   try {
     const { projectId } = req.params;
-    // const { id } = req.payload;
-    const { id } = req.body;
+    const id = req.payload.id;
 
     const project = await db.Projects.findOne({ _id: projectId });
 

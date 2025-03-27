@@ -168,7 +168,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
   // Add new subtask
   const addSubTask = async () => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to add new subtask");
       return;
     }
@@ -224,7 +224,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateDescription = async () => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to update task status.");
       console.log("Viewer don't have permission to update task status.");
       return;
@@ -246,7 +246,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateTaskName = async () => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to update task name.");
       console.log("Viewer don't have permission to update task name.");
       return;
@@ -269,7 +269,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleEditSubTaskName = (subTask) => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to update subtask name.");
       console.log("Viewer don't have permission to update subtask name.");
       return;
@@ -313,7 +313,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateSubTask = async (subTask, updates) => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to update subtask");
       console.log("Viewer don't have permission to update subtask");
       return;
@@ -352,7 +352,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleDeleteSubTask = async (subTask) => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to delete subtask.");
       console.log("Viewer don't have permission to delete subtask .");
       return;
@@ -539,7 +539,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateTaskStatus = async (newStatus) => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to update subtask name.");
       console.log("Viewer don't have permission to update subtask name.");
       return;
@@ -574,7 +574,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateDeadline = async (newDeadline) => {
-    if (!isViewing) {
+    if (isViewing) {
       alert("Viewer don't have permission to update task status.");
       return;
     }

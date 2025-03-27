@@ -157,7 +157,11 @@ function App() {
       )}
 
       {accessToken || accessToken2 ? (
-        <Route path="/profile" element={<ProfilePage />}>
+        <Route path="/profile" element={
+          <ProtectedRoute allowedRoles={["admin", "user"]}>
+            <ProfilePage />
+          </ProtectedRoute>
+        }>
           <Route path="profileInfo" element={<ProfileInfo />} />
           <Route path="editProfile" element={<EditProfile />} />
           <Route path="changePassword" element={<ChangePassword />} />
