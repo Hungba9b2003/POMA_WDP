@@ -200,9 +200,8 @@ async function updateProject(req, res, next) {
           { $set: { status: newName } }
         );
       }
-    } else {
-      throw createHttpErrors(403, "Only the project owner can edit project details");
     }
+
 
     const result = await db.Projects.updateOne(
       { _id: projectId },
