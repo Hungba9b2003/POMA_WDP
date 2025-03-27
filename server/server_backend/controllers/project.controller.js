@@ -609,6 +609,9 @@ const joinProjectByCode = async (req, res, next) => {
         .json({ message: "Invalid project code or project not found" });
     }
 
+    if (project.members.length >= 5) {
+      return res.status(400).json({ message: "Project is full" });
+    }
     // Kiểm tra xem user đã là thành viên chưa
     const isMember = project.members.some(
       (member) => member._id.toString() === userId
