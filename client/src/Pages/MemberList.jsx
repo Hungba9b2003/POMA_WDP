@@ -206,7 +206,7 @@ function MemberList() {
                                 {member.role === "owner" || currentUserRole !== "owner" ? (
                                     <span className="badge bg-primary">{member.role}</span>
                                 ) : (
-                                    <Dropdown container="body">
+                                    <Dropdown drop="up">
                                         <Dropdown.Toggle variant="secondary" size="sm">
                                             {member.role} <BsChevronDown />
                                         </Dropdown.Toggle>

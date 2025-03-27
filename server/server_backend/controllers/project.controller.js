@@ -697,7 +697,7 @@ const ProjectController = {
   createTeam,
   joinProjectByCode,
   getProjectByIdSummary,
-  inviteUserToProject,
+  inviteUserToProject
 };
 
 module.exports = ProjectController;
