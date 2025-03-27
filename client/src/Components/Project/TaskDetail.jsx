@@ -31,6 +31,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
   const [subTaskName, setSubTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState(task.description || "");
+  const [taskName, setTaskName] = useState(task.taskName || "");
   const [editingCommentId, setEditingCommentId] = useState(null); // Trạng thái bình luận đang chỉnh sửa
   const [editedContent, setEditedContent] = useState(""); // Nội dung chỉnh sửa
   const [projectMembers, setProjectMembers] = useState([]);
@@ -44,6 +45,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { projectId } = useParams();  // Get project ID from params
   const [statusList, setStatusList] = useState([]);
+  const [isViewing, setIsViewing] = useState(false);
 
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -166,6 +168,10 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
   // Add new subtask
   const addSubTask = async () => {
+    if (!isViewing) {
+      alert("Viewer don't have permission to add new subtask");
+      return;
+    }
     if (newSubTask) {
       try {
         await axios.post(
@@ -218,6 +224,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateDescription = async () => {
+    if (!isViewing) {
+      alert("Viewer don't have permission to update task status.");
+      console.log("Viewer don't have permission to update task status.");
+      return;
+    }
     try {
       const { data } = await axios.put(
         `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
@@ -234,12 +245,41 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     }
   };
 
+  const handleUpdateTaskName = async () => {
+    if (!isViewing) {
+      alert("Viewer don't have permission to update task name.");
+      console.log("Viewer don't have permission to update task name.");
+      return;
+    }
+    try {
+      const { data } = await axios.put(
+        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+        { taskName: taskName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      onUpdateTask(data); // Gọi hàm cập nhật task trong ListTask
+      setTaskName(data.taskName);
+    } catch (error) {
+      console.error("Error updating task name", error);
+    }
+  };
+
   const handleEditSubTaskName = (subTask) => {
+    if (!isViewing) {
+      alert("Viewer don't have permission to update subtask name.");
+      console.log("Viewer don't have permission to update subtask name.");
+      return;
+    }
     setEditingSubTaskId(subTask._id);
     setSubTaskName(subTask.subTaskName); // Đặt tên subtask vào input
   };
 
   const handleSaveSubTaskName = async (subTask) => {
+
     if (!subTaskName.trim()) {
       alert("Subtask name cannot be empty!");
       return;
@@ -273,6 +313,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateSubTask = async (subTask, updates) => {
+    if (!isViewing) {
+      alert("Viewer don't have permission to update subtask");
+      console.log("Viewer don't have permission to update subtask");
+      return;
+    }
     try {
       if (!projectId || !task?._id || !subTask?._id) {
         console.error("Missing projectId, taskId, or subTaskId");
@@ -307,6 +352,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleDeleteSubTask = async (subTask) => {
+    if (!isViewing) {
+      alert("Viewer don't have permission to delete subtask.");
+      console.log("Viewer don't have permission to delete subtask .");
+      return;
+    }
     try {
       await axios.delete(
         `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/delete`,
@@ -387,13 +437,19 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
         // Sử dụng 'id' thay vì '_id' để so sánh
         setProjectMembers(data.memberInfo || []);
-        console.log(data.memberInfo);
 
         // Kiểm tra xem có thành viên nào có role là 'owner' và id trùng với id hiện tại không
         setIsOwner(
           data.memberInfo.some(
             (member) =>
               member.id.toString() === id.toString() && member.role === "owner"
+          )
+        );
+
+        setIsViewing(
+          data.memberInfo.some(
+            (member) =>
+              member.id.toString() === id.toString() && member.role === "viewer"
           )
         );
       } else {
@@ -419,7 +475,6 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
   const handleChangeAssignee = async (newAssigneeId) => {
     if (!isOwner || !isPremium) {
-      console.warn("You don't have permission to change the assignee.");
       alert("Only the owner of a premium project can change the assignee.");
       return;
     }
@@ -484,7 +539,12 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateTaskStatus = async (newStatus) => {
-    console.log("Updating task status to:", newStatus);
+    if (!isViewing) {
+      alert("Viewer don't have permission to update subtask name.");
+      console.log("Viewer don't have permission to update subtask name.");
+      return;
+    }
+
     setTaskStatus(newStatus);
     try {
       const { data } = await axios.put(
@@ -514,6 +574,10 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
 
   const handleUpdateDeadline = async (newDeadline) => {
+    if (!isViewing) {
+      alert("Viewer don't have permission to update task status.");
+      return;
+    }
     if (checkDeadlineStatus(newDeadline) === "overdue") {
       alert("Deadline you chose has passed. Please choose another one.");
       return;
@@ -539,8 +603,47 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   return (
     <Modal show={showModal} onHide={onClose} size="xl">
       <Modal.Header closeButton>
-        <Modal.Title style={{ fontWeight: "bold" }}>
-          {task.taskName}
+        <Modal.Title style={{ fontWeight: "bold", display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {isEditing ? (
+            <>
+              <Form.Control
+                type="text"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+                onBlur={handleUpdateTaskName}
+                autoFocus
+              />
+              <Button
+                variant="success"
+                size="sm"
+                onClick={() => {
+                  handleUpdateTaskName();
+                  setIsEditing(false);
+                }}
+              >
+                <FaSave />
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  setIsEditing(false);
+                  setTaskName(task.taskName); // Reset to original name if cancelled
+                }}
+                style={{ padding: '5px 10px' }}
+              >
+                X
+              </Button>
+            </>
+          ) : (
+            <>
+              {task.taskName}
+              <FaEdit
+                style={{ cursor: 'pointer', marginLeft: '10px' }}
+                onClick={() => setIsEditing(true)}
+              />
+            </>
+          )}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

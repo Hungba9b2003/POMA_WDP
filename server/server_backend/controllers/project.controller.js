@@ -112,14 +112,18 @@ async function getProjectByIdSummary(req, res, next) {
 async function updateProject(req, res, next) {
   try {
     const projectId = req.params.projectId;
-    const { id = null, newColumn = null, removeColumn = null, renameColumn = null } = req.body;
+    const {
+      id = null,
+      newColumn = null,
+      removeColumn = null,
+      renameColumn = null,
+    } = req.body;
     // Nhận removeColumn từ request body
     const {
       projectName = null,
       projectCode = null,
       projectAvatar = null,
     } = req.body;
-    console.log(projectId);
     const project = await db.Projects.findOne({ _id: projectId })
       .populate("tasks")
       .exec();
@@ -197,6 +201,8 @@ async function updateProject(req, res, next) {
         );
       }
     }
+
+
     const result = await db.Projects.updateOne(
       { _id: projectId },
       { $set: updateProject },
@@ -211,8 +217,6 @@ async function updateProject(req, res, next) {
     next(error);
   }
 }
-
-
 
 async function deleteProject(req, res, next) {
   try {
@@ -267,7 +271,6 @@ const updateProjectStatus = async (req, res) => {
 };
 
 async function getProjectMembers(req, res, next) {
-
   try {
     const { projectId } = req.params;
 
@@ -284,7 +287,7 @@ async function getProjectMembers(req, res, next) {
       name: member._id ? member._id.username : null,
       role: member.role,
       avatar: member._id ? member._id.profile.avatar : null,
-      email: member._id ? member._id.account.email : null
+      email: member._id ? member._id.account.email : null,
     }));
     res.status(200).json({ memberInfo });
   } catch (error) {
