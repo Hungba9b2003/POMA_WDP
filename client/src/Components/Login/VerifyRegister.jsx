@@ -4,7 +4,7 @@ import axios from "axios";
 import { AppContext } from "../../Context/AppContext";
 import "./../../Styles/Login/Verify.module.css";
 export default function VerifyPage() {
-  const { authentication_API, setUser } = useContext(AppContext);
+  const { API, setUser } = useContext(AppContext);
   const { id, token } = useParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState("loading");
@@ -13,7 +13,7 @@ export default function VerifyPage() {
     async function verifyAccount() {
       try {
         const response = await axios.get(
-          `${authentication_API}/verify/${id}/${token}`
+          `${API}/authentication/verify/${id}/${token}`
         );
         if (response.data.message) {
           setStatus("success");

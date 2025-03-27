@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import TaskCard from "./TaskCard";
 import CreateTask from "./CreateTask";
@@ -6,10 +6,10 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { HiMiniPencilSquare } from "react-icons/hi2";
-
+import { AppContext } from "../../Context/AppContext";
 const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
   const [showModal, setShowModal] = useState(false);
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   let id = null;
@@ -31,13 +31,10 @@ const Column = ({ title, tasks, setTasks, projectId, setColumns }) => {
       return;
 
     try {
-      const response = await axios.put(
-        `http://localhost:9999/projects/${projectId}/edit`,
-        {
-          id,
-          removeColumn: title,
-        }
-      );
+      const response = await axios.put(`${API}/projects/${projectId}/edit`, {
+        id,
+        removeColumn: title,
+      });
 
       if (response.data.classifications) {
         setColumns(response.data.classifications);

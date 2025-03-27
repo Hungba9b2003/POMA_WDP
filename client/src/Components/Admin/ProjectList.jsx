@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Table, Button, Container, Form, Badge } from "react-bootstrap";
 import axios from "axios";
 import { MdVisibility } from "react-icons/md";
-
+import { AppContext } from "../../Context/AppContext";
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [premiumCount, setPremiumCount] = useState(0);
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -25,12 +25,9 @@ const ProjectList = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:9999/admins/getAllProjectList",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.get(`${API}/admins/getAllProjectList`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log(response.data.projects);
       setProjects(response.data.projects);
       setFilteredProjects(response.data.projects);

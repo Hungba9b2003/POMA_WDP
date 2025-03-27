@@ -11,7 +11,7 @@ import Header from "../../Components/Utils/Header";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function LoginForm() {
-  const { authentication_API, setUser } = useContext(AppContext);
+  const { API, setUser } = useContext(AppContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -20,7 +20,7 @@ function LoginForm() {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const login_API = `${authentication_API}/login`;
+  const login_API = `${API}/authentication/login`;
 
   const checkTokenExpiration = () => {
     const token = localStorage.getItem("token");

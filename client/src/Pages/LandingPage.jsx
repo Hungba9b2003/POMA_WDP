@@ -143,26 +143,26 @@ function LandingPage() {
       <HeroSection>
         <Container>
           <Title>
-            Chào mừng đến với <Highlight>POMA</Highlight>
+            Welcome to <Highlight>POMA</Highlight>
           </Title>
           <Subtitle>
-            Giải pháp quản lý dự án hiệu quả cho doanh nghiệp của bạn
+            The ultimate project management solution for your business.
           </Subtitle>
-          <Button href="#">Bắt đầu ngay</Button>
+          <Button href="#">Get Started</Button>
         </Container>
       </HeroSection>
 
       <Section>
         <Container>
-          <SectionTitle>Tính năng nổi bật</SectionTitle>
+          <SectionTitle>Key Features</SectionTitle>
           <FeaturesGrid>
             <FeatureCard>
-              <h3>Quản lý dự án</h3>
-              <p>Theo dõi tiến độ, phân công nhiệm vụ dễ dàng.</p>
+              <h3>Project Management</h3>
+              <p>Track progress and assign tasks with ease.</p>
             </FeatureCard>
             <FeatureCard>
-              <h3>Giao tiếp nhóm</h3>
-              <p>Chat nhóm, chia sẻ tài liệu và đồng bộ lịch họp.</p>
+              <h3>Team Communication</h3>
+              <p>Group chat, file sharing, and synced meetings.</p>
             </FeatureCard>
           </FeaturesGrid>
         </Container>
@@ -170,39 +170,50 @@ function LandingPage() {
 
       <PricingSection>
         <Container>
-          <h2>Bảng giá</h2>
+          <h2>Pricing</h2>
           <PricingGrid>
             <PricingCard>
-              <PricingTitle>Cơ bản</PricingTitle>
-              <Price>Miễn phí</Price>
+              <PricingTitle>Basic</PricingTitle>
+              <Price>Free</Price>
               <Features>
-                <li>Tối đa 5 thành viên</li>
-                <li>3 dự án cùng lúc</li>
-                <li>1GB lưu trữ</li>
+                <li>Up to 5 team members</li>
+                <li>3 active projects</li>
+                <li>1GB storage</li>
               </Features>
-              <PricingButton href="#">Đăng ký</PricingButton>
+              <PricingButton href="#">Sign Up</PricingButton>
             </PricingCard>
 
             <PricingCard>
-              <PricingTitle>Chuyên nghiệp</PricingTitle>
-              <Price>$29/tháng</Price>
+              <PricingTitle>Professional</PricingTitle>
+              <Price>$29/month</Price>
               <Features>
-                <li>Không giới hạn thành viên</li>
-                <li>Không giới hạn dự án</li>
-                <li>100GB lưu trữ</li>
+                <li>Unlimited team members</li>
+                <li>Unlimited projects</li>
+                <li>100GB storage</li>
               </Features>
-              <PricingButton href="#">Mua ngay</PricingButton>
+              <PricingButton href="#">Get Now</PricingButton>
             </PricingCard>
 
             <PricingCard>
-              <PricingTitle>Doanh nghiệp</PricingTitle>
-              <Price>Liên hệ</Price>
+              <PricingTitle>Enterprise</PricingTitle>
+              <Price>Contact Us</Price>
               <Features>
-                <li>Tính năng tùy chỉnh</li>
-                <li>API tích hợp</li>
-                <li>Không giới hạn lưu trữ</li>
+                <li>Custom features</li>
+                <li>API integration</li>
+                <li>Unlimited storage</li>
               </Features>
-              <PricingButton href="#">Liên hệ</PricingButton>
+              <PricingButton href="#">Contact Us</PricingButton>
+            </PricingCard>
+
+            <PricingCard>
+              <PricingTitle>VIP Team</PricingTitle>
+              <Price>$199/month</Price>
+              <Features>
+                <li>Priority support</li>
+                <li>Advanced analytics</li>
+                <li>Exclusive VIP features</li>
+              </Features>
+              <PricingButton href="#">Upgrade Now</PricingButton>
             </PricingCard>
           </PricingGrid>
         </Container>

@@ -286,7 +286,7 @@ async function forgotPassword(req, res) {
 async function resetPassword(req, res) {
   const { id, token } = req.params;
   const { password, confirmPassword } = req.body;
-
+  console.log("password: " + password);
   try {
     if (password !== confirmPassword) {
       return res.status(400).json({
@@ -296,7 +296,6 @@ async function resetPassword(req, res) {
     }
 
     const oldUser = await db.Users.findById(id);
-    console.log(oldUser.resetToken);
     if (oldUser.resetToken != token) {
       return res.status(400).json({
         status: "Invalid",
@@ -328,18 +327,15 @@ async function resetPassword(req, res) {
     }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
+    const user = await db.Users.findOne({ _id: id });
+    const newStatus = user.status === "deactive" ? "active" : user.status;
+
     await db.Users.updateOne(
       { _id: id },
       {
         $set: {
           "account.password": encryptedPassword,
-          status: {
-            $cond: {
-              if: { $eq: ["$status", "deactive"] },
-              then: "active",
-              else: "$status",
-            },
-          },
+          status: newStatus,
         },
       }
     );

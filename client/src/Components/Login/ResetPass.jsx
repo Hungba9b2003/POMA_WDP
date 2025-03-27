@@ -8,7 +8,7 @@ import styles from "../../Styles/Login/Login.module.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function ResetPassword() {
-  const { authentication_API } = useContext(AppContext);
+  const { API } = useContext(AppContext);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -17,14 +17,16 @@ function ResetPassword() {
   const { id, token } = useParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
-  const resetPass_API = `${authentication_API}/reset-password/${id}/${token}`;
+  const resetPass_API = `${API}/authentication/reset-password/${id}/${token}`;
 
   const resetPassword = async () => {
     try {
-      const { data } = await axios.post(resetPass_API, {
-        password,
-        confirmPassword,
-      });
+      const { data } = await axios.post(
+        resetPass_API,
+        { password, confirmPassword },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log(password);
       return data;
     } catch (error) {
       if (error.response) {
@@ -112,7 +114,7 @@ function ResetPassword() {
                     position: "absolute",
                     left: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                   }}
                 ></i>
@@ -131,7 +133,7 @@ function ResetPassword() {
                     position: "absolute",
                     right: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                     cursor: "pointer",
                   }}
@@ -149,7 +151,7 @@ function ResetPassword() {
                     position: "absolute",
                     left: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                   }}
                 ></i>
@@ -168,7 +170,7 @@ function ResetPassword() {
                     position: "absolute",
                     right: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                     cursor: "pointer",
                   }}

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { FaProjectDiagram } from "react-icons/fa";
 import { Table, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { AppContext } from "../../Context/AppContext";
 function ProjectSetting() {
   const [isSaving, setIsSaving] = useState(false);
   const [projectInfo, setProjectInfo] = useState(null);
@@ -22,7 +23,7 @@ function ProjectSetting() {
     "/images/avatar/image8.jpg",
     "/images/avatar/imageDefault.jpg",
   ]);
-
+  const { API } = useContext(AppContext);
   const { projectId } = useParams();
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -33,7 +34,7 @@ function ProjectSetting() {
       const fetchProjectInfo = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:9999/projects/${projectId}/get-project`,
+            `${API}/projects/${projectId}/get-project`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -75,7 +76,7 @@ function ProjectSetting() {
       const oldAvatar = getImageNameFromUrl(projectInfo.projectAvatar);
       try {
         const response = await fetch(
-          `http://localhost:9999/api/upload?oldAvatar=${oldAvatar}`,
+          `${API}/api/upload?oldAvatar=${oldAvatar}`,
           {
             method: "POST",
             body: formData,
@@ -122,16 +123,12 @@ function ProjectSetting() {
     };
 
     try {
-      await axios.put(
-        `http://localhost:9999/projects/${projectId}/edit`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await axios.put(`${API}/projects/${projectId}/edit`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       navigate(`/project/${projectId}/setting`);
       alert("Project information updated successfully.");

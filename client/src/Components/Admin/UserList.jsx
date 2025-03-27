@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Table, Button, Container, Form, Image } from "react-bootstrap";
 import axios from "axios";
 import { FaRegUser } from "react-icons/fa";
 import { MdBlock, MdCheckCircle, MdVisibility } from "react-icons/md";
-
+import { AppContext } from "../../Context/AppContext";
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -25,12 +25,9 @@ const UserList = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:9999/admins/getUserList",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.get(`${API}/admins/getUserList`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setUsers(response.data.users);
       setFilteredUsers(response.data.users);
     } catch (error) {
@@ -41,7 +38,7 @@ const UserList = () => {
   const handleUserStatusChange = async (userId, newStatus) => {
     try {
       await axios.post(
-        "http://localhost:9999/admins/updateUserStatus",
+        `${API}/admins/updateUserStatus`,
         { userId, status: newStatus },
         {
           headers: { Authorization: `Bearer ${token}` },

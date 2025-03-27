@@ -7,7 +7,7 @@ import loginImage from "../../assets/login/images/image1.jpg";
 import styles from "../../Styles/Login/Login.module.css";
 
 function RegisterForm() {
-  const { authentication_API } = useContext(AppContext);
+  const { API } = useContext(AppContext);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -18,7 +18,7 @@ function RegisterForm() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
-  const register_API = `${authentication_API}/register`;
+  const register_API = `${API}/authentication/register`;
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -98,7 +98,7 @@ function RegisterForm() {
                     position: "absolute",
                     left: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                   }}
                 ></i>
@@ -123,7 +123,7 @@ function RegisterForm() {
                     position: "absolute",
                     left: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                   }}
                 ></i>
@@ -148,7 +148,7 @@ function RegisterForm() {
                     position: "absolute",
                     left: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                   }}
                 ></i>

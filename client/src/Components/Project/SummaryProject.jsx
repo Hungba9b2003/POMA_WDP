@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Chart as ChartJS,
@@ -13,6 +13,7 @@ import { CheckCircle, Edit, List, Clock } from "lucide-react";
 import { Bar, Pie } from "react-chartjs-2";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { AppContext } from "../../Context/AppContext";
 import { Container, Row, Col } from "react-bootstrap";
 ChartJS.register(
   ArcElement,
@@ -27,6 +28,7 @@ const SummaryProject = () => {
   const { projectId } = useParams();
   const [projectInfo, setProjectInfo] = useState({});
   const navigate = useNavigate();
+  const { API } = useContext(AppContext);
   useEffect(() => {
     fetchTasks();
   }, [projectId]);
@@ -35,7 +37,7 @@ const SummaryProject = () => {
   const fetchTasks = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:9999/projects/${projectId}/getProjectByIdSummary`,
+        `${API}/projects/${projectId}/getProjectByIdSummary`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

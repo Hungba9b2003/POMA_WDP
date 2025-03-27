@@ -9,18 +9,18 @@ import {
   Modal,
   Form,
 } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { FaBell } from "react-icons/fa";
 import { FiLogOut, FiUser, FiKey } from "react-icons/fi";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-
+import { AppContext } from "../../Context/AppContext";
 const Header = () => {
   const [showModal, setShowModal] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
   const [projectName, setProjectName] = useState(null);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -38,14 +38,11 @@ const Header = () => {
     if (token) {
       const fetchUserInfo = async () => {
         try {
-          const response = await axios.get(
-            "http://localhost:9999/users/get-profile",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await axios.get(`${API}/users/get-profile`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           setUserInfo(response.data);
         } catch (error) {
           console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -75,15 +72,15 @@ const Header = () => {
       return;
     }
 
-    if (!id){
+    if (!id) {
       window.location.href = "/login/loginForm";
     }
 
     try {
-      const createResponse = await axios.post(
-        "http://localhost:9999/projects/create",
-        { projectName, id }
-      );
+      const createResponse = await axios.post(`${API}/projects/create`, {
+        projectName,
+        id,
+      });
 
       if (createResponse.data) {
         setProjectName("");

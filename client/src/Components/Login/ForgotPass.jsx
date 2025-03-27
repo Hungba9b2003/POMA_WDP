@@ -8,12 +8,12 @@ import styles from "../../Styles/Login/Login.module.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function ForgotPassword() {
-  const { authentication_API } = useContext(AppContext);
+  const { API } = useContext(AppContext);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const navigate = useNavigate();
-  const forgotPass_API = `${authentication_API}/forgot-password`;
+  const forgotPass_API = `${API}/authentication/forgot-password`;
 
   const requestPasswordReset = async (email) => {
     try {
@@ -120,7 +120,7 @@ function ForgotPassword() {
                     position: "absolute",
                     left: "10px",
                     top: "50%",
-                    transform: "translateY(-50%)",
+                    transform: "translateY(-80%)",
                     color: "#666",
                   }}
                 ></i>

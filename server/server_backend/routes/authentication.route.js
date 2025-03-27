@@ -26,7 +26,7 @@ authRouter.post(
 authRouter.post("/getByEmail", AuthController.getUserByEmail);
 
 // đặt lại mật khẩu
-authRouter.get("/reset-password/:id/:token", AuthController.resetPassword);
+authRouter.post("/reset-password/:id/:token", AuthController.resetPassword);
 //token để reset,verify với token để đăng nhâp đăng đang là 2 cái khác nhau
 
 // Xác minh tài khoản

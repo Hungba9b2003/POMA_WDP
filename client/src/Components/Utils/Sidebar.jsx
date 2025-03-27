@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
 import { FaUsers, FaTasks } from "react-icons/fa";
 import { TbWorld } from "react-icons/tb";
@@ -7,6 +7,7 @@ import { Card } from "react-bootstrap";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { IoSettingsSharp } from "react-icons/io5";
+import { AppContext } from "../../Context/AppContext";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -15,7 +16,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   console.log("Project ID from URL:", userInfo);
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -31,32 +32,32 @@ const Sidebar = () => {
 
   const menuItems = projectId
     ? [
-      {
-        path: `/project/${projectId}/summary`,
-        label: "Summary",
-        icon: <TbWorld />,
-      },
-      {
-        path: `/project/${projectId}/workspace`,
-        label: "Workspace",
-        icon: <GrWorkshop />,
-      },
-      {
-        path: `/project/${projectId}/members`,
-        label: "Member",
-        icon: <FaUsers />,
-      },
-      {
-        path: `/project/${projectId}/listTask`,
-        label: "List Tasks",
-        icon: <FaTasks />,
-      },
-      {
-        path: `/project/${projectId}/setting`,
-        label: "Setting",
-        icon: <IoSettingsSharp />,
-      },
-    ]
+        {
+          path: `/project/${projectId}/summary`,
+          label: "Summary",
+          icon: <TbWorld />,
+        },
+        {
+          path: `/project/${projectId}/workspace`,
+          label: "Workspace",
+          icon: <GrWorkshop />,
+        },
+        {
+          path: `/project/${projectId}/members`,
+          label: "Member",
+          icon: <FaUsers />,
+        },
+        {
+          path: `/project/${projectId}/listTask`,
+          label: "List Tasks",
+          icon: <FaTasks />,
+        },
+        {
+          path: `/project/${projectId}/setting`,
+          label: "Setting",
+          icon: <IoSettingsSharp />,
+        },
+      ]
     : [];
 
   // useEffect để fetch project info
@@ -67,7 +68,7 @@ const Sidebar = () => {
       try {
         //console.log(`Fetching project: ${projectId}`);
         const response = await axios.get(
-          `http://localhost:9999/projects/${projectId}/get-project`,
+          `${API}/projects/${projectId}/get-project`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -88,14 +89,11 @@ const Sidebar = () => {
     if (token) {
       const fetchUserInfo = async () => {
         try {
-          const response = await axios.get(
-            "http://localhost:9999/users/get-profile",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await axios.get(`${API}/users/get-profile`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           // console.log(response.data);
           setUserInfo(response.data);
         } catch (error) {
@@ -155,10 +153,11 @@ const Sidebar = () => {
           <Link
             key={item.path}
             to={item.path}
-            className={`d-flex align-items-center gap-2 p-2 rounded text-decoration-none ${location.pathname === item.path
-              ? "bg-primary text-white"
-              : "text-dark"
-              }`}
+            className={`d-flex align-items-center gap-2 p-2 rounded text-decoration-none ${
+              location.pathname === item.path
+                ? "bg-primary text-white"
+                : "text-dark"
+            }`}
           >
             {item.icon} {item.label}
           </Link>
@@ -187,7 +186,7 @@ const Sidebar = () => {
           </>
         )}
       </Card>
-      <div className="d-flex align-items-center gap-2 mt-3" >
+      <div className="d-flex align-items-center gap-2 mt-3">
         <img
           src={userInfo?.profile.avatar || "https://placehold.co/40"}
           alt="avatar"

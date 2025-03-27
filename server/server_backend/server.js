@@ -5,6 +5,7 @@ const httpsErrors = require("http-errors");
 const cors = require("cors"); // Thêm dòng này để import cors
 // require("dotenv").config();
 const path = require("path");
+
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const app = express();
 const db = require("./models/index");
@@ -16,13 +17,7 @@ const {
 } = require("./routes");
 const uploadRoutes = require("./routes/upload.route");
 // Sử dụng cors middleware để cho phép request từ localhost:3000
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
-  })
-);
+app.use(cors());
 
 app.use(morgan("dev"));
 app.use(bodyParser.json());

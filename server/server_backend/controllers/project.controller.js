@@ -127,7 +127,7 @@ async function updateProject(req, res, next) {
     const project = await db.Projects.findOne({ _id: projectId })
       .populate("tasks")
       .exec();
-
+    console.log(id);
     if (!project) {
       throw createHttpErrors(404, "Project not found");
     }
@@ -217,7 +217,6 @@ async function updateProject(req, res, next) {
           );
         }
       }
-      console.log(updateProject);
 
       const result = await db.Projects.updateOne(
         { _id: projectId },

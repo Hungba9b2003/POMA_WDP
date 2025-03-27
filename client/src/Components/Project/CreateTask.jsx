@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-
+import { AppContext } from "../../Context/AppContext";
 const CreateTask = ({ show, handleClose, projectId, setTasks }) => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
-
+  const { API } = useContext(AppContext);
   let id = null;
   if (token) {
     try {
@@ -31,7 +31,7 @@ const CreateTask = ({ show, handleClose, projectId, setTasks }) => {
     const fetchClassifications = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:9999/projects/${projectId}/get-project`,
+          `${API}/projects/${projectId}/get-project`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (response.status === 200 && response.data.project) {
@@ -70,7 +70,7 @@ const CreateTask = ({ show, handleClose, projectId, setTasks }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:9999/projects/${projectId}/tasks/create`,
+        `${API}/projects/${projectId}/tasks/create`,
         { ...taskData, id }, // Dữ liệu gửi đi
         { headers: { Authorization: `Bearer ${token}` } } // Headers
       );

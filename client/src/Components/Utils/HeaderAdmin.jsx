@@ -6,14 +6,15 @@ import {
   Image,
   Container,
 } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { FiLogOut, FiUser, FiKey } from "react-icons/fi";
 import axios from "axios";
 import { FaBell } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
+import { AppContext } from "../../Context/AppContext";
 const AdminHeader = () => {
   const [userInfo, setUserInfo] = useState(null);
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
   let id = null;
@@ -30,14 +31,11 @@ const AdminHeader = () => {
     if (token) {
       const fetchUserInfo = async () => {
         try {
-          const response = await axios.get(
-            "http://localhost:9999/users/get-profile",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await axios.get(`${API}/users/get-profile`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           setUserInfo(response.data);
         } catch (error) {
           console.error("Error fetching user info:", error);

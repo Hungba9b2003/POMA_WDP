@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Modal,
   Button,
@@ -13,39 +13,52 @@ import {
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { AppContext } from "../../Context/AppContext";
 import {
   FaEdit,
   FaTrashAlt,
   FaRegCalendarAlt,
   FaCalendarTimes,
-  FaCalendarCheck, FaSave,
+  FaCalendarCheck,
+  FaSave,
 } from "react-icons/fa"; // Các biểu tượng bút và thùng rác
 import moment from "moment"; // Để tính thời gian đã trôi qua
 
 const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const [user, setUser] = useState(null);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState(task.comments || []);  // Use task.comments directly
+  const [comments, setComments] = useState(task.comments || []); // Use task.comments directly
   const [newSubTask, setNewSubTask] = useState("");
-  const [subTasks, setSubTasks] = useState(task.subTasks || []);  // Use task.subTasks directly
+  const [subTasks, setSubTasks] = useState(task.subTasks || []); // Use task.subTasks directly
   const [editingSubTaskId, setEditingSubTaskId] = useState(null); // ID của subtask đang sửa
   const [subTaskName, setSubTaskName] = useState("");
-  const [taskDescription, setTaskDescription] = useState(task.description || "");
+  const [taskDescription, setTaskDescription] = useState(
+    task.description || ""
+  );
   const [editingCommentId, setEditingCommentId] = useState(null); // Trạng thái bình luận đang chỉnh sửa
   const [editedContent, setEditedContent] = useState(""); // Nội dung chỉnh sửa
   const [projectMembers, setProjectMembers] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
-  const [assigneeName, setAssigneeName] = useState(task.assignee?.username || null);
-  const [reviewerName, setReviewerName] = useState(task.reviewer?.username || null);
-  const [assigneeAvatar, setAssigneeAvatar] = useState(task.assignee?.profile?.avatar || null);
-  const [reviewerAvatar, setReviewerAvatar] = useState(task.reviewer?.profile?.avatar || null);
+  const [assigneeName, setAssigneeName] = useState(
+    task.assignee?.username || null
+  );
+  const [reviewerName, setReviewerName] = useState(
+    task.reviewer?.username || null
+  );
+  const [assigneeAvatar, setAssigneeAvatar] = useState(
+    task.assignee?.profile?.avatar || null
+  );
+  const [reviewerAvatar, setReviewerAvatar] = useState(
+    task.reviewer?.profile?.avatar || null
+  );
   const [deadline, setDeadline] = useState(task.deadline || null);
   const [taskStatus, setTaskStatus] = useState(task.status || "");
   const [isEditing, setIsEditing] = useState(false);
-  const { projectId } = useParams();  // Get project ID from params
+  const { projectId } = useParams(); // Get project ID from params
   const [statusList, setStatusList] = useState([]);
-
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const { API } = useContext(AppContext);
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
   let id = null;
   if (token) {
@@ -69,14 +82,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   // Fetch user profile
   const fetchUser = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:9999/users/get-profile`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API}/users/get-profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setUser(response.data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
@@ -87,7 +97,9 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const addComment = async () => {
     if (newComment) {
       try {
-        await axios.post(`http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/create`, { content: newComment },
+        await axios.post(
+          `${API}/projects/${projectId}/tasks/${task._id}/comments/create`,
+          { content: newComment },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -111,7 +123,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const handleSave = async (commentId) => {
     try {
       await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/${commentId}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/comments/${commentId}/edit`,
         { content: editedContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -136,7 +148,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
       try {
         // Gọi API DELETE để xóa bình luận
         await axios.delete(
-          `http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/${commentId}/delete`,
+          `${API}/projects/${projectId}/tasks/${task._id}/comments/${commentId}/delete`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         fetchComments(); // Fetch lại bình luận sau khi xóa thành công
@@ -150,7 +162,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const fetchComments = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/comments/get-all`,
+        `${API}/projects/${projectId}/tasks/${task._id}/comments/get-all`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -169,7 +181,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     if (newSubTask) {
       try {
         await axios.post(
-          `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/create`,
+          `${API}/projects/${projectId}/tasks/${task._id}/subTasks/create`,
           { subTaskName: newSubTask },
           {
             headers: {
@@ -189,7 +201,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const fetchSubTasks = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/get-all`,
+        `${API}/projects/${projectId}/tasks/${task._id}/subTasks/get-all`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -205,7 +217,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const fetchProject = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:9999/projects/${projectId}/get-project`,
+        `${API}/projects/${projectId}/get-project`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -220,7 +232,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const handleUpdateDescription = async () => {
     try {
       const { data } = await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/edit`,
         { description: taskDescription },
         {
           headers: {
@@ -247,7 +259,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
     try {
       await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
         { subTaskName }, // Chỉ gửi subTaskName để cập nhật
         {
           headers: {
@@ -291,7 +303,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
       }
 
       await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/edit`,
         updateData, // Chỉ gửi những giá trị cần cập nhật
         {
           headers: {
@@ -309,7 +321,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const handleDeleteSubTask = async (subTask) => {
     try {
       await axios.delete(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/delete`,
+        `${API}/projects/${projectId}/tasks/${task._id}/subTasks/${subTask._id}/delete`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -374,14 +386,11 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
   const fetchProjectMembers = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:9999/projects/${projectId}/get-member`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API}/projects/${projectId}/get-member`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.ok) {
         const data = await response.json();
 
@@ -424,7 +433,9 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
       return;
     }
 
-    const selectedAssignee = projectMembers.find(member => member.id === newAssigneeId);
+    const selectedAssignee = projectMembers.find(
+      (member) => member.id === newAssigneeId
+    );
 
     if (!selectedAssignee) {
       console.error("Selected assignee not found in projectMembers");
@@ -438,7 +449,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/edit`,
         { assignee: newAssigneeId }, // 👈 Chỉ gửi ID, không phải object
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -469,7 +480,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     setReviewerAvatar(selectedReviewer.avatar);
     try {
       const response = await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/edit`,
         { reviewer: newReviewerId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -488,7 +499,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     setTaskStatus(newStatus);
     try {
       const { data } = await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/edit`,
         { status: newStatus },
         {
           headers: {
@@ -521,7 +532,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
     setDeadline(newDeadline);
     try {
       const { data } = await axios.put(
-        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${task._id}/edit`,
         { deadline: newDeadline },
         {
           headers: {
@@ -768,8 +779,8 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                                   subtask.priority === "Low"
                                     ? "green"
                                     : subtask.priority === "Medium"
-                                      ? "yellow"
-                                      : "red",
+                                    ? "yellow"
+                                    : "red",
                               }}
                             >
                               <option
@@ -808,41 +819,61 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                             </Form.Control>
                           </Col>
 
-                          <Col xs={1} className="d-flex justify-content-center align-items-center">
+                          <Col
+                            xs={1}
+                            className="d-flex justify-content-center align-items-center"
+                          >
                             <Dropdown>
-                              <Dropdown.Toggle variant="link" id="dropdown-assignee-subtask">
+                              <Dropdown.Toggle
+                                variant="link"
+                                id="dropdown-assignee-subtask"
+                              >
                                 {/* Hiển thị chỉ avatar trong trạng thái bình thường */}
                                 <Image
-                                  src={subtask.assignee?.profile?.avatar || "default-avatar-url"}
+                                  src={
+                                    subtask.assignee?.profile?.avatar ||
+                                    "default-avatar-url"
+                                  }
                                   roundedCircle
                                   width={30}
                                   height={30}
-                                  style={{ cursor: 'pointer' }}
+                                  style={{ cursor: "pointer" }}
                                 />
                               </Dropdown.Toggle>
 
                               <Dropdown.Menu>
-                                {projectMembers.map(member => {
+                                {projectMembers.map((member) => {
                                   // Điều kiện chỉ cho phép owner hoặc assignee của task chọn subtask
                                   if (
-                                    (isOwner && member.role !== "owner") ||  // Owner có thể chọn bất kỳ ai trừ chính mình
-                                    (task.assignee._id === member._id && member.role !== "owner") // Assignee của task không thể chọn owner
+                                    (isOwner && member.role !== "owner") || // Owner có thể chọn bất kỳ ai trừ chính mình
+                                    (task.assignee._id === member._id &&
+                                      member.role !== "owner") // Assignee của task không thể chọn owner
                                   ) {
                                     return (
                                       <Dropdown.Item
                                         key={member._id}
-                                        onClick={() => handleUpdateSubTask(subtask, { assignee: member.id })} // Gọi trực tiếp editSubTask
+                                        onClick={() =>
+                                          handleUpdateSubTask(subtask, {
+                                            assignee: member.id,
+                                          })
+                                        } // Gọi trực tiếp editSubTask
                                       >
                                         <Row className="d-flex align-items-center">
                                           <Col xs={2}>
                                             <Image
-                                              src={member?.avatar || "default-avatar-url"}
+                                              src={
+                                                member?.avatar ||
+                                                "default-avatar-url"
+                                              }
                                               roundedCircle
                                               width={30}
                                               height={30}
                                             />
                                           </Col>
-                                          <Col xs={9} style={{ marginLeft: '10px' }}>
+                                          <Col
+                                            xs={9}
+                                            style={{ marginLeft: "10px" }}
+                                          >
                                             {member?.name}
                                           </Col>
                                         </Row>
@@ -871,8 +902,8 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                                   subtask.status === "Pending"
                                     ? "black"
                                     : subtask.status === "In Progress"
-                                      ? "blue"
-                                      : "green",
+                                    ? "blue"
+                                    : "green",
                               }}
                             >
                               <option
@@ -923,8 +954,14 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
             {user && (
               <Row>
                 <Col md={1} style={{ display: "flex", alignItems: "center" }}>
-                  <img src={user?.profile?.avatar} alt="avatar"
-                    style={{ width: "50px", height: "50px", borderRadius: "50%" }}
+                  <img
+                    src={user?.profile?.avatar}
+                    alt="avatar"
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      borderRadius: "50%",
+                    }}
                   />
                 </Col>
                 <Col
@@ -1009,11 +1046,13 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                                   }}
                                 />
                               ) : (
-                                <p style={{
-                                  wordWrap: "break-word",
-                                  whiteSpace: "pre-wrap",
-                                  margin: 0
-                                }}>
+                                <p
+                                  style={{
+                                    wordWrap: "break-word",
+                                    whiteSpace: "pre-wrap",
+                                    margin: 0,
+                                  }}
+                                >
                                   {c.content}
                                 </p>
                               )}
@@ -1023,7 +1062,8 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                               {editingCommentId === c._id ? (
                                 <FaSave
                                   style={{ color: "green", cursor: "pointer" }}
-                                  onClick={() => handleSave(c._id)}></FaSave>
+                                  onClick={() => handleSave(c._id)}
+                                ></FaSave>
                               ) : (
                                 <FaEdit
                                   style={{ color: "gold", cursor: "pointer" }}
@@ -1075,10 +1115,10 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                     taskStatus === "Pending"
                       ? "black"
                       : taskStatus === "In Progress"
-                        ? "blue"
-                        : taskStatus === "Completed"
-                          ? "green"
-                          : "gray",
+                      ? "blue"
+                      : taskStatus === "Completed"
+                      ? "green"
+                      : "gray",
                 }}
               >
                 {statusList.map((status) => (
@@ -1091,10 +1131,10 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                         status === "Pending"
                           ? "black"
                           : status === "In Progress"
-                            ? "blue"
-                            : status === "Completed"
-                              ? "green"
-                              : "gray",
+                          ? "blue"
+                          : status === "Completed"
+                          ? "green"
+                          : "gray",
                     }}
                   >
                     {status}
@@ -1190,8 +1230,8 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                       deadlineStatus === "overdue"
                         ? "red"
                         : deadlineStatus === "upcoming"
-                          ? "green"
-                          : "gray",
+                        ? "green"
+                        : "gray",
                   }}
                 >
                   {deadline

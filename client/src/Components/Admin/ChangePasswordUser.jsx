@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Table } from "react-bootstrap";
 import styles from "../../Styles/Profile/Profile.module.css";
 import { Button } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
+import { AppContext } from "../../Context/AppContext";
+
 import "@fortawesome/fontawesome-free/css/all.min.css";
+
 function ChangePasswordUser() {
+  const { API } = useContext(AppContext);
   const { userId } = useParams();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,7 +38,7 @@ function ChangePasswordUser() {
         ? localStorage.getItem("token")
         : sessionStorage.getItem("token"); // Retrieve token from local storage
       const response = await axios.put(
-        `http://localhost:9999/users/change-passwordById/${userId}`, // Update to your actual API endpoint
+        `${API}/users/change-passwordById/${userId}`, // Update to your actual API endpoint
         {
           newPassword,
           confirmPassword, // Include confirmPassword for server-side validation
@@ -93,7 +97,7 @@ function ChangePasswordUser() {
                         position: "absolute",
                         left: "10px",
                         top: "40%",
-                        transform: "translateY(-50%)",
+                        transform: "translateY(-80%)",
                         color: "#666",
                       }}
                     ></i>
@@ -114,7 +118,7 @@ function ChangePasswordUser() {
                         position: "absolute",
                         right: "10px",
                         top: "40%",
-                        transform: "translateY(-50%)",
+                        transform: "translateY(-80%)",
                         color: "#666",
                         cursor: "pointer",
                       }}
@@ -133,7 +137,7 @@ function ChangePasswordUser() {
                         position: "absolute",
                         left: "10px",
                         top: "40%",
-                        transform: "translateY(-50%)",
+                        transform: "translateY(-80%)",
                         color: "#666",
                       }}
                     ></i>
@@ -154,7 +158,7 @@ function ChangePasswordUser() {
                         position: "absolute",
                         right: "10px",
                         top: "40%",
-                        transform: "translateY(-50%)",
+                        transform: "translateY(-80%)",
                         color: "#666",
                         cursor: "pointer",
                       }}

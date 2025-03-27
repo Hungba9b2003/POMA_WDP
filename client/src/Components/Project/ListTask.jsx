@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Table, Button, Image, Container, Form } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { TbHandFinger } from "react-icons/tb";
 import TaskDetail from "./TaskDetail.jsx";
-
+import { AppContext } from "../../Context/AppContext";
 const ListTask = () => {
   const { projectId } = useParams();
   const [tasks, setTasks] = useState([]);
@@ -14,7 +14,7 @@ const ListTask = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -34,7 +34,7 @@ const ListTask = () => {
   const fetchTasks = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:9999/projects/${projectId}/tasks/get-all`,
+        `${API}/projects/${projectId}/tasks/get-all`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -49,7 +49,7 @@ const ListTask = () => {
   const fetchProject = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:9999/projects/${projectId}/get-project`,
+        `${API}/projects/${projectId}/get-project`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

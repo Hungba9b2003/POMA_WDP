@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Form, Button } from "react-bootstrap";
 import Swal from "sweetalert2";
 import { jwtDecode } from "jwt-decode";
 import "./JoinProject.css";
-
+import { AppContext } from "../../Context/AppContext";
 const JoinProject = ({ handleJoin }) => {
   const [projectCode, setProjectCode] = useState("");
-
+  const { API } = useContext(AppContext);
   // Hàm lấy userId từ token
   const getUserIdFromToken = () => {
     const token =
@@ -41,17 +41,14 @@ const JoinProject = ({ handleJoin }) => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:9999/projects/join-by-code",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ projectCode, userId }),
-        }
-      );
+      const response = await fetch(`${API}/projects/join-by-code`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectCode, userId }),
+      });
 
       const data = await response.json();
       if (response.ok) {

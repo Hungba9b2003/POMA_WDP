@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { Col, Dropdown, Row } from "react-bootstrap";
 import { AiOutlineMenu } from "react-icons/ai";
-
+import { AppContext } from "../../Context/AppContext";
 const ListProject = () => {
   const [projects, setProjects] = useState([]);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
-
+  const { API } = useContext(AppContext);
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -26,7 +26,7 @@ const ListProject = () => {
   useEffect(() => {
     axios
       .post(
-        "http://localhost:9999/projects/get-project",
+        `${API}/projects/get-project`,
         { id },
         {
           headers: {
@@ -63,8 +63,12 @@ const ListProject = () => {
               <AiOutlineMenu size={30} />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => navigate("/join-project")}>Join by Code</Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("/projectStored")}>Project Stored</Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/join-project")}>
+                Join by Code
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate("/projectStored")}>
+                Project Stored
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Col>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { FaAddressCard, FaUser, FaPhone, FaKey, FaHome } from "react-icons/fa";
 import { IoMail } from "react-icons/io5";
 import { Table, Button } from "react-bootstrap";
@@ -7,8 +7,9 @@ import axios from "axios";
 import imageDefault from "./../../assets/user/avatar/imageDefault.jpg";
 import styles from "../../Styles/Profile/Profile.module.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { AppContext } from "../../Context/AppContext";
 function DetailUser() {
+  const { API } = useContext(AppContext);
   const { userId } = useParams();
   const [userInfo, setUserInfo] = useState(null);
   const token =
@@ -19,7 +20,7 @@ function DetailUser() {
       const fetchUserInfo = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:9999/users/get-profileById/${userId}`,
+            `${API}/users/get-profileById/${userId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }

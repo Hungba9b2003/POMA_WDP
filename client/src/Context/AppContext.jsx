@@ -1,4 +1,10 @@
-import React, { createContext, useEffect, useState, useRef } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+} from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +16,10 @@ const AppProvider = ({ children }) => {
   const accessToken = localStorage.getItem("token");
   const accessToken2 = sessionStorage.getItem("token");
   // api
+  const API = process.env.REACT_APP_SERVER_BACKEND || "http://localhost:9999";
+  console.log(API);
+  const API_PAYMENT =
+    process.env.REACT_APP_SERVER_PAYMENT || "http://localhost:8888";
   const authentication_API = `http://localhost:9999/authentication`;
   const users_API = "http://localhost:9999/users";
   //parameter
@@ -24,7 +34,7 @@ const AppProvider = ({ children }) => {
     if ((accessToken || accessToken2) && !isFetched.current) {
       isFetched.current = true; // Đánh dấu là đã fetch để tránh gọi lại
       axios
-        .get(`${users_API}/get-profile`, {
+        .get(`${API}/users/get-profile`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         })
         .then((res) => {
@@ -64,6 +74,8 @@ const AppProvider = ({ children }) => {
         accessToken2,
         user,
         setUser,
+        API,
+        API_PAYMENT,
         authentication_API,
         show,
         setShow,

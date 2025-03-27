@@ -1,6 +1,14 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import axios from "axios";
-import { Container, Row, Col, Button, Card } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Card,
+  Modal,
+  Form,
+} from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import TaskCard from "./TaskCard";
@@ -8,12 +16,14 @@ import CreateTask from "./CreateTask";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import DropArea from "./DropArea";
 import { HiMiniPencilSquare } from "react-icons/hi2";
+import { AppContext } from "../../Context/AppContext";
 const Workspace = () => {
   const [columns, setColumns] = useState([
     "Pending",
     "In Progress",
     "Completed",
   ]);
+  const { API } = useContext(AppContext);
   const [tasks, setTasks] = useState([]);
   const { projectId } = useParams();
   const [isPremium, setIsPremium] = useState(false);
@@ -23,6 +33,9 @@ const Workspace = () => {
   const [activeCardId, setactiveCardId] = useState(null);
   const [editableColumn, setEditableColumn] = useState("");
   const [selectedColumnIndex, setSelectedColumnIndex] = useState(null);
+  const [newColumn, setNewColumn] = useState("");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showModalColumn, setShowModalColumn] = useState(false);
 
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -69,8 +82,8 @@ const Workspace = () => {
     if (swapTaskId1 && swapTaskId2) {
       // Gửi yêu cầu đổi vị trí taskNumber
       axios
-        .put(`
-          http://localhost:9999/projects/${projectId}/tasks/swap`,
+        .put(
+          `${API}/projects/${projectId}/tasks/swap`,
           {
             position: position,
             taskId1: swapTaskId1,
@@ -88,7 +101,7 @@ const Workspace = () => {
     // Cập nhật status của task
     axios
       .put(
-        `http://localhost:9999/projects/${projectId}/tasks/${activeCardId._id}/edit`,
+        `${API}/projects/${projectId}/tasks/${activeCardId._id}/edit`,
         { status: status },
         {
           headers: {
@@ -110,14 +123,14 @@ const Workspace = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:9999/projects/${projectId}/tasks/get-all`, {
+      .get(`${API}/projects/${projectId}/tasks/get-all`, {
         headers: { Authorization: `Bearer ${token} ` },
       })
       .then((response) => setTasks(response.data))
       .catch((error) => console.error("Error fetching tasks:", error));
 
     axios
-      .get(`http://localhost:9999/projects/${projectId}/get-project`, {
+      .get(`${API}/projects/${projectId}/get-project`, {
         headers: { Authorization: `Bearer ${token} ` },
       })
       .then((response) => {
@@ -136,20 +149,26 @@ const Workspace = () => {
       );
       return;
     }
-    const newColumn = prompt("Enter new column title:")?.trim();
-    if (!newColumn) return;
+    if (!newColumn) {
+      alert("Column name is required!");
+      return;
+    }
 
     try {
-      const response = await axios.put(
-        `http://localhost:9999/projects/${projectId}/edit`,
-        { newColumn, id }
-      );
+      const response = await axios.put(`${API}/projects/${projectId}/edit`, {
+        newColumn,
+        id,
+      });
       setColumns(response.data.classifications);
+      setNewColumn("");
+      setShowSuccessAlert(true);
+      setTimeout(() => setShowSuccessAlert(false), 2000);
+      setShowModalColumn(false);
     } catch (error) {
       console.error("Error adding column:", error);
       alert("Failed to add column!");
     }
-  }, [projectId, id, isPremium, columns]);
+  }, [projectId, id, isPremium, newColumn, columns]);
 
   const deleteColumn = useCallback(
     async (title) => {
@@ -157,10 +176,10 @@ const Workspace = () => {
         return;
 
       try {
-        const response = await axios.put(
-          `http://localhost:9999/projects/${projectId}/edit`,
-          { id, removeColumn: title }
-        );
+        const response = await axios.put(`${API}/projects/${projectId}/edit`, {
+          id,
+          removeColumn: title,
+        });
         setColumns(response.data.classifications);
         setTasks((prevTasks) =>
           prevTasks.filter((task) => task.column !== title)
@@ -199,9 +218,9 @@ const Workspace = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:9999/projects/${projectId}/edit`,
+        `${API}/projects/${projectId}/edit`,
         {
-          id,  
+          id,
           renameColumn: {
             oldName,
             newName: editableColumn,
@@ -214,6 +233,11 @@ const Workspace = () => {
 
       if (response.data.classifications) {
         setColumns(response.data.classifications);
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.status === oldName ? { ...task, status: editableColumn } : task
+          )
+        );
       } else {
         console.error("API response missing classifications:", response.data);
       }
@@ -225,15 +249,31 @@ const Workspace = () => {
     }
   };
 
-
-
-
   return (
     <Container fluid className="workspace-container">
+      {showSuccessAlert && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            padding: "15px 30px",
+            borderRadius: "5px",
+            zIndex: 1000,
+            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+            animation: "slideDown 0.5s ease-out",
+          }}
+        >
+          Create Column Successful!
+        </div>
+      )}
       <h2 className="mb-4">CRM Board</h2>
       <div className="board-wrapper">
         <Row className="flex-nowrap board-container">
-          {columns.map((col, index) => (
+          {columns?.map((col, index) => (
             <Col key={col} md={3} className="column">
               <Card className="p-3">
                 <Row>
@@ -247,11 +287,19 @@ const Workspace = () => {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSaveColumn(col);
                         }}
-
                         autoFocus
                       />
                     ) : (
-                      <h5 onClick={() => handleEditColumn(index, col)} style={{ cursor: "pointer" }}>
+                      <h5
+                        onClick={() => handleEditColumn(index, col)}
+                        style={{
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {col} <HiMiniPencilSquare />
                       </h5>
                     )}
@@ -294,7 +342,11 @@ const Workspace = () => {
             </Col>
           ))}
           <Col md="auto">
-            <Button variant="light" onClick={addColumn} className="mt-4">
+            <Button
+              variant="light"
+              onClick={() => setShowModalColumn(true)}
+              className="mt-4"
+            >
               +
             </Button>
           </Col>
@@ -306,7 +358,37 @@ const Workspace = () => {
         projectId={projectId}
         setTasks={setTasks}
       />
-    </Container >
+      <Modal
+        show={showModalColumn}
+        onHide={() => setShowModalColumn(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Column</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="ColumnName">
+              <Form.Label>
+                Required fields are marked with an asterisk *
+              </Form.Label>
+              <br />
+              <Form.Label>Colum Name *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Colum Name"
+                onChange={(e) => setNewColumn(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="dark" className="w-100" onClick={addColumn}>
+            Create Column
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
   );
 };
 
