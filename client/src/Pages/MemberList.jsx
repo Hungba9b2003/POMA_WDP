@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, InputGroup, FormControl, Dropdown, Pagination } from 'react-bootstrap';
+import { Table, Button, InputGroup, FormControl, Dropdown, Pagination, Form, Modal } from 'react-bootstrap';
 import { BsChevronDown, BsTrashFill } from 'react-icons/bs';
 import { useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { jwtDecode } from 'jwt-decode';
 import './MemberList.css';
+import axios from 'axios';
 
 function MemberList() {
     const { projectId } = useParams();
@@ -16,7 +17,12 @@ function MemberList() {
     const [userId, setUserId] = useState('');
     const membersPerPage = 5;
     const roles = ['member', 'viewer'];
+    const [showModal, setShowModal] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+    const [email, setEmail] = useState('');
+    const [isPremium, setIsPremium] = useState(false);
 
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     // Hàm lấy userId từ token
     const getUserIdFromToken = () => {
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -33,7 +39,15 @@ function MemberList() {
 
     useEffect(() => {
         setUserId(getUserIdFromToken());
-    }, []);
+        axios
+              .get(`http://localhost:9999/projects/${projectId}/get-project`, {
+                headers: { Authorization: `Bearer ${token} ` },
+              })
+              .then((response) => {
+                setIsPremium(response.data.project.isPremium || false);
+              })
+              .catch((error) => console.error("Error fetching project data:", error));
+    }, [projectId]);
 
     useEffect(() => {
         const fetchProjectMembers = async () => {
@@ -132,13 +146,17 @@ function MemberList() {
         }
     };
     const handleInviteMemberByEmail = async () => {
-        const email = prompt('Enter email to invite');
         if (!email) {
             alert('Email is required!');
             return;
         };
+        if (!isPremium && projectMembers.length >= 5) {
+            alert(
+              "You have reached the maximum number of member for a free account!"
+            );
+            return;
+          }
         try {
-            // Kiểm tra email đã tồn tại trong danh sách thành viên chưa
             const isAlreadyMember = projectMembers.filter(member => member.email === email);
             console.log("Email entered:", email);
             console.log("isAlreadyMember", isAlreadyMember);
@@ -147,7 +165,6 @@ function MemberList() {
                 return;
             }
 
-            // Nếu chưa là thành viên, gửi lời mời
             const response = await fetch(`http://localhost:9999/projects/${projectId}/invite`, {
                 method: 'POST',
                 headers: {
@@ -159,6 +176,11 @@ function MemberList() {
 
             if (response.ok) {
                 alert('Invitation sent!');
+                setEmail('');
+                setShowModal(false);
+                setShowSuccessAlert(true);
+                setTimeout(() => setShowSuccessAlert(false), 2000);
+
             } else {
                 alert('Failed to send invitation!');
             }
@@ -181,6 +203,25 @@ function MemberList() {
     return (
         <div className="container mt-4">
             <h2 className="text-center mb-4">Project Members</h2>
+            {showSuccessAlert && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: "20px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        backgroundColor: "#4CAF50",
+                        color: "white",
+                        padding: "15px 30px",
+                        borderRadius: "5px",
+                        zIndex: 1000,
+                        boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                        animation: "slideDown 0.5s ease-out",
+                    }}
+                >
+                    Invite member Successful!
+                </div>
+            )}
             <InputGroup className="mb-3">
                 <FormControl
                     placeholder="Search members..."
@@ -240,7 +281,33 @@ function MemberList() {
                 ))}
                 <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
             </Pagination>
-            <Button onClick={handleInviteMemberByEmail}>Invite By Email</Button>
+            <Button onClick={()=> setShowModal(true)}>Invite By Email</Button>
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Create</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="email">
+                            <Form.Label>
+                                Required fields are marked with an asterisk *
+                            </Form.Label>
+                            <br />
+                            <Form.Label>Email *</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="email"
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="dark" className="w-100" onClick={handleInviteMemberByEmail}>
+                        Invite Member
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }
