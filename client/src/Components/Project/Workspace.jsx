@@ -164,7 +164,7 @@ const Workspace = () => {
     async (title) => {
       if (!window.confirm(`Are you sure you want to delete column "${title}"?`))
         return;
-
+      
       try {
         const response = await axios.put(
           `http://localhost:9999/projects/${projectId}/edit`,
@@ -228,14 +228,12 @@ const Workspace = () => {
             task.status === oldName ? { ...task, status: editableColumn } : task
           )
         );
-      } else {
-        console.error("API response missing classifications:", response.data);
-      }
+      } 
 
       setSelectedColumnIndex(null);
     } catch (error) {
-      console.error("Error updating column:", error);
-      alert("Failed to update column name!");
+      setEditableColumn(oldName);
+      alert("Failed to update column name!");      
     }
   };
 
