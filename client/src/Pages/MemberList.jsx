@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { jwtDecode } from 'jwt-decode';
 import './MemberList.css';
+import axios from 'axios';
 
 function MemberList() {
     const { projectId } = useParams();
@@ -19,7 +20,9 @@ function MemberList() {
     const [showModal, setShowModal] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     const [email, setEmail] = useState('');
+    const [isPremium, setIsPremium] = useState(false);
 
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     // Hàm lấy userId từ token
     const getUserIdFromToken = () => {
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -36,7 +39,15 @@ function MemberList() {
 
     useEffect(() => {
         setUserId(getUserIdFromToken());
-    }, []);
+        axios
+              .get(`http://localhost:9999/projects/${projectId}/get-project`, {
+                headers: { Authorization: `Bearer ${token} ` },
+              })
+              .then((response) => {
+                setIsPremium(response.data.project.isPremium || false);
+              })
+              .catch((error) => console.error("Error fetching project data:", error));
+    }, [projectId]);
 
     useEffect(() => {
         const fetchProjectMembers = async () => {
@@ -139,6 +150,12 @@ function MemberList() {
             alert('Email is required!');
             return;
         };
+        if (!isPremium && projectMembers.length >= 5) {
+            alert(
+              "You have reached the maximum number of member for a free account!"
+            );
+            return;
+          }
         try {
             const isAlreadyMember = projectMembers.filter(member => member.email === email);
             console.log("Email entered:", email);

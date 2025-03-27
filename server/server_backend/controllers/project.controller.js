@@ -138,76 +138,75 @@ async function updateProject(req, res, next) {
 
     const updateProject = {};
 
-    if (member.role === "owner") {
-      if (projectName) updateProject.projectName = projectName;
+    if (projectName) updateProject.projectName = projectName;
 
-      if (projectCode) {
-        const existingProject = await db.Projects.findOne({ projectCode, _id: { $ne: projectId } });
-        if (existingProject) return res.status(409).json({ error: "Project code already exists" });
-        updateProject.projectCode = projectCode;
-      }
-
-      if (projectAvatar) updateProject.projectAvatar = projectAvatar;
-
-      // **Thêm column**
-      if (newColumn) {
-        if (project.classifications.includes(newColumn)) {
-          return res.status(400).json({ message: "Column already exists" });
-        }
-        project.classifications.push(newColumn);
-        updateProject.classifications = project.classifications;
-      }
-
-      // **Xóa column**
-      if (removeColumn) {
-        const tasksToDelete = project.tasks.filter((task) => task.status === removeColumn).map((task) => task._id);
-
-        if (tasksToDelete.length > 0) {
-          await db.Tasks.deleteMany({ _id: { $in: tasksToDelete } });
-        }
-
-        project.tasks = project.tasks.filter((task) => task.status !== removeColumn);
-        updateProject.tasks = project.tasks;
-        project.classifications = project.classifications.filter((col) => col !== removeColumn);
-        updateProject.classifications = project.classifications;
-      }
-
-      // **Đổi tên column**
-      if (renameColumn) {
-        const { oldName, newName } = renameColumn;
-        if (!oldName || !newName) return res.status(400).json({ message: "Invalid rename request" });
-
-        const columnIndex = project.classifications.indexOf(oldName);
-        if (columnIndex === -1) return res.status(404).json({ message: "Column not found" });
-
-        if (project.classifications.includes(newName)) {
-          return res.status(400).json({ message: "New column name already exists" });
-        }
-
-        project.classifications[columnIndex] = newName;
-        updateProject.classifications = project.classifications;
-
-        const taskIdsToUpdate = project.tasks
-          .filter((task) => task.status === oldName)
-          .map((task) => task._id);
-
-        if (taskIdsToUpdate.length > 0) {
-          await db.Tasks.updateMany(
-            { _id: { $in: taskIdsToUpdate } },
-            { $set: { status: newName } }
-          );
-        }
-      } 
-      const result = await db.Projects.updateOne(
-        { _id: projectId },
-        { $set: updateProject },
-        { runValidators: true }
-      );
-
-      const saveProject = await db.Projects.findOne({ _id: projectId });
-      console.log(result);
-      res.status(200).json(saveProject);
+    if (projectCode) {
+      const existingProject = await db.Projects.findOne({ projectCode, _id: { $ne: projectId } });
+      if (existingProject) return res.status(409).json({ error: "Project code already exists" });
+      updateProject.projectCode = projectCode;
     }
+
+    if (projectAvatar) updateProject.projectAvatar = projectAvatar;
+
+    // **Thêm column**
+    if (newColumn) {
+      if (project.classifications.includes(newColumn)) {
+        return res.status(400).json({ message: "Column already exists" });
+      }
+      project.classifications.push(newColumn);
+      updateProject.classifications = project.classifications;
+    }
+
+    // **Xóa column**
+    if (removeColumn) {
+      const tasksToDelete = project.tasks.filter((task) => task.status === removeColumn).map((task) => task._id);
+
+      if (tasksToDelete.length > 0) {
+        await db.Tasks.deleteMany({ _id: { $in: tasksToDelete } });
+      }
+
+      project.tasks = project.tasks.filter((task) => task.status !== removeColumn);
+      updateProject.tasks = project.tasks;
+      project.classifications = project.classifications.filter((col) => col !== removeColumn);
+      updateProject.classifications = project.classifications;
+    }
+
+    // **Đổi tên column**
+    if (renameColumn) {
+      const { oldName, newName } = renameColumn;
+      if (!oldName || !newName) return res.status(400).json({ message: "Invalid rename request" });
+
+      const columnIndex = project.classifications.indexOf(oldName);
+      if (columnIndex === -1) return res.status(404).json({ message: "Column not found" });
+
+      if (project.classifications.includes(newName)) {
+        return res.status(400).json({ message: "New column name already exists" });
+      }
+
+      project.classifications[columnIndex] = newName;
+      updateProject.classifications = project.classifications;
+
+      const taskIdsToUpdate = project.tasks
+        .filter((task) => task.status === oldName)
+        .map((task) => task._id);
+
+      if (taskIdsToUpdate.length > 0) {
+        await db.Tasks.updateMany(
+          { _id: { $in: taskIdsToUpdate } },
+          { $set: { status: newName } }
+        );
+      }
+    }
+    const result = await db.Projects.updateOne(
+      { _id: projectId },
+      { $set: updateProject },
+      { runValidators: true }
+    );
+
+    const saveProject = await db.Projects.findOne({ _id: projectId });
+    console.log(result);
+    res.status(200).json(saveProject);
+
   } catch (error) {
     next(error);
   }
