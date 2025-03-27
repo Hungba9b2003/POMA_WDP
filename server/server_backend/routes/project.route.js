@@ -59,7 +59,7 @@ projectRouter.delete(
   ProjectController.deleteProjectMember
 ); // lấy thông tin thành viên đang có trong dự án
 projectRouter.get(
-  "/user/:projectId/get-user-role",
+  "/user/:projectId/get-user-role",AuthMiddleware.verifyAccessToken,
   ProjectController.getUserRole
 );
 

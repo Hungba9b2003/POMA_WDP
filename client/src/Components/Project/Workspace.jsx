@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { Container, Row, Col, Button, Card } from "react-bootstrap";
+import { Container, Row, Col, Button, Card, Modal, Form } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import TaskCard from "./TaskCard";
@@ -23,6 +23,10 @@ const Workspace = () => {
   const [activeCardId, setactiveCardId] = useState(null);
   const [editableColumn, setEditableColumn] = useState("");
   const [selectedColumnIndex, setSelectedColumnIndex] = useState(null);
+  const [newColumn, setNewColumn] = useState("");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showModalColumn, setShowModalColumn] = useState(false);
+  const [role, setRole] = useState(null);
 
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -110,6 +114,17 @@ const Workspace = () => {
 
   useEffect(() => {
     axios
+      .get(`http://localhost:9999/projects/user/${projectId}/get-user-role`, {
+        headers: { Authorization: `Bearer ${token} ` },
+      })
+      .then((response) => {
+        setRole(response.data.role)
+      })
+      .catch((error) => console.error("Error fetching user's role:", error));
+  })
+
+  useEffect(() => {
+    axios
       .get(`http://localhost:9999/projects/${projectId}/tasks/get-all`, {
         headers: { Authorization: `Bearer ${token} ` },
       })
@@ -130,14 +145,20 @@ const Workspace = () => {
   }, [projectId, token, id]);
 
   const addColumn = useCallback(async () => {
+    if(role === "viewer"){
+      alert("Viewer don't have permission to add column!");
+      return;
+    }
     if (!isPremium && columns.length >= 5) {
       alert(
         "You have reached the maximum number of columns for a free account!"
       );
       return;
     }
-    const newColumn = prompt("Enter new column title:")?.trim();
-    if (!newColumn) return;
+    if (!newColumn) {
+      alert("Column name is required!");
+      return;
+    }
 
     try {
       const response = await axios.put(
@@ -145,16 +166,24 @@ const Workspace = () => {
         { newColumn, id }
       );
       setColumns(response.data.classifications);
+      setNewColumn("");
+      setShowSuccessAlert(true);
+      setTimeout(() => setShowSuccessAlert(false), 2000);
+      setShowModalColumn(false);
     } catch (error) {
       console.error("Error adding column:", error);
       alert("Failed to add column!");
     }
-  }, [projectId, id, isPremium, columns]);
+  }, [projectId, id, isPremium, newColumn, columns]);
 
   const deleteColumn = useCallback(
     async (title) => {
       if (!window.confirm(`Are you sure you want to delete column "${title}"?`))
         return;
+      if(role === "viewer"){
+        alert("Viewer don't have permission to delete column!");
+        return;
+      }
 
       try {
         const response = await axios.put(
@@ -185,6 +214,7 @@ const Workspace = () => {
   };
 
   const handleSaveColumn = async (oldName) => {
+    
     if (!editableColumn) return;
 
     if (editableColumn === oldName) {
@@ -197,11 +227,16 @@ const Workspace = () => {
       return;
     }
 
+    if (role === "viewer") {
+      alert("Viewer don't have permission to rename column!");
+      return;
+    }
+
     try {
       const response = await axios.put(
         `http://localhost:9999/projects/${projectId}/edit`,
         {
-          id,  
+          id,
           renameColumn: {
             oldName,
             newName: editableColumn,
@@ -214,13 +249,16 @@ const Workspace = () => {
 
       if (response.data.classifications) {
         setColumns(response.data.classifications);
-      } else {
-        console.error("API response missing classifications:", response.data);
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.status === oldName ? { ...task, status: editableColumn } : task
+          )
+        );
       }
 
       setSelectedColumnIndex(null);
     } catch (error) {
-      console.error("Error updating column:", error);
+      setEditableColumn(oldName);
       alert("Failed to update column name!");
     }
   };
@@ -230,10 +268,29 @@ const Workspace = () => {
 
   return (
     <Container fluid className="workspace-container">
+      {showSuccessAlert && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            padding: "15px 30px",
+            borderRadius: "5px",
+            zIndex: 1000,
+            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+            animation: "slideDown 0.5s ease-out",
+          }}
+        >
+          Create Column Successful!
+        </div>
+      )}
       <h2 className="mb-4">CRM Board</h2>
       <div className="board-wrapper">
         <Row className="flex-nowrap board-container">
-          {columns.map((col, index) => (
+          {columns?.map((col, index) => (
             <Col key={col} md={3} className="column">
               <Card className="p-3">
                 <Row>
@@ -251,7 +308,16 @@ const Workspace = () => {
                         autoFocus
                       />
                     ) : (
-                      <h5 onClick={() => handleEditColumn(index, col)} style={{ cursor: "pointer" }}>
+                      <h5
+                        onClick={() => handleEditColumn(index, col)}
+                        style={{
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {col} <HiMiniPencilSquare />
                       </h5>
                     )}
@@ -269,7 +335,7 @@ const Workspace = () => {
                     task.status === col && (
                       <React.Fragment key={task._id || `task-${index}`}>
                         <TaskCard
-                          key={task._id || `task-${index}`} // Đảm bảo key duy nhất
+                          key={task._id || `task-${index}`}
                           task={task}
                           index={index}
                           setactiveCard={setactiveCard}
@@ -294,7 +360,7 @@ const Workspace = () => {
             </Col>
           ))}
           <Col md="auto">
-            <Button variant="light" onClick={addColumn} className="mt-4">
+            <Button variant="light" onClick={() => setShowModalColumn(true)} className="mt-4">
               +
             </Button>
           </Col>
@@ -306,6 +372,32 @@ const Workspace = () => {
         projectId={projectId}
         setTasks={setTasks}
       />
+      <Modal show={showModalColumn} onHide={() => setShowModalColumn(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Column</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="ColumnName">
+              <Form.Label>
+                Required fields are marked with an asterisk *
+              </Form.Label>
+              <br />
+              <Form.Label>Colum Name *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Colum Name"
+                onChange={(e) => setNewColumn(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="dark" className="w-100" onClick={addColumn}>
+            Create Column
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container >
   );
 };

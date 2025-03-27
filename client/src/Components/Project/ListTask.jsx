@@ -74,7 +74,20 @@ const ListTask = () => {
         task._id === updatedTask._id ? updatedTask : task
       )
     );
+
+    // Cập nhật lại danh sách filteredTasks để tránh bị lỗi khi tìm kiếm
+    setFilteredTasks((prevFilteredTasks) =>
+      prevFilteredTasks.map((task) =>
+        task._id === updatedTask._id ? updatedTask : task
+      )
+    );
+
+    // Nếu task đang mở là task vừa cập nhật, thì cập nhật luôn `selectedTask`
+    if (selectedTask && selectedTask._id === updatedTask._id) {
+      setSelectedTask(updatedTask);
+    }
   };
+
 
   const handleTaskClick = (task) => {
     setSelectedTask(task);
@@ -185,8 +198,8 @@ const ListTask = () => {
                     task.status === "Pending"
                       ? "black"
                       : task.status === "In Progress"
-                      ? "blue"
-                      : "green",
+                        ? "blue"
+                        : "green",
                 }}
               >
                 {task.status}

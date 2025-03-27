@@ -14,7 +14,6 @@ const Sidebar = () => {
   const [project, setProject] = useState(null);
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
-  console.log("Project ID from URL:", userInfo);
 
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
