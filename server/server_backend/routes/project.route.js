@@ -44,9 +44,9 @@ projectRouter.post("/:projectId/invite", ProjectController.inviteUserToProject, 
 projectRouter.delete("/:projectId/out");
 // lấy danh sách thành viên dự án
 projectRouter.get(
-    "/:projectId/get-member",
-    ProjectController.getProjectMembers
-  );
+  "/:projectId/get-member",
+  ProjectController.getProjectMembers
+);
 
 // set group member role
 projectRouter.put(
@@ -59,7 +59,7 @@ projectRouter.delete(
   ProjectController.deleteProjectMember
 ); // lấy thông tin thành viên đang có trong dự án
 projectRouter.get(
-  "/user/:projectId/get-user-role",AuthMiddleware.verifyAccessToken,
+  "/user/:projectId/get-user-role", AuthMiddleware.verifyAccessToken,
   ProjectController.getUserRole
 );
 
@@ -100,7 +100,7 @@ projectRouter.delete(
 //Subtask bên trong Task có list subtask, xem model nếu không rõ
 
 //lấy subtask
-projectRouter.get(  
+projectRouter.get(
   "/:projectId/tasks/:taskId/subTasks/get-all",
   AuthMiddleware.verifyAccessToken,
   TaskController.getAllSubTasks

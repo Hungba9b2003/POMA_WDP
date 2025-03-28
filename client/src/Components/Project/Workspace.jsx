@@ -145,7 +145,7 @@ const Workspace = () => {
   }, [projectId, token, id]);
 
   const addColumn = useCallback(async () => {
-    if(role === "viewer"){
+    if (role === "viewer") {
       alert("Viewer don't have permission to add column!");
       return;
     }
@@ -178,9 +178,13 @@ const Workspace = () => {
 
   const deleteColumn = useCallback(
     async (title) => {
+      if (role === "viewer") {
+        alert("Viewer don't have permission to delete column.");
+        return;
+      }
       if (!window.confirm(`Are you sure you want to delete column "${title}"?`))
         return;
-      if(role === "viewer"){
+      if (role === "viewer") {
         alert("Viewer don't have permission to delete column!");
         return;
       }
@@ -203,18 +207,26 @@ const Workspace = () => {
   );
 
   const handleOpenModal = (column) => {
+    if (role === "viewer") {
+      alert("Viewer don't have permission to create task.");
+      return
+    }
     setSelectedColumn(column);
     setShowModal(true);
   };
   const handleCloseModal = () => setShowModal(false);
 
   const handleEditColumn = (index, col) => {
+    if (role === "viewer") {
+      alert("Viewer don't have permission to rename column.");
+      return
+    }
     setSelectedColumnIndex(index);
     setEditableColumn(col);
   };
 
   const handleSaveColumn = async (oldName) => {
-    
+
     if (!editableColumn) return;
 
     if (editableColumn === oldName) {

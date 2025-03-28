@@ -185,7 +185,7 @@ function LandingPage() {
 
             <PricingCard>
               <PricingTitle>Chuyên nghiệp</PricingTitle>
-              <Price>$29/tháng</Price>
+              <Price>$199/tháng</Price>
               <Features>
                 <li>Không giới hạn thành viên</li>
                 <li>Không giới hạn dự án</li>

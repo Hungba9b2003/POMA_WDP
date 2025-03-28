@@ -141,7 +141,7 @@ async function updateProject(req, res, next) {
     }
 
     const updateProject = {};
-    
+
 
     if (projectName) updateProject.projectName = projectName;
 
@@ -389,7 +389,7 @@ async function deleteProjectMember(req, res, next) {
 async function getUserRole(req, res, next) {
   try {
     const { projectId } = req.params;
-    const id  = req.payload.id;
+    const id = req.payload.id;
 
     const project = await db.Projects.findOne({ _id: projectId });
 
@@ -609,7 +609,7 @@ const joinProjectByCode = async (req, res, next) => {
         .status(404)
         .json({ message: "Invalid project code or project not found" });
     }
-    if(project.members.length >= 5 && project.isPremium == false){
+    if (project.members.length >= 5 && project.isPremium == false) {
       return res
         .status(400)
         .json({ message: "Project is full!" });
