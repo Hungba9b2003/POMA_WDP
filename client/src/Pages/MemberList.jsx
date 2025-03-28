@@ -40,13 +40,13 @@ function MemberList() {
     useEffect(() => {
         setUserId(getUserIdFromToken());
         axios
-              .get(`http://localhost:9999/projects/${projectId}/get-project`, {
+            .get(`http://localhost:9999/projects/${projectId}/get-project`, {
                 headers: { Authorization: `Bearer ${token} ` },
-              })
-              .then((response) => {
+            })
+            .then((response) => {
                 setIsPremium(response.data.project.isPremium || false);
-              })
-              .catch((error) => console.error("Error fetching project data:", error));
+            })
+            .catch((error) => console.error("Error fetching project data:", error));
     }, [projectId]);
 
     useEffect(() => {
@@ -72,7 +72,7 @@ function MemberList() {
                     setProjectMembers([]);
                 }
             } catch (error) {
-                console.error("Lỗi khi lấy danh sách thành viên:", error);
+                console.error("Error retrieving member list:", error);
                 setProjectMembers([]);
             }
         };
@@ -84,14 +84,14 @@ function MemberList() {
 
     const handleDeleteMember = async (memberId) => {
         Swal.fire({
-            title: "Bạn có chắc chắn?",
-            text: "Thao tác này sẽ xóa thành viên khỏi dự án!",
+            title: "Are you sure?",
+            text: "This action will remove the member from the project!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
-            confirmButtonText: "Xóa",
-            cancelButtonText: "Hủy",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel",
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -102,12 +102,12 @@ function MemberList() {
 
                     if (response.ok) {
                         setProjectMembers(prevMembers => prevMembers.filter(member => member.id !== memberId));
-                        Swal.fire("Đã xóa!", "Thành viên đã được xóa thành công.", "success");
+                        Swal.fire("Deleted!", "The member has been successfully removed.", "success");
                     } else {
-                        Swal.fire("Lỗi!", "Không thể xóa thành viên.", "error");
+                        Swal.fire("Fail!", "Unable to remove the member.", "error");
                     }
                 } catch (error) {
-                    Swal.fire("Lỗi!", "Đã xảy ra lỗi khi gọi API.", "error");
+                    Swal.fire("Fail!", "Đã xảy ra lỗi khi gọi API.", "error");
                 }
             }
         });
@@ -133,16 +133,16 @@ function MemberList() {
                         member.id === memberId ? { ...member, role: newRole } : member
                     )
                 );
-                Swal.fire("Thành công!", result.message, "success");
+                Swal.fire("Successful!", result.message, "success");
             } else {
                 const errorData = await response.json();
                 // Xử lý lỗi nếu API trả về không thành công
-                Swal.fire("Lỗi!", errorData.message || "Không thể cập nhật vai trò. Vui lòng thử lại.", "error");
+                Swal.fire("Fail!", errorData.message || "Cannot update role. Please try again.", "error");
             }
         } catch (error) {
             // Xử lý lỗi khi gọi API
             console.error("Error:", error);
-            Swal.fire("Lỗi!", "Đã xảy ra lỗi khi gọi API.", "error");
+            Swal.fire("Fail!", "Đã xảy ra lỗi khi gọi API.", "error");
         }
     };
     const handleInviteMemberByEmail = async () => {
@@ -152,10 +152,10 @@ function MemberList() {
         };
         if (!isPremium && projectMembers.length >= 5) {
             alert(
-              "You have reached the maximum number of member for a free account!"
+                "You have reached the maximum number of member for a free account!"
             );
             return;
-          }
+        }
         try {
             const isAlreadyMember = projectMembers.filter(member => member.email === email);
             console.log("Email entered:", email);
@@ -247,18 +247,16 @@ function MemberList() {
                                 {member.role === "owner" || currentUserRole !== "owner" ? (
                                     <span className="badge bg-primary">{member.role}</span>
                                 ) : (
-                                    <Dropdown container="body" flip={false}>
-                                        <Dropdown.Toggle variant="secondary" size="sm">
-                                            {member.role} <BsChevronDown />
-                                        </Dropdown.Toggle>
-                                        <Dropdown.Menu>
-                                            {roles.map(role => (
-                                                <Dropdown.Item key={role} onClick={() => handleSetRole(member.id, role)}>
-                                                    {role}
-                                                </Dropdown.Item>
-                                            ))}
-                                        </Dropdown.Menu>
-                                    </Dropdown>
+                                    <Form.Control
+                                        as="select"
+                                        size="sm"
+                                        value={member.role}
+                                        onChange={(e) => handleSetRole(member.id, e.target.value)}
+                                    >
+                                        {roles.map(role => (
+                                            <option key={role} value={role}>{role}</option>
+                                        ))}
+                                    </Form.Control>
                                 )}
                             </td>
                             <td>
@@ -281,7 +279,7 @@ function MemberList() {
                 ))}
                 <Pagination.Next onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
             </Pagination>
-            <Button onClick={()=> setShowModal(true)}>Invite By Email</Button>
+            <Button onClick={() => setShowModal(true)}>Invite By Email</Button>
             <Modal show={showModal} onHide={() => setShowModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Create</Modal.Title>

@@ -26,7 +26,7 @@ const Workspace = () => {
   const [newColumn, setNewColumn] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showModalColumn, setShowModalColumn] = useState(false);
-  const [role, setRole] = useState(null)
+  const [role, setRole] = useState(null);
 
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -114,15 +114,13 @@ const Workspace = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:9999/projects/user/${projectId}/get-user-role`,
-        {
-          headers: { Authorization: `Bearer ${token} ` },
-        })
+      .get(`http://localhost:9999/projects/user/${projectId}/get-user-role`, {
+        headers: { Authorization: `Bearer ${token} ` },
+      })
       .then((response) => {
         setRole(response.data.role)
-      }).catch((error) =>
-        console.error("Error fetching project data:", error)
-      )
+      })
+      .catch((error) => console.error("Error fetching user's role:", error));
   })
 
   useEffect(() => {
@@ -148,7 +146,7 @@ const Workspace = () => {
 
   const addColumn = useCallback(async () => {
     if (role === "viewer") {
-      alert("Viewer don't have permission to add column.");
+      alert("Viewer don't have permission to add column!");
       return;
     }
     if (!isPremium && columns.length >= 5) {
@@ -186,6 +184,10 @@ const Workspace = () => {
       }
       if (!window.confirm(`Are you sure you want to delete column "${title}"?`))
         return;
+      if (role === "viewer") {
+        alert("Viewer don't have permission to delete column!");
+        return;
+      }
 
       try {
         const response = await axios.put(
@@ -224,6 +226,7 @@ const Workspace = () => {
   };
 
   const handleSaveColumn = async (oldName) => {
+
     if (!editableColumn) return;
 
     if (editableColumn === oldName) {
@@ -233,6 +236,11 @@ const Workspace = () => {
 
     if (!id) {
       console.error("User ID not found in token!");
+      return;
+    }
+
+    if (role === "viewer") {
+      alert("Viewer don't have permission to rename column!");
       return;
     }
 
@@ -339,7 +347,7 @@ const Workspace = () => {
                     task.status === col && (
                       <React.Fragment key={task._id || `task-${index}`}>
                         <TaskCard
-                          key={task._id || `task-${index}`} // Đảm bảo key duy nhất
+                          key={task._id || `task-${index}`}
                           task={task}
                           index={index}
                           setactiveCard={setactiveCard}
