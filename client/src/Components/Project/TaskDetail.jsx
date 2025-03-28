@@ -48,8 +48,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   const [isViewing, setIsViewing] = useState(false);
 
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  console.log("cmt:", comments);
-  console.log("user:", user._id);
+  console.log("cmt", comments);
   let id = null;
   if (token) {
     try {
@@ -1095,7 +1094,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                           {/* Hàng 2: Nội dung bình luận và các nút Edit/Delete */}
                           <Row>
                             <Col xs={10}>
-                              {editingCommentId === c._id ? (
+                              {editingCommentId === c?._id ? (
                                 <textarea
                                   value={editedContent}
                                   onChange={(e) => setEditedContent(e.target.value)}
@@ -1118,10 +1117,10 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                             </Col>
 
                             {/* Nút Edit và Save chỉ hiển thị khi bình luận thuộc về người dùng hiện tại */}
-                            {user._id === c.user._id && (
+                            {c.user && user?._id === c?.user?._id && (
                               <>
                                 <Col xs={1} className="text-center">
-                                  {editingCommentId === c._id ? (
+                                  {editingCommentId === c?._id ? (
                                     <FaSave
                                       style={{ color: "green", cursor: "pointer" }}
                                       onClick={() => handleSave(c._id)}
@@ -1129,7 +1128,7 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
                                   ) : (
                                     <FaEdit
                                       style={{ color: "gold", cursor: "pointer" }}
-                                      onClick={() => handleEdit(c._id, c.content, c.user._id)}
+                                      onClick={() => handleEdit(c?._id, c.content, c.user._id)}
                                     />
                                   )}
                                 </Col>
