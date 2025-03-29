@@ -51,7 +51,7 @@ app.post('/payment', async (req, res) => {
         item: JSON.stringify(items),
         embed_data: JSON.stringify(embed_data),
         amount,
-        callback_url: 'https://19be-42-119-222-133.ngrok-free.app/callback',
+        callback_url: 'https://ebbb-42-116-196-115.ngrok-free.app/callback',
         description: `POMA - Payment for the order #${transID}`,
         bank_code: ''
     };
