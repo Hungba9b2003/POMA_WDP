@@ -596,6 +596,23 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
   };
   const deadlineStatus = checkDeadlineStatus(deadline);
 
+  const handleDeleteTask = async () => {
+    try {
+      const { data } = await axios.delete(
+        `http://localhost:9999/projects/${projectId}/tasks/${task._id}/delete`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      onUpdateTask(data); // Cập nhật task trong parent component
+      onClose();
+    } catch (error) {
+      console.error("Error deleting task", error);
+    }
+  };
+
   return (
     <Modal show={showModal} onHide={onClose} size="xl">
       <Modal.Header closeButton>
@@ -1164,46 +1181,57 @@ const TaskDetail = ({ task, showModal, onClose, onUpdateTask, isPremium }) => {
           </Col>
           <Col md={4}>
             <Row style={{ width: "100%", maxWidth: "330px" }}>
-              <Form.Control
-                as="select"
-                value={taskStatus}
-                onChange={(e) => handleUpdateTaskStatus(e.target.value)}
-                style={{
-                  border: "1px solid black",
-                  borderRadius: "5px",
-                  width: "120px",
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  color:
-                    taskStatus === "Pending"
-                      ? "black"
-                      : taskStatus === "In Progress"
-                        ? "blue"
-                        : taskStatus === "Completed"
-                          ? "green"
-                          : "gray",
-                }}
-              >
-                {statusList.map((status) => (
-                  <option
-                    key={status}
-                    value={status}
-                    style={{
-                      fontWeight: "bold",
-                      color:
-                        status === "Pending"
-                          ? "black"
-                          : status === "In Progress"
-                            ? "blue"
-                            : status === "Completed"
-                              ? "green"
-                              : "gray",
-                    }}
-                  >
-                    {status}
-                  </option>
-                ))}
-              </Form.Control>
+              <Col md={10}>
+                <Form.Control
+                  as="select"
+                  value={taskStatus}
+                  onChange={(e) => handleUpdateTaskStatus(e.target.value)}
+                  style={{
+                    border: "1px solid black",
+                    borderRadius: "5px",
+                    width: "120px",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    color:
+                      taskStatus === "Pending"
+                        ? "black"
+                        : taskStatus === "In Progress"
+                          ? "blue"
+                          : taskStatus === "Completed"
+                            ? "green"
+                            : "gray",
+                  }}
+                >
+                  {statusList.map((status) => (
+                    <option
+                      key={status}
+                      value={status}
+                      style={{
+                        fontWeight: "bold",
+                        color:
+                          status === "Pending"
+                            ? "black"
+                            : status === "In Progress"
+                              ? "blue"
+                              : status === "Completed"
+                                ? "green"
+                                : "gray",
+                      }}
+                    >
+                      {status}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Col>
+              <Col md={2}>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={handleDeleteTask}
+                >
+                  <FaTrashAlt />
+                </Button>
+              </Col>
             </Row>
 
             <Row className="d-flex align-items-center">
