@@ -209,6 +209,10 @@ const Workspace = () => {
   const handleCloseModal = () => setShowModal(false);
 
   const handleEditColumn = (index, col) => {
+    if(role === "viewer"){
+      alert("Viewer don't have permission to edit column!");
+      return;
+    }
     setSelectedColumnIndex(index);
     setEditableColumn(col);
   };
@@ -227,10 +231,6 @@ const Workspace = () => {
       return;
     }
 
-    if (role === "viewer") {
-      alert("Viewer don't have permission to rename column!");
-      return;
-    }
 
     try {
       const response = await axios.put(
